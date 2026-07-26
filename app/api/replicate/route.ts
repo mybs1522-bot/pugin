@@ -199,6 +199,30 @@ function buildModelInput(
   };
 }
 
+async function resolveOutputUrl(output: unknown): Promise<string> {
+  if (!output) return "";
+  let item = Array.isArray(output) ? output[output.length - 1] : output;
+
+  // Handles ReadableStream returned by models like flux-schnell
+  if (item && typeof item === "object" && "getReader" in item) {
+    const reader = (item as ReadableStream<Uint8Array>).getReader();
+    const chunks: Uint8Array[] = [];
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
+    }
+    const buffer = Buffer.concat(chunks);
+    return `data:image/png;base64,${buffer.toString("base64")}`;
+  }
+
+  if (typeof item === "string") return item;
+  if (item && typeof item === "object" && "url" in item) {
+    return String((item as { url: unknown }).url);
+  }
+  return String(item);
+}
+
 /* ─── Route handler ──────────────────────────────────────────────────────── */
 export async function POST(request: Request) {
   try {
@@ -353,12 +377,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const url = Array.isArray(output)
-      ? (output[output.length - 1] as { toString(): string }).toString()
-      : (output as { toString(): string }).toString();
+    const url = await resolveOutputUrl(output);
 
-    if (session?.user?.email) {
-      await incrementGenerationCount(session.user.email);
+    if (email && email !== "sketchup-plugin@local.app") {
+      await incrementGenerationCount(email);
     }
 
     return NextResponse.json({ output: [url] }, { status: 200 });
