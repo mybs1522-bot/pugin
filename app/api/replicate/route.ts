@@ -26,23 +26,7 @@ const ERA: Record<string, string> = {
   traditional: "classic traditional",
   futuristic: "sleek futuristic",
 };
-const ROOM_SIZE: Record<string, string> = {
-  small: "compact intimate",
-  medium: "",
-  large: "spacious large",
-  "open-plan": "expansive open-plan",
-};
-const CEILING: Record<string, string> = {
-  low: "",
-  standard: "",
-  high: "",
-  vaulted: "",
-};
-const LIGHT: Record<string, string> = {
-  minimal: "dim intimate light quality",
-  moderate: "natural light quality",
-  abundant: "bright sun-drenched light quality",
-};
+
 const PALETTE: Record<string, string> = {
   "warm-neutrals":
     "warm neutral color palette of creams, taupes, and sandy tones",
@@ -70,12 +54,6 @@ const FLOOR: Record<string, string> = {
   tile: "large format ceramic porcelain tile flooring",
   herringbone: "elegant herringbone parquet flooring",
 };
-const FURNITURE: Record<string, string> = {
-  minimal: "minimal furniture only essential pieces clean open floor space",
-  moderate: "balanced furniture arrangement functional and comfortable",
-  "fully-furnished":
-    "fully furnished richly layered with multiple seating and storage pieces",
-};
 const WOOD: Record<string, string> = {
   "light-ash": "light ash birch wood furniture",
   "medium-oak": "warm medium oak wood furniture",
@@ -95,28 +73,6 @@ const TEXTILE: Record<string, string> = {
   layered: "layered textiles with cushions throw blankets and area rug",
   "rich-and-textured":
     "richly textured textiles floor-to-ceiling curtains multiple rugs abundant soft furnishings",
-};
-const LIGHTING: Record<string, string> = {
-  "bright-natural": "bright cool daylight color temperature",
-  "warm-ambient": "warm golden color temperature",
-  "dramatic-spotlit": "high-contrast dramatic shadows",
-  "soft-diffused": "soft even neutral color temperature",
-};
-const GREENERY: Record<string, string> = {
-  none: "",
-  minimal: "one or two subtle indoor plants",
-  moderate: "several indoor plants as decorative elements",
-  "lush-botanical":
-    "lush botanical statement plants abundant indoor greenery indoor jungle",
-};
-const SPECIAL: Record<string, string> = {
-  fireplace: "",
-  bookshelf: "",
-  rug: "area rug on floor",
-  curtains: "curtains on windows",
-  artwork: "framed artwork on wall",
-  mirrors: "decorative mirror on wall",
-  "exposed-beams": "",
 };
 
 /* ─── Exterior-specific finish maps ──────────────────────────────────────── */
@@ -139,7 +95,6 @@ const EXT_GROUND: Record<string, string> = {
   herringbone: "herringbone brick paving",
 };
 
-/* ─── Exterior prompt ───────────────────────────────────────────────────── */
 const LIGHT_TO_SKY: Record<string, string> = {
   minimal:
     "dramatic twilight dusk sky with deep blue-purple gradient, city glow on horizon, lit building facade, golden artificial light spill",
@@ -169,75 +124,45 @@ function buildExteriorPrompt(q: DesignQuestionnaire): string {
     `You are given an input image of a ${style} building. ` +
     `You MUST preserve with 100% fidelity: ` +
     `(1) exact camera angle, perspective, and distance from the building, ` +
-    `(2) exact building massing — every wall, roof plane, overhang, balcony, parapet stays identical, ` +
-    `(3) exact window positions, sizes, and shapes — do NOT move, resize, or add windows, ` +
+    `(2) exact building massing — every wall, roof plane, overhang, balcony stays identical, ` +
+    `(3) exact window positions, sizes, and shapes — do NOT move or resize windows, ` +
     `(4) exact door positions and sizes, ` +
-    `(5) exact number of floors and storey heights, ` +
-    `(6) exact site context — driveway, boundary wall, gate, existing trees all stay in same positions. ` +
-    `The output MUST show the exact same building form as the input. NO EXCEPTIONS. `;
+    `(5) exact number of floors and storey heights. `;
 
   return (
     EXT_STRUCTURE_LOCK +
-    `NOW apply photorealistic rendering quality to that exact building. ` +
+    `NOW apply photorealistic rendering quality to that exact building layout. ` +
     `${palette ? `Color scheme: ${palette}. ` : ""}` +
     `${accentColorStr ? `Accent: ${accentColorStr}. ` : ""}` +
-    `Apply ONLY these surface/cladding changes: ${matChanges.join(", ")}. ` +
-    `Sky: ${skyDesc}. ` +
-    `GLASS: Realistic window glass — warm amber interior glow visible behind panes, ` +
-    `mirror-like sky and tree reflections on outer surface, blue-green glass tint, specular glare, dark aluminium frames. ` +
-    `LIGHTING: 3000K warm facade uplights and downlights, strong contrast with 7000K cool sky. ` +
-    `Warm bloom tightly around each fixture only — no air scatter or fog. ` +
-    `MATERIALS: PBR textures — concrete aggregate grain, stone veining, timber wood grain, brushed metal reflections. ` +
-    `SHADOWS: Physically accurate sun shadows, sharp contact shadows at wall bases, deep AO in overhangs and soffits. ` +
-    `GLASS INTERIOR: Sheer curtains and furniture silhouettes faintly visible through window glass, condensation on lower edges. ` +
-    `GROUND: ${EXT_GROUND[q.floorMaterial] ?? "paving"} with joint lines, wet puddle reflections, individual gravel stones visible. ` +
-    `SURFACE AGING: Subtle mineral staining at wall base, micro-crack hairlines, UV paint fade top to bottom, patina on metal. ` +
-    `PHOTOGRAPHIC REALISM: ISO 800 grain, lens barrel distortion, chromatic aberration on edges, lens vignette, ` +
-    `color temperature variation (warm lit vs cool shadowed). ` +
-    `Crystal-clear air — NO haze, fog, or volumetric scatter. ` +
-    `100% indistinguishable from a real DSLR photograph. ` +
-    `8K. Canon EOS R5, 35mm f/1.4, ISO 800, RAW. ` +
+    `Surface changes: ${matChanges.join(", ")}. Sky: ${skyDesc}. ` +
+    `GLASS: Realistic window glass with amber interior glow. ` +
+    `MATERIALS: PBR textures — concrete aggregate grain, stone veining, timber wood grain. ` +
+    `PHOTOGRAPHIC REALISM: Architectural Digest quality. 8K, RAW. ` +
     EXT_STRUCTURE_LOCK
   );
 }
 
-/* ─── Interior lighting mood → description ──────────────────────────────── */
 const INTERIOR_LIGHT_DESC: Record<string, string> = {
   "bright-natural":
-    "bright cool daylight streaming through windows with sharp window-frame shadows on walls and floor, 6500K color temperature",
+    "bright cool daylight streaming through windows with sharp window shadows",
   "warm-ambient":
-    "warm golden ambient light from lamps and recessed lighting at 2700K, soft shadows, cozy glow filling the room",
+    "warm golden ambient light from lamps and recessed lighting at 2700K",
   "dramatic-spotlit":
-    "dramatic directional spotlighting with high contrast deep shadows, theatrical pools of warm light on key surfaces",
+    "dramatic directional spotlighting with high contrast deep shadows",
   "soft-diffused":
-    "soft even diffused light, 4000K neutral temperature, gentle shadow gradients, no harsh highlights",
+    "soft even diffused light, neutral temperature, no harsh highlights",
 };
 
-/* ─── Interior prompt ───────────────────────────────────────────────────── */
 function buildEditPrompt(q: DesignQuestionnaire): string {
   const matChanges: string[] = [];
-  const customWall = q.customColors?.[`wallFinish:${q.wallFinish}`];
-  const customFloor = q.customColors?.[`floorMaterial:${q.floorMaterial}`];
-  const customWood = q.customColors?.[`woodTone:${q.woodTone}`];
-  const customMetal = q.customColors?.[`metalAccent:${q.metalAccent}`];
-  if (customWall) matChanges.push(`walls: custom hex color ${customWall}`);
-  else if (WALL[q.wallFinish]) matChanges.push(`walls: ${WALL[q.wallFinish]}`);
-  if (customFloor) matChanges.push(`floor: custom hex color ${customFloor}`);
-  else if (FLOOR[q.floorMaterial])
+  if (WALL[q.wallFinish]) matChanges.push(`walls: ${WALL[q.wallFinish]}`);
+  if (FLOOR[q.floorMaterial])
     matChanges.push(`floor: ${FLOOR[q.floorMaterial]}`);
   if (PALETTE[q.colorPalette])
     matChanges.push(`color scheme: ${PALETTE[q.colorPalette]}`);
-  if (q.accentColor)
-    matChanges.push(
-      `custom accent color ${q.accentColor} on key decorative surfaces`
-    );
-  if (customWood) matChanges.push(`wood: custom hex color ${customWood}`);
-  else if (WOOD[q.woodTone]) matChanges.push(`wood: ${WOOD[q.woodTone]}`);
-  if (customMetal) matChanges.push(`metal: custom hex color ${customMetal}`);
-  else if (METAL[q.metalAccent])
-    matChanges.push(`metal: ${METAL[q.metalAccent]}`);
-  if (TEXTILE[q.textileRichness])
-    matChanges.push(`textiles: ${TEXTILE[q.textileRichness]}`);
+  if (q.accentColor) matChanges.push(`custom accent color ${q.accentColor}`);
+  if (WOOD[q.woodTone]) matChanges.push(`wood: ${WOOD[q.woodTone]}`);
+  if (METAL[q.metalAccent]) matChanges.push(`metal: ${METAL[q.metalAccent]}`);
   if (MOOD[q.mood]) matChanges.push(MOOD[q.mood]);
 
   const lightDesc =
@@ -249,42 +174,47 @@ function buildEditPrompt(q: DesignQuestionnaire): string {
     `You are given an input image of a ${style}. ` +
     `You MUST preserve with 100% fidelity: ` +
     `(1) exact camera angle and perspective, ` +
-    `(2) exact positions of every piece of furniture — bed, nightstands, lamps, ottoman, rugs, art, every object, ` +
-    `(3) exact room dimensions, ceiling height, wall layout, window positions, door positions, ` +
-    `(4) exact number and type of every object in the scene — do NOT add, remove, or replace any item, ` +
-    `(5) exact lighting fixture positions — pendant lamps, floor lamps, ceiling lights stay exactly where they are. ` +
-    `The output MUST look like the same room in the input image. If the input has a bed against a wall, the output has a bed against that same wall. If the input has two pendant lamps, the output has exactly two pendant lamps in the same positions. NO EXCEPTIONS. `;
+    `(2) exact positions of every piece of furniture — bed, lamps, rugs, art, ` +
+    `(3) exact room dimensions, ceiling height, wall layout, window positions. `;
 
   return (
     STRUCTURE_LOCK +
     `NOW apply photorealistic rendering quality to that exact layout. ` +
     `Style: ${style}. V-Ray / Corona / Enscape quality. ` +
-    `Apply ONLY these surface/finish changes (do not change what objects exist): ${matChanges.join("; ")}. ` +
+    `Apply ONLY these surface changes: ${matChanges.join("; ")}. ` +
     `LIGHTING: ${lightDesc}. ` +
-    `Physically accurate GI — lamp light in a tight pool on adjacent surfaces, ` +
-    `window light casting sharp shadow patterns. ` +
-    `NO haze, fog, mist, dust particles, or atmospheric scatter. Crystal-clear air. ` +
-    `Emissive glow tightly around bulbs only. ` +
-    `MATERIALS — razor-sharp PBR on every surface: ` +
-    `wood grain with pores and micro-scratches; fabric weave texture with natural fold wrinkles; ` +
-    `cushions with realistic pile compression; walls with matte/eggshell micro-texture; ` +
-    `stone/tile with veining and grout lines; metal with correct IOR and brushed scratch pattern; ` +
-    `glass with crisp reflections and transparency. ` +
-    `SHADOWS: crisp contact shadows under every furniture leg, deep AO in wall-ceiling junctions and under bed frames, ` +
-    `self-shadow on every fabric fold. NO foggy shadow wash. ` +
-    `PHOTOGRAPHIC REALISM: ISO 400 grain, lens vignette, chromatic aberration on high-contrast edges, ` +
-    `warm 2700K lamp zones vs cool 6500K daylight zones. NO fog. NO haze. CRYSTAL CLEAR air. ` +
-    `Real imperfections: floor wear, micro-scratches on surfaces, uneven pillow compression. ` +
-    `Architectural Digest quality — sharp, clean, crisp. ` +
-    `8K. Canon EOS R5, 24mm f/2.8, ISO 400, RAW. ` +
+    `MATERIALS: razor-sharp PBR textures on every surface. ` +
+    `8K photographic realism, RAW. ` +
     STRUCTURE_LOCK
   );
+}
+
+function buildModelInput(
+  modelId: string,
+  prompt: string,
+  image: string,
+  aspect_ratio?: string
+) {
+  if (modelId.includes("flux")) {
+    return {
+      prompt,
+      image,
+      aspect_ratio:
+        aspect_ratio === "match_input_image" ? "16:9" : aspect_ratio || "16:9",
+      output_format: "png",
+    };
+  }
+  return {
+    prompt,
+    image_input: [image],
+    aspect_ratio: aspect_ratio || "match_input_image",
+    output_format: "png",
+  };
 }
 
 /* ─── Route handler ──────────────────────────────────────────────────────── */
 export async function POST(request: Request) {
   try {
-    // ── Auth & subscription gate ────────────────────────────────────────────
     const session = await getServerSession(authOptions);
     let email = session?.user?.email;
 
@@ -303,7 +233,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check Stripe subscription if configured
     let subscriptionActive = false;
     if (process.env.STRIPE_SECRET_KEY && stripe) {
       try {
@@ -326,7 +255,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Always enforce trial limit for non-subscribers
     if (!subscriptionActive) {
       const currentCount = await getGenerationCount(email);
       if (currentCount >= TRIAL_GENERATION_LIMIT) {
@@ -339,7 +267,6 @@ export async function POST(request: Request) {
         );
       }
     }
-    // ── End gate ────────────────────────────────────────────────────────────
 
     const req = await request.json();
     const image: string = req.image;
@@ -349,30 +276,19 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "REPLICATE_API_TOKEN is not configured. Please add it to your .env.local file.",
+            "REPLICATE_API_TOKEN is not configured on server. Add it to Vercel Environment Variables.",
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-    // Route to correct prompt builder based on user's spaceType selection
     const prompt =
-      questionnaire.spaceType === "exterior"
+      questionnaire?.spaceType === "exterior"
         ? buildExteriorPrompt(questionnaire)
-        : buildEditPrompt(questionnaire);
+        : buildEditPrompt(questionnaire ?? {});
 
-    console.log("Prompt:", prompt.slice(0, 300) + "...");
-
-    const input = {
-      prompt,
-      image_input: [image],
-      aspect_ratio: req.aspect_ratio || "match_input_image",
-      output_format: "png",
-    };
-
-    // User model selection (defaults to fast/cheap model if requested)
     const userModel = req.model || "google/nano-banana-2";
     const MODELS: Array<{ id: string; e003Retries: number }> = [
       { id: userModel, e003Retries: 2 },
@@ -380,24 +296,33 @@ export async function POST(request: Request) {
       { id: "black-forest-labs/flux-1-schnell", e003Retries: 0 },
       { id: "google/nano-banana", e003Retries: 0 },
     ];
-    const MAX_429_RETRIES = 4;
+
+    const MAX_429_RETRIES = 3;
     let output: unknown;
+    let lastError: string = "";
 
     for (const { id: model, e003Retries } of MODELS) {
       let modelSucceeded = false;
       let e003Attempt = 0;
+      const modelInput = buildModelInput(
+        model,
+        prompt,
+        image,
+        req.aspect_ratio
+      );
 
       for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
         try {
           console.log(`Trying ${model} (attempt ${attempt + 1})…`);
           output = await replicate.run(model as `${string}/${string}`, {
-            input,
+            input: modelInput,
           });
           modelSucceeded = true;
           console.log(`✓ Used model: ${model}`);
           break;
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
+          lastError = msg;
           const is429 =
             msg.includes("429") ||
             msg.toLowerCase().includes("throttled") ||
@@ -415,24 +340,16 @@ export async function POST(request: Request) {
             continue;
           }
 
-          if (isUnavailable) {
-            if (e003Attempt < e003Retries) {
-              e003Attempt++;
-              const delay = e003Attempt * 5000; // 5s, 10s, 15s
-              console.warn(
-                `${model} returned E003 (attempt ${e003Attempt}/${e003Retries}). Retrying in ${delay}ms…`
-              );
-              await new Promise((res) => setTimeout(res, delay));
-              attempt--; // don't consume a 429 retry slot
-              continue;
-            }
-            console.warn(
-              `${model} consistently unavailable after ${e003Retries} retries. Falling back…`
-            );
-            break; // try next model
+          if (isUnavailable && e003Attempt < e003Retries) {
+            e003Attempt++;
+            const delay = e003Attempt * 3000;
+            await new Promise((res) => setTimeout(res, delay));
+            attempt--;
+            continue;
           }
 
-          throw err; // unrecoverable — bubble up
+          console.warn(`Model ${model} failed: ${msg}. Trying fallback…`);
+          break;
         }
       }
       if (modelSucceeded) break;
@@ -440,8 +357,8 @@ export async function POST(request: Request) {
 
     if (!output) {
       return NextResponse.json(
-        { error: "No output from model" },
-        { status: 500 }
+        { error: lastError || "No output from AI models." },
+        { status: 400 }
       );
     }
 
@@ -449,24 +366,15 @@ export async function POST(request: Request) {
       ? (output[output.length - 1] as { toString(): string }).toString()
       : (output as { toString(): string }).toString();
 
-    // Increment usage count for the authenticated user
     if (session?.user?.email) {
       await incrementGenerationCount(session.user.email);
     }
 
-    console.log("Output URL:", url);
-    return NextResponse.json({ output: [url] }, { status: 201 });
+    return NextResponse.json({ output: [url] }, { status: 200 });
   } catch (err) {
     console.error("Replicate API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
-    const is429 =
-      raw.includes("429") ||
-      raw.toLowerCase().includes("throttled") ||
-      raw.toLowerCase().includes("rate limit");
-    const message = is429
-      ? "Rate limit reached. Add $5+ credits at https://replicate.com/account/billing to remove this restriction."
-      : raw;
-    return NextResponse.json({ error: message }, { status: is429 ? 429 : 500 });
+    return NextResponse.json({ error: raw }, { status: 400 });
   }
 }
