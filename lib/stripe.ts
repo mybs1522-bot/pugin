@@ -2,9 +2,9 @@ import Stripe from "stripe";
 
 let _stripe: Stripe | null = null;
 
-export function getStripe(): Stripe {
+export function getStripe(): Stripe | null {
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("STRIPE_SECRET_KEY is not configured");
+    return null;
   }
   if (!_stripe) {
     _stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -16,7 +16,9 @@ export function getStripe(): Stripe {
 
 export const stripe = new Proxy({} as Stripe, {
   get(_t, prop) {
-    return (getStripe() as unknown as Record<string | symbol, unknown>)[prop];
+    const s = getStripe();
+    if (!s) return undefined;
+    return (s as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
@@ -25,14 +27,14 @@ export const PLANS = {
     label: "Monthly",
     price: "$20",
     period: "/month",
-    priceId: process.env.STRIPE_PRICE_MONTHLY_ID!,
+    priceId: process.env.STRIPE_PRICE_MONTHLY_ID || "",
     trialDays: 7,
   },
   yearly: {
     label: "Yearly",
     price: "$200",
     period: "/year",
-    priceId: process.env.STRIPE_PRICE_YEARLY_ID!,
+    priceId: process.env.STRIPE_PRICE_YEARLY_ID || "",
     trialDays: 7,
   },
 } as const;
