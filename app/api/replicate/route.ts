@@ -284,7 +284,7 @@ export async function POST(request: Request) {
     const MODELS: Array<{ id: string; e003Retries: number }> = [
       { id: userModel, e003Retries: 2 },
       { id: "google/nano-banana-2", e003Retries: 2 },
-      { id: "black-forest-labs/flux-1-schnell", e003Retries: 0 },
+      { id: "black-forest-labs/flux-schnell", e003Retries: 0 },
       { id: "google/nano-banana", e003Retries: 0 },
     ];
 
