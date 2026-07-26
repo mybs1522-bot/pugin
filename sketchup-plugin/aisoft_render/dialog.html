@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>AIsoft Render AI</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --panel-bg: #131b2e;
+      --card-bg: #1a243a;
+      --card-hover: #23304c;
+      --card-selected: #2563eb25;
+      --border-color: #27364d;
+      --border-active: #3b82f6;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #3b82f6;
+      --accent: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 16px;
+      font-size: 12px;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    h2 { font-size: 16px; font-weight: 700; background: linear-gradient(135deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .badge { background: linear-gradient(135deg, var(--primary), var(--accent)); padding: 3px 8px; border-radius: 12px; font-size: 10px; text-transform: uppercase; color: #fff; font-weight: 600; }
+    
+    .layout-container {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 16px;
+      height: calc(100vh - 65px);
+    }
+
+    .controls-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Step Nav Tabs */
+    .step-tabs {
+      display: flex;
+      gap: 4px;
+      background: #090d16;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 6px 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 10px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .step-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 6px;
+    }
+
+    /* Option Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .card-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+    .card-item:hover {
+      border-color: #475569;
+      background: var(--card-hover);
+    }
+    .card-item.selected {
+      border-color: var(--border-active);
+      background: var(--card-selected);
+      box-shadow: 0 0 0 1px var(--border-active);
+    }
+    .card-emoji { font-size: 18px; }
+    .card-label { font-size: 12px; font-weight: 600; color: #fff; }
+    .card-desc { font-size: 10px; color: var(--text-muted); line-height: 1.3; }
+
+    /* Swatch Bar */
+    .swatch-bar {
+      display: flex;
+      height: 16px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+    .swatch-color { flex: 1; height: 100%; }
+
+    /* Single Swatch Box */
+    .color-box {
+      height: 22px;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .preview-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .preview-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-title {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 5;
+    }
+    .preview-title span { background: #334155; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #fff; }
+
+    .img-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .img-box img {
+      max-width: 100%;
+      max-height: calc(100vh - 160px);
+      object-fit: contain;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .placeholder-state {
+      text-align: center;
+      color: var(--text-muted);
+      padding: 20px;
+    }
+    .placeholder-state icon { font-size: 32px; display: block; margin-bottom: 8px; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: auto;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+    .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    #status {
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.4;
+      display: none;
+      word-break: break-word;
+    }
+    .status-loading { background: #1e1b4b; color: #a5b4fc; border: 1px solid #4338ca; }
+    .status-success { background: #064e3b; color: #6ee7b7; border: 1px solid #047857; }
+    .status-error { background: #450a0a; color: #fca5a5; border: 1px solid #991b1b; }
+
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.1);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border-left-color: var(--primary);
+      animation: spin 1s linear infinite;
+      margin: 0 auto 12px auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .download-btn {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      padding: 8px 14px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .download-btn:hover { background: #2563eb; }
+    
+    input[type="text"], input[type="color"] {
+      width: 100%;
+      padding: 7px 9px;
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>AIsoft Render AI</h2>
+    <span class="badge">Project Questionnaire</span>
+  </header>
+
+  <div class="layout-container">
+    <!-- LEFT PANEL: Controls -->
+    <div class="controls-panel">
+      <!-- Hidden Server Endpoint (Defaults to localhost:3000 or production URL) -->
+      <input type="hidden" id="serverUrl" value="http://localhost:3000">
+
+      <!-- Step Navigation Tabs -->
+      <div class="step-tabs">
+        <button class="tab-btn active" onclick="switchStep(0)">1. Space</button>
+        <button class="tab-btn" onclick="switchStep(1)">2. Room</button>
+        <button class="tab-btn" onclick="switchStep(2)">3. Style</button>
+        <button class="tab-btn" onclick="switchStep(3)">4. Palette</button>
+        <button class="tab-btn" onclick="switchStep(4)">5. Finishes</button>
+        <button class="tab-btn" onclick="switchStep(5)">6. Lighting</button>
+      </div>
+
+      <!-- STEP 0: Space Type -->
+      <div class="step-content" id="step-0">
+        <div class="section-title">Space Type</div>
+        <div class="cards-grid">
+          <div class="card-item selected" id="space-interior" onclick="selectSpace('interior')">
+            <span class="card-emoji">🏠</span>
+            <span class="card-label">Interior</span>
+            <span class="card-desc">Inside a building — rooms, hallways, living spaces</span>
+          </div>
+          <div class="card-item" id="space-exterior" onclick="selectSpace('exterior')">
+            <span class="card-emoji">🏡</span>
+            <span class="card-label">Exterior</span>
+            <span class="card-desc">Outside a building — façades, gardens, entrances</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1: Room / Building Type -->
+      <div class="step-content" id="step-1" style="display:none;">
+        <div class="section-title" id="roomSectionTitle">Room & Space Type</div>
+        <div class="cards-grid" id="roomGrid">
+          <!-- Populated dynamically based on interior/exterior -->
+        </div>
+      </div>
+
+      <!-- STEP 2: Style & Mood & Era -->
+      <div class="step-content" id="step-2" style="display:none;">
+        <div class="section-title">Design Style</div>
+        <div class="cards-grid" id="styleGrid"></div>
+
+        <div class="section-title" style="margin-top:10px;">Atmospheric Mood</div>
+        <div class="cards-grid" id="moodGrid"></div>
+      </div>
+
+      <!-- STEP 3: Color Palette & Accent -->
+      <div class="step-content" id="step-3" style="display:none;">
+        <div class="section-title">Color Scheme</div>
+        <div class="cards-grid" id="paletteGrid"></div>
+
+        <div class="section-title" style="margin-top:10px;">Custom Accent Color</div>
+        <input type="color" id="accentColor" value="#8B5CF6">
+      </div>
+
+      <!-- STEP 4: Finishes & Materials -->
+      <div class="step-content" id="step-4" style="display:none;">
+        <div class="section-title">Wall Finish</div>
+        <div class="cards-grid" id="wallGrid"></div>
+
+        <div class="section-title" style="margin-top:10px;">Floor Material</div>
+        <div class="cards-grid" id="floorGrid"></div>
+      </div>
+
+      <!-- STEP 5: Furniture, Accents & Lighting -->
+      <div class="step-content" id="step-5" style="display:none;">
+        <div class="section-title">Wood Tone</div>
+        <div class="cards-grid" id="woodGrid"></div>
+
+        <div class="section-title" style="margin-top:10px;">Metal Accent</div>
+        <div class="cards-grid" id="metalGrid"></div>
+
+        <div class="section-title" style="margin-top:10px;">Lighting Mood</div>
+        <div class="cards-grid" id="lightingGrid"></div>
+      </div>
+
+      <button class="btn" id="renderBtn" onclick="triggerRender()">Render Current Viewport</button>
+      <div id="status"></div>
+    </div>
+
+    <!-- RIGHT PANEL: Side-by-Side Image Comparison -->
+    <div class="preview-split">
+      <!-- LEFT SIDE: Viewport Capture -->
+      <div class="preview-card">
+        <div class="preview-title">
+          1. SketchUp Viewport
+          <span id="dimBadge">Original</span>
+        </div>
+        <div class="img-box" id="viewportBox">
+          <div class="placeholder-state" id="viewportPlaceholder">
+            <div style="font-size:32px; margin-bottom:8px;">📐</div>
+            <p>Click <b>Render Current Viewport</b> to capture your SketchUp screen.</p>
+          </div>
+          <img id="viewportImg" src="" style="display:none;" alt="SketchUp Viewport Capture">
+        </div>
+      </div>
+
+      <!-- RIGHT SIDE: AI Photorealistic Render -->
+      <div class="preview-card">
+        <div class="preview-title">
+          2. AI Photorealistic Render
+          <span id="aiBadge">AI Output</span>
+        </div>
+        <div class="img-box" id="aiBox">
+          <div class="placeholder-state" id="aiPlaceholder">
+            <div style="font-size:32px; margin-bottom:8px;">🖼️</div>
+            <p>Rendered image will appear here side-by-side.</p>
+          </div>
+
+          <div class="placeholder-state" id="aiLoading" style="display:none;">
+            <div class="spinner"></div>
+            <p><b>Generating AI Render...</b></p>
+            <p style="font-size:11px; margin-top:4px;">Processing PBR lighting, materials & geometry</p>
+          </div>
+
+          <img id="aiImg" src="" style="display:none;" alt="AI Photorealistic Render">
+        </div>
+        <a id="downloadLink" class="download-btn" href="#" target="_blank" download="aisoft-render.png">Download HD Render</a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // State matching project's DEFAULT_QUESTIONNAIRE
+    const questionnaire = {
+      spaceType: "interior",
+      roomType: "Living Room",
+      roomSize: "medium",
+      ceilingHeight: "standard",
+      naturalLight: "moderate",
+      primaryStyle: "Modern",
+      mood: "luxurious",
+      era: "contemporary",
+      colorPalette: "warm-neutrals",
+      accentColor: "#8B5CF6",
+      wallFinish: "cream",
+      floorMaterial: "marble",
+      furnitureDensity: "moderate",
+      woodTone: "dark-walnut",
+      metalAccent: "brushed-gold",
+      textileRichness: "layered",
+      lightingMood: "warm-ambient",
+      greenery: "minimal",
+      specialElements: []
+    };
+
+    let currentServerUrl = 'http://localhost:3000';
+
+    const ROOMS_INTERIOR = [
+      { v: "Living Room", e: "🛋️", d: "Lounge & sitting area" },
+      { v: "Bedroom", e: "🛏️", d: "Private sleep retreat" },
+      { v: "Bathroom", e: "🚿", d: "Wash & wellness" },
+      { v: "Kitchen", e: "🍳", d: "Cooking & dining" },
+      { v: "Dining Room", e: "🪑", d: "Formal dining space" },
+      { v: "Home Office", e: "💻", d: "Work & study" },
+      { v: "Kids Room", e: "🧸", d: "Playful children room" }
+    ];
+
+    const ROOMS_EXTERIOR = [
+      { v: "House", e: "🏡", d: "Single family residential" },
+      { v: "Villa", e: "🏰", d: "Luxury estate & villa" },
+      { v: "Apartment Building", e: "🏢", d: "Multi-family residential" },
+      { v: "Office Building", e: "🏬", d: "Commercial office tower" },
+      { v: "Commercial Facade", e: "🏪", d: "Retail storefront" },
+      { v: "Garden / Landscape", e: "🌳", d: "Outdoor landscape & yard" },
+      { v: "Entrance / Driveway", e: "🚗", d: "Approach & gate entry" }
+    ];
+
+    const STYLES = [
+      { v: "Modern", e: "🛋️", d: "Clean lines, open plan" },
+      { v: "Minimalist", e: "🧊", d: "Essential elements only" },
+      { v: "Scandinavian", e: "🌿", d: "Light wood, functional" },
+      { v: "Industrial", e: "🧱", d: "Exposed brick & metal" },
+      { v: "Bohemian", e: "🎨", d: "Eclectic, rich textures" },
+      { v: "Traditional", e: "🏛️", d: "Classic moldings & detail" },
+      { v: "Coastal", e: "🌊", d: "Breezy blues & sand" },
+      { v: "Mid-Century Modern", e: "📻", d: "Retro 50s-60s aesthetic" }
+    ];
+
+    const MOODS = [
+      { v: "cozy", e: "☕", label: "Cozy", d: "Warm & intimate" },
+      { v: "airy", e: "🌬️", label: "Airy", d: "Light & open" },
+      { v: "dramatic", e: "🎭", label: "Dramatic", d: "Bold & contrasty" },
+      { v: "serene", e: "🧘", label: "Serene", d: "Calm & tranquil" },
+      { v: "energetic", e: "⚡", label: "Energetic", d: "Vibrant & lively" },
+      { v: "luxurious", e: "💎", label: "Luxurious", d: "Opulent & refined" }
+    ];
+
+    const PALETTES = [
+      { v: "warm-neutrals", label: "Warm Neutrals", c: ["#FAF8F5", "#E8DFD8", "#C4B5A5", "#8C7A6B"], d: "Creams & sandy tones" },
+      { v: "cool-neutrals", label: "Cool Neutrals", c: ["#FFFFFF", "#F1F5F9", "#94A3B8", "#475569"], d: "Whites, grays & pale blues" },
+      { v: "bold", label: "Bold Accents", c: ["#0F172A", "#1E293B", "#3B82F6", "#EF4444"], d: "High contrast pops" },
+      { v: "monochrome", label: "Monochrome", c: ["#FAFAFA", "#D4D4D4", "#737373", "#171717"], d: "Tonal depth" },
+      { v: "earthy", label: "Earthy Tones", c: ["#FAF6F0", "#C87D55", "#6B705C", "#4A3B32"], d: "Terracotta & olive" },
+      { v: "pastel", label: "Pastels", c: ["#FFF5F5", "#F0F4FF", "#FDF2F8", "#E6F4EA"], d: "Soft muted hues" }
+    ];
+
+    const WALLS = [
+      { v: "white", label: "White", color: "#FFFFFF", d: "Crisp bright white" },
+      { v: "cream", label: "Cream", color: "#FAF6EE", d: "Warm soft cream" },
+      { v: "light-gray", label: "Soft Gray", color: "#E2E8F0", d: "Cool neutral gray" },
+      { v: "beige", label: "Warm Beige", color: "#E6DEC8", d: "Sandy warm beige" },
+      { v: "dark", label: "Deep Dark", color: "#1E293B", d: "Moody dark gray" },
+      { v: "textured", label: "Textured Stucco", color: "#DCD6CD", d: "Subtle plaster" },
+      { v: "wood-paneled", label: "Wood Paneled", color: "#A87B51", d: "Timber accent" }
+    ];
+
+    const FLOORS = [
+      { v: "light-hardwood", label: "Light Hardwood", color: "#E2C4A2", d: "Blonde oak/ash" },
+      { v: "dark-hardwood", label: "Dark Hardwood", color: "#4A3324", d: "Walnut timber" },
+      { v: "marble", label: "Marble Stone", color: "#F8FAF9", d: "Luxurious stone" },
+      { v: "concrete", label: "Polished Concrete", color: "#94A3B8", d: "Industrial gray" },
+      { v: "carpet", label: "Plush Carpet", color: "#CBD5E1", d: "Soft woven textile" },
+      { v: "tile", label: "Porcelain Tile", color: "#E2E8F0", d: "Large format tile" },
+      { v: "herringbone", label: "Herringbone Parquet", color: "#B88E64", d: "Patterned wood" }
+    ];
+
+    const WOODS = [
+      { v: "light-ash", label: "Light Ash", color: "#E5D3B3" },
+      { v: "medium-oak", label: "Medium Oak", color: "#B88E64" },
+      { v: "dark-walnut", label: "Dark Walnut", color: "#4A3324" },
+      { v: "painted-white", label: "Painted White", color: "#FFFFFF" },
+      { v: "none", label: "None", color: "#334155" }
+    ];
+
+    const METALS = [
+      { v: "brushed-gold", label: "Brushed Gold", color: "#EAB308" },
+      { v: "polished-silver", label: "Polished Silver", color: "#CBD5E1" },
+      { v: "matte-black", label: "Matte Black", color: "#1E293B" },
+      { v: "aged-bronze", label: "Aged Bronze", color: "#9A3412" },
+      { v: "none", label: "None", color: "#334155" }
+    ];
+
+    const LIGHTINGS = [
+      { v: "bright-natural", label: "Bright Daylight", d: "Cool 6500K sunlight" },
+      { v: "warm-ambient", label: "Warm Ambient", d: "Cozy 2700K lamp glow" },
+      { v: "dramatic-spotlit", label: "Dramatic Spotlit", d: "High contrast pools" },
+      { v: "soft-diffused", label: "Soft Diffused", d: "Gentle even shadows" }
+    ];
+
+    function switchStep(idx) {
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+      document.querySelectorAll('.step-content').forEach((s, i) => s.style.display = i === idx ? 'flex' : 'none');
+    }
+
+    function selectSpace(type) {
+      questionnaire.spaceType = type;
+      document.getElementById('space-interior').classList.toggle('selected', type === 'interior');
+      document.getElementById('space-exterior').classList.toggle('selected', type === 'exterior');
+      renderRoomGrid();
+    }
+
+    function renderRoomGrid() {
+      const isExt = questionnaire.spaceType === 'exterior';
+      document.getElementById('roomSectionTitle').innerText = isExt ? 'Building & Site Type' : 'Room & Space Type';
+      const rooms = isExt ? ROOMS_EXTERIOR : ROOMS_INTERIOR;
+      if (isExt && !ROOMS_EXTERIOR.find(r => r.v === questionnaire.roomType)) {
+        questionnaire.roomType = 'House';
+      } else if (!isExt && !ROOMS_INTERIOR.find(r => r.v === questionnaire.roomType)) {
+        questionnaire.roomType = 'Living Room';
+      }
+
+      const grid = document.getElementById('roomGrid');
+      grid.innerHTML = rooms.map(r => `
+        <div class="card-item ${questionnaire.roomType === r.v ? 'selected' : ''}" onclick="selectRoom('${r.v}')">
+          <span class="card-emoji">${r.e}</span>
+          <span class="card-label">${r.v}</span>
+          <span class="card-desc">${r.d}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectRoom(v) {
+      questionnaire.roomType = v;
+      renderRoomGrid();
+    }
+
+    function renderStyleGrid() {
+      document.getElementById('styleGrid').innerHTML = STYLES.map(s => `
+        <div class="card-item ${questionnaire.primaryStyle === s.v ? 'selected' : ''}" onclick="selectStyle('${s.v}')">
+          <span class="card-emoji">${s.e}</span>
+          <span class="card-label">${s.v}</span>
+          <span class="card-desc">${s.d}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('moodGrid').innerHTML = MOODS.map(m => `
+        <div class="card-item ${questionnaire.mood === m.v ? 'selected' : ''}" onclick="selectMood('${m.v}')">
+          <span class="card-emoji">${m.e}</span>
+          <span class="card-label">${m.label}</span>
+          <span class="card-desc">${m.d}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectStyle(v) { questionnaire.primaryStyle = v; renderStyleGrid(); }
+    function selectMood(v) { questionnaire.mood = v; renderStyleGrid(); }
+
+    function renderPaletteGrid() {
+      document.getElementById('paletteGrid').innerHTML = PALETTES.map(p => `
+        <div class="card-item ${questionnaire.colorPalette === p.v ? 'selected' : ''}" onclick="selectPalette('${p.v}')">
+          <div class="swatch-bar">
+            ${p.c.map(hex => `<div class="swatch-color" style="background:${hex};"></div>`).join('')}
+          </div>
+          <span class="card-label">${p.label}</span>
+          <span class="card-desc">${p.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectPalette(v) { questionnaire.colorPalette = v; renderPaletteGrid(); }
+
+    function renderFinishGrids() {
+      document.getElementById('wallGrid').innerHTML = WALLS.map(w => `
+        <div class="card-item ${questionnaire.wallFinish === w.v ? 'selected' : ''}" onclick="selectWall('${w.v}')">
+          <div class="color-box" style="background:${w.color};"></div>
+          <span class="card-label">${w.label}</span>
+          <span class="card-desc">${w.d}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('floorGrid').innerHTML = FLOORS.map(f => `
+        <div class="card-item ${questionnaire.floorMaterial === f.v ? 'selected' : ''}" onclick="selectFloor('${f.v}')">
+          <div class="color-box" style="background:${f.color};"></div>
+          <span class="card-label">${f.label}</span>
+          <span class="card-desc">${f.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectWall(v) { questionnaire.wallFinish = v; renderFinishGrids(); }
+    function selectFloor(v) { questionnaire.floorMaterial = v; renderFinishGrids(); }
+
+    function renderFurnitureGrids() {
+      document.getElementById('woodGrid').innerHTML = WOODS.map(w => `
+        <div class="card-item ${questionnaire.woodTone === w.v ? 'selected' : ''}" onclick="selectWood('${w.v}')">
+          <div class="color-box" style="background:${w.color};"></div>
+          <span class="card-label">${w.label}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('metalGrid').innerHTML = METALS.map(m => `
+        <div class="card-item ${questionnaire.metalAccent === m.v ? 'selected' : ''}" onclick="selectMetal('${m.v}')">
+          <div class="color-box" style="background:${m.color};"></div>
+          <span class="card-label">${m.label}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('lightingGrid').innerHTML = LIGHTINGS.map(l => `
+        <div class="card-item ${questionnaire.lightingMood === l.v ? 'selected' : ''}" onclick="selectLighting('${l.v}')">
+          <span class="card-label">${l.label}</span>
+          <span class="card-desc">${l.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectWood(v) { questionnaire.woodTone = v; renderFurnitureGrids(); }
+    function selectMetal(v) { questionnaire.metalAccent = v; renderFurnitureGrids(); }
+    function selectLighting(v) { questionnaire.lightingMood = v; renderFurnitureGrids(); }
+
+    // Initialize all grids
+    renderRoomGrid();
+    renderStyleGrid();
+    renderPaletteGrid();
+    renderFinishGrids();
+    renderFurnitureGrids();
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.style.display = 'block';
+      el.className = 'status-' + type;
+      el.innerHTML = msg;
+    }
+
+    function triggerRender() {
+      const renderBtn = document.getElementById('renderBtn');
+      renderBtn.disabled = true;
+      showStatus('📸 Capturing SketchUp viewport...', 'loading');
+
+      // Reset placeholders
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiLoading').style.display = 'block';
+      document.getElementById('downloadLink').style.display = 'none';
+
+      currentServerUrl = document.getElementById('serverUrl').value.trim().replace(/\/+$/, '');
+      questionnaire.accentColor = document.getElementById('accentColor').value;
+
+      if (window.sketchup) {
+        sketchup.capture_viewport();
+      } else {
+        showStatus('❌ Error: SketchUp Ruby bridge not found. Run inside SketchUp.', 'error');
+        renderBtn.disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        document.getElementById('aiPlaceholder').style.display = 'block';
+      }
+    }
+
+    // Callback from Ruby after screen capture completes
+    async function onViewportCaptured(result) {
+      if (!result || !result.success) {
+        const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
+        showStatus('❌ Screen Capture Failed: ' + err, 'error');
+        document.getElementById('renderBtn').disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        document.getElementById('aiPlaceholder').style.display = 'block';
+        return;
+      }
+
+      // SHOW CAPTURED VIEWPORT IMAGE IMMEDIATELY ON THE LEFT SIDE!
+      const vpImg = document.getElementById('viewportImg');
+      vpImg.src = result.image;
+      vpImg.style.display = 'block';
+      document.getElementById('viewportPlaceholder').style.display = 'none';
+
+      if (result.width && result.height) {
+        document.getElementById('dimBadge').innerText = result.width + 'x' + result.height;
+      }
+
+      showStatus('✨ Viewport captured! Generating AI render...', 'loading');
+
+      try {
+        const apiUrl = currentServerUrl + '/api/replicate';
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client': 'sketchup'
+          },
+          body: JSON.stringify({
+            image: result.image,
+            questionnaire: questionnaire
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.output && data.output.length > 0) {
+          const imgUrl = data.output[0];
+          showStatus('✓ Render complete!', 'success');
+          document.getElementById('renderBtn').disabled = false;
+          
+          document.getElementById('aiLoading').style.display = 'none';
+          const aiImg = document.getElementById('aiImg');
+          aiImg.src = imgUrl;
+          aiImg.style.display = 'block';
+
+          const dlBtn = document.getElementById('downloadLink');
+          dlBtn.href = imgUrl;
+          dlBtn.style.display = 'inline-block';
+        } else {
+          const errMsg = data.error || 'Server error occurred during rendering.';
+          showStatus('❌ Render Failed: ' + errMsg, 'error');
+          document.getElementById('renderBtn').disabled = false;
+          document.getElementById('aiLoading').style.display = 'none';
+          document.getElementById('aiPlaceholder').style.display = 'block';
+        }
+      } catch (err) {
+        showStatus('❌ Server Connection Error: Could not connect to ' + currentServerUrl, 'error');
+        document.getElementById('renderBtn').disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        document.getElementById('aiPlaceholder').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
