@@ -34,17 +34,18 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.REPLICATE_API_TOKEN) {
+    const apiToken = process.env.REPLICATE_API_TOKEN;
+    if (!apiToken) {
       return NextResponse.json(
         {
           error:
-            "REPLICATE_API_TOKEN is not configured in environment variables.",
+            "REPLICATE_API_TOKEN is missing on Vercel server. Go to Vercel Settings -> Environment Variables, add REPLICATE_API_TOKEN, then Redeploy.",
         },
-        { status: 500 }
+        { status: 400 }
       );
     }
 
-    const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const replicate = new Replicate({ auth: apiToken });
 
     // Motion prompt for 3D architectural camera walkthrough
     const prompt =

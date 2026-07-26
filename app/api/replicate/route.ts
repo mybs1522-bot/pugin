@@ -272,17 +272,18 @@ export async function POST(request: Request) {
     const image: string = req.image;
     const questionnaire: DesignQuestionnaire = req.questionnaire;
 
-    if (!process.env.REPLICATE_API_TOKEN) {
+    const apiToken = process.env.REPLICATE_API_TOKEN;
+    if (!apiToken) {
       return NextResponse.json(
         {
           error:
-            "REPLICATE_API_TOKEN is not configured on server. Add it to Vercel Environment Variables.",
+            "REPLICATE_API_TOKEN is missing on Vercel server. Go to Vercel Settings -> Environment Variables, add REPLICATE_API_TOKEN, then Redeploy.",
         },
         { status: 400 }
       );
     }
 
-    const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const replicate = new Replicate({ auth: apiToken });
 
     const prompt =
       questionnaire?.spaceType === "exterior"
