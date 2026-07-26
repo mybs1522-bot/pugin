@@ -68,14 +68,7 @@ const METAL: Record<string, string> = {
   "aged-bronze": "aged bronze copper metal accents",
   none: "",
 };
-const TEXTILE: Record<string, string> = {
-  minimal: "minimal textiles clean lines simple fabrics",
-  layered: "layered textiles with cushions throw blankets and area rug",
-  "rich-and-textured":
-    "richly textured textiles floor-to-ceiling curtains multiple rugs abundant soft furnishings",
-};
 
-/* ─── Exterior-specific finish maps ──────────────────────────────────────── */
 const EXT_FACADE: Record<string, string> = {
   white: "crisp white render/plaster facade",
   cream: "warm cream painted stucco facade",
@@ -97,11 +90,11 @@ const EXT_GROUND: Record<string, string> = {
 
 const LIGHT_TO_SKY: Record<string, string> = {
   minimal:
-    "dramatic twilight dusk sky with deep blue-purple gradient, city glow on horizon, lit building facade, golden artificial light spill",
+    "dramatic twilight dusk sky with deep blue-purple gradient, city glow on horizon",
   moderate:
-    "overcast soft cloudy sky, diffused daylight, subtle blue-grey clouds, even natural light, realistic cloud texture",
+    "overcast soft cloudy sky, diffused daylight, subtle blue-grey clouds",
   abundant:
-    "vivid golden hour sky with warm orange and pink clouds, long directional sunlight, deep cast shadows, volumetric light rays",
+    "vivid golden hour sky with warm orange and pink clouds, long directional sunlight",
 };
 
 function buildExteriorPrompt(q: DesignQuestionnaire): string {
@@ -114,7 +107,7 @@ function buildExteriorPrompt(q: DesignQuestionnaire): string {
     matChanges.push(`${METAL[q.metalAccent]} on railings and fixtures`);
   const palette = PALETTE[q.colorPalette] ?? "";
   const accentColorStr = q.accentColor
-    ? `custom accent color ${q.accentColor} applied to key surfaces`
+    ? `custom accent color ${q.accentColor}`
     : "";
   const skyDesc = LIGHT_TO_SKY[q.naturalLight] ?? LIGHT_TO_SKY["abundant"];
   const style = `${ERA[q.era] ?? ""} ${q.primaryStyle} ${q.roomType}`.trim();
@@ -123,21 +116,17 @@ function buildExteriorPrompt(q: DesignQuestionnaire): string {
     `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK, NOT IMAGE GENERATION: ` +
     `You are given an input image of a ${style} building. ` +
     `You MUST preserve with 100% fidelity: ` +
-    `(1) exact camera angle, perspective, and distance from the building, ` +
-    `(2) exact building massing — every wall, roof plane, overhang, balcony stays identical, ` +
-    `(3) exact window positions, sizes, and shapes — do NOT move or resize windows, ` +
-    `(4) exact door positions and sizes, ` +
-    `(5) exact number of floors and storey heights. `;
+    `(1) exact camera angle, perspective, and distance, ` +
+    `(2) exact building massing — every wall, roof plane, overhang stays identical, ` +
+    `(3) exact window positions, sizes, and shapes. `;
 
   return (
     EXT_STRUCTURE_LOCK +
-    `NOW apply photorealistic rendering quality to that exact building layout. ` +
+    `NOW apply photorealistic rendering quality to that exact building. ` +
     `${palette ? `Color scheme: ${palette}. ` : ""}` +
     `${accentColorStr ? `Accent: ${accentColorStr}. ` : ""}` +
     `Surface changes: ${matChanges.join(", ")}. Sky: ${skyDesc}. ` +
-    `GLASS: Realistic window glass with amber interior glow. ` +
-    `MATERIALS: PBR textures — concrete aggregate grain, stone veining, timber wood grain. ` +
-    `PHOTOGRAPHIC REALISM: Architectural Digest quality. 8K, RAW. ` +
+    `8K RAW photographic realism. ` +
     EXT_STRUCTURE_LOCK
   );
 }
@@ -149,8 +138,7 @@ const INTERIOR_LIGHT_DESC: Record<string, string> = {
     "warm golden ambient light from lamps and recessed lighting at 2700K",
   "dramatic-spotlit":
     "dramatic directional spotlighting with high contrast deep shadows",
-  "soft-diffused":
-    "soft even diffused light, neutral temperature, no harsh highlights",
+  "soft-diffused": "soft even diffused light, neutral temperature",
 };
 
 function buildEditPrompt(q: DesignQuestionnaire): string {
@@ -174,8 +162,8 @@ function buildEditPrompt(q: DesignQuestionnaire): string {
     `You are given an input image of a ${style}. ` +
     `You MUST preserve with 100% fidelity: ` +
     `(1) exact camera angle and perspective, ` +
-    `(2) exact positions of every piece of furniture — bed, lamps, rugs, art, ` +
-    `(3) exact room dimensions, ceiling height, wall layout, window positions. `;
+    `(2) exact positions of every piece of furniture, ` +
+    `(3) exact room dimensions, wall layout, window positions. `;
 
   return (
     STRUCTURE_LOCK +
@@ -183,7 +171,6 @@ function buildEditPrompt(q: DesignQuestionnaire): string {
     `Style: ${style}. V-Ray / Corona / Enscape quality. ` +
     `Apply ONLY these surface changes: ${matChanges.join("; ")}. ` +
     `LIGHTING: ${lightDesc}. ` +
-    `MATERIALS: razor-sharp PBR textures on every surface. ` +
     `8K photographic realism, RAW. ` +
     STRUCTURE_LOCK
   );
@@ -215,22 +202,25 @@ function buildModelInput(
 /* ─── Route handler ──────────────────────────────────────────────────────── */
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    let email = session?.user?.email;
+    const clientHeader = request.headers.get("x-client");
+    let email: string | undefined = undefined;
+
+    if (clientHeader === "sketchup" || process.env.NODE_ENV === "development") {
+      email = "sketchup-plugin@local.app";
+    } else {
+      try {
+        const session = await getServerSession(authOptions);
+        email = session?.user?.email;
+      } catch (err) {
+        console.warn("Session check error:", err);
+      }
+    }
 
     if (!email) {
-      const clientHeader = request.headers.get("x-client");
-      if (
-        clientHeader === "sketchup" ||
-        process.env.NODE_ENV === "development"
-      ) {
-        email = "sketchup-plugin@local.app";
-      } else {
-        return NextResponse.json(
-          { error: "Sign in required", code: "auth_required" },
-          { status: 401 }
-        );
-      }
+      return NextResponse.json(
+        { error: "Sign in required", code: "auth_required" },
+        { status: 401 }
+      );
     }
 
     let subscriptionActive = false;
@@ -255,7 +245,7 @@ export async function POST(request: Request) {
       }
     }
 
-    if (!subscriptionActive) {
+    if (!subscriptionActive && email !== "sketchup-plugin@local.app") {
       const currentCount = await getGenerationCount(email);
       if (currentCount >= TRIAL_GENERATION_LIMIT) {
         return NextResponse.json(
