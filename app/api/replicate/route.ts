@@ -234,7 +234,7 @@ export async function POST(request: Request) {
     } else {
       try {
         const session = await getServerSession(authOptions);
-        email = session?.user?.email;
+        email = session?.user?.email ?? undefined;
       } catch (err) {
         console.warn("Session check error:", err);
       }
