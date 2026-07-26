@@ -305,20 +305,24 @@ export async function POST(request: Request) {
 
     // Check Stripe subscription if configured
     let subscriptionActive = false;
-    if (process.env.STRIPE_SECRET_KEY) {
-      const customers = await stripe.customers.list({ email, limit: 1 });
-      if (customers.data.length > 0) {
-        const subs = await stripe.subscriptions.list({
-          customer: customers.data[0].id,
-          status: "all",
-          limit: 5,
-        });
-        const active = subs.data.find(
-          (s) =>
-            (s.status === "active" || s.status === "trialing") &&
-            !s.cancel_at_period_end
-        );
-        subscriptionActive = !!active;
+    if (process.env.STRIPE_SECRET_KEY && stripe) {
+      try {
+        const customers = await stripe.customers.list({ email, limit: 1 });
+        if (customers.data.length > 0) {
+          const subs = await stripe.subscriptions.list({
+            customer: customers.data[0].id,
+            status: "all",
+            limit: 5,
+          });
+          const active = subs.data.find(
+            (s) =>
+              (s.status === "active" || s.status === "trialing") &&
+              !s.cancel_at_period_end
+          );
+          subscriptionActive = !!active;
+        }
+      } catch (err) {
+        console.warn("Stripe check skipped:", err);
       }
     }
 

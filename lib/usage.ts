@@ -9,37 +9,50 @@ export interface UserRecord {
 }
 
 export async function getGenerationCount(email: string): Promise<number> {
-  const { data } = await getSupabaseAdmin()
-    .from("user_usage")
-    .select("count")
-    .eq("email", email)
-    .single();
+  try {
+    const { data, error } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("count")
+      .eq("email", email)
+      .single();
 
-  if (!data) {
-    // First time we see this user — insert with count 0
-    await getSupabaseAdmin().from("user_usage").upsert({
-      email,
-      count: 0,
-      signed_up_at: new Date().toISOString(),
-      last_active_at: new Date().toISOString(),
-    });
+    if (error || !data) {
+      try {
+        await getSupabaseAdmin().from("user_usage").upsert({
+          email,
+          count: 0,
+          signed_up_at: new Date().toISOString(),
+          last_active_at: new Date().toISOString(),
+        });
+      } catch (e) {
+        // Ignore table/db write errors
+      }
+      return 0;
+    }
+
+    return (data as { count: number }).count ?? 0;
+  } catch (err) {
+    console.warn("Supabase usage check skipped:", err);
     return 0;
   }
-
-  return (data as { count: number }).count;
 }
 
 export async function incrementGenerationCount(email: string): Promise<number> {
-  const current = await getGenerationCount(email);
-  const next = current + 1;
+  try {
+    const current = await getGenerationCount(email);
+    const next = current + 1;
 
-  await getSupabaseAdmin().from("user_usage").upsert({
-    email,
-    count: next,
-    last_active_at: new Date().toISOString(),
-  });
+    await getSupabaseAdmin().from("user_usage").upsert({
+      email,
+      count: next,
+      last_active_at: new Date().toISOString(),
+    });
 
-  return next;
+    return next;
+  } catch (err) {
+    console.warn("Supabase usage increment skipped:", err);
+    return 0;
+  }
 }
 
 export async function getAllUsers(): Promise<
