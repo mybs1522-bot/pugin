@@ -191,12 +191,30 @@
     }
 
     .img-box img, .img-box video {
+      width: 100%;
+      height: 100%;
       max-width: 100%;
-      max-height: calc(100vh - 200px);
+      max-height: calc(100vh - 120px);
       object-fit: contain;
       border-radius: 6px;
       border: 1px solid var(--border-color);
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .toggle-btn {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .toggle-btn.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #60a5fa;
     }
 
     .placeholder-state {
@@ -409,9 +427,15 @@
 
       <!-- RIGHT SIDE: AI Photorealistic Render / Walkthrough Video -->
       <div class="preview-card">
-        <div class="preview-title">
-          2. AI Render & Walkthrough
-          <span id="aiBadge">Output</span>
+        <div class="preview-title" style="right: 14px; width: calc(100% - 28px); justify-content: space-between;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            2. AI Render & Walkthrough
+            <span id="aiBadge">Output</span>
+          </div>
+          <div id="viewModeToggle" style="display:none; gap:6px;">
+            <button id="btnShowImg" class="toggle-btn active" onclick="switchPreviewMode('image')">🖼️ Image</button>
+            <button id="btnShowVid" class="toggle-btn" onclick="switchPreviewMode('video')">🎬 3D Video</button>
+          </div>
         </div>
         <div class="img-box" id="aiBox">
           <div class="placeholder-state" id="aiPlaceholder">
@@ -758,7 +782,8 @@
           document.getElementById('aiLoading').style.display = 'none';
           const aiImg = document.getElementById('aiImg');
           aiImg.src = imgUrl;
-          aiImg.style.display = 'block';
+          
+          switchPreviewMode('image');
 
           const dlBtn = document.getElementById('downloadLink');
           dlBtn.href = imgUrl;
@@ -780,6 +805,27 @@
       }
     }
 
+    function switchPreviewMode(mode) {
+      const aiImg = document.getElementById('aiImg');
+      const aiVideo = document.getElementById('aiVideo');
+      const btnImg = document.getElementById('btnShowImg');
+      const btnVid = document.getElementById('btnShowVid');
+
+      document.getElementById('aiPlaceholder').style.display = 'none';
+
+      if (mode === 'video' && aiVideo.src) {
+        aiImg.style.display = 'none';
+        aiVideo.style.display = 'block';
+        if (btnImg) btnImg.classList.remove('active');
+        if (btnVid) btnVid.classList.add('active');
+      } else {
+        aiVideo.style.display = 'none';
+        aiImg.style.display = 'block';
+        if (btnVid) btnVid.classList.remove('active');
+        if (btnImg) btnImg.classList.add('active');
+      }
+    }
+
     async function triggerVideoWalkthrough() {
       if (!lastRenderUrl) {
         alert('Please render an image first!');
@@ -790,6 +836,7 @@
       videoBtn.disabled = true;
 
       document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
       document.getElementById('loadingTitle').innerHTML = '<b>Creating 3D Video Walkthrough...</b>';
       document.getElementById('loadingSub').innerHTML = 'Animating camera pan & motion path (15-30s)';
       document.getElementById('aiLoading').style.display = 'block';
@@ -818,7 +865,9 @@
           document.getElementById('aiLoading').style.display = 'none';
           const videoEl = document.getElementById('aiVideo');
           videoEl.src = data.videoUrl;
-          videoEl.style.display = 'block';
+
+          document.getElementById('viewModeToggle').style.display = 'flex';
+          switchPreviewMode('video');
 
           const dlVidBtn = document.getElementById('downloadVideoLink');
           dlVidBtn.href = data.videoUrl;
@@ -827,13 +876,13 @@
           showStatus('❌ Video Generation Failed: ' + (data.error || 'Server error'), 'error');
           videoBtn.disabled = false;
           document.getElementById('aiLoading').style.display = 'none';
-          document.getElementById('aiImg').style.display = 'block';
+          switchPreviewMode('image');
         }
       } catch (err) {
         showStatus('❌ Connection Error creating video walkthrough.', 'error');
         videoBtn.disabled = false;
         document.getElementById('aiLoading').style.display = 'none';
-        document.getElementById('aiImg').style.display = 'block';
+        switchPreviewMode('image');
       }
     }
   </script>
