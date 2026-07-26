@@ -3,10 +3,8 @@ import crypto from "crypto";
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 function hmac(data: string): string {
-  return crypto
-    .createHmac("sha256", process.env.NEXTAUTH_SECRET!)
-    .update(data)
-    .digest("hex");
+  const secret = process.env.NEXTAUTH_SECRET || "fallback-secret-key-123456";
+  return crypto.createHmac("sha256", secret).update(data).digest("hex");
 }
 
 interface OTPPayload {
