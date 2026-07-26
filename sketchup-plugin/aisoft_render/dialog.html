@@ -53,10 +53,9 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
-    /* Step Nav Tabs */
     .step-tabs {
       display: flex;
       gap: 4px;
@@ -97,10 +96,9 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    /* Option Cards Grid */
     .cards-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -131,7 +129,6 @@
     .card-label { font-size: 12px; font-weight: 600; color: #fff; }
     .card-desc { font-size: 10px; color: var(--text-muted); line-height: 1.3; }
 
-    /* Swatch Bar */
     .swatch-bar {
       display: flex;
       height: 16px;
@@ -141,7 +138,6 @@
     }
     .swatch-color { flex: 1; height: 100%; }
 
-    /* Single Swatch Box */
     .color-box {
       height: 22px;
       border-radius: 4px;
@@ -194,9 +190,9 @@
       margin-top: 24px;
     }
 
-    .img-box img {
+    .img-box img, .img-box video {
       max-width: 100%;
-      max-height: calc(100vh - 160px);
+      max-height: calc(100vh - 200px);
       object-fit: contain;
       border-radius: 6px;
       border: 1px solid var(--border-color);
@@ -208,7 +204,6 @@
       color: var(--text-muted);
       padding: 20px;
     }
-    .placeholder-state icon { font-size: 32px; display: block; margin-bottom: 8px; }
 
     .btn {
       width: 100%;
@@ -226,6 +221,19 @@
     }
     .btn:hover { opacity: 0.95; transform: translateY(-1px); }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-video {
+      background: linear-gradient(135deg, #059669, #0d9488);
+      padding: 8px 12px;
+      font-size: 11px;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-video:hover { opacity: 0.9; }
 
     #status {
       padding: 8px 10px;
@@ -250,24 +258,28 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .download-btn {
+    .action-row {
       position: absolute;
-      bottom: 14px;
-      right: 14px;
-      padding: 8px 14px;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .download-btn {
+      padding: 8px 12px;
       background: var(--primary);
       color: white;
       text-decoration: none;
       border-radius: 6px;
       font-size: 11px;
       font-weight: 600;
-      display: none;
-      z-index: 10;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .download-btn:hover { background: #2563eb; }
-    
-    input[type="text"], input[type="color"] {
+
+    select, input[type="text"], input[type="color"] {
       width: 100%;
       padding: 7px 9px;
       background: #090d16;
@@ -283,14 +295,24 @@
 
   <header>
     <h2>AIsoft Render AI</h2>
-    <span class="badge">Project Questionnaire</span>
+    <span class="badge">Walkthrough & Render Studio</span>
   </header>
 
   <div class="layout-container">
     <!-- LEFT PANEL: Controls -->
     <div class="controls-panel">
-      <!-- Live Vercel Production Server Endpoint -->
+      <!-- Hidden Server Endpoint -->
       <input type="hidden" id="serverUrl" value="https://pugin-five.vercel.app">
+
+      <!-- AI Model Quality & Cost Selector -->
+      <div>
+        <div class="section-title">AI Engine & Cost Model</div>
+        <select id="modelSelect">
+          <option value="black-forest-labs/flux-1-schnell" selected>⚡ Flux Schnell (~$0.003 - Ultra Cheap & Fast)</option>
+          <option value="google/nano-banana-2">⚡ Nano Banana 2 (~$0.01 - Balanced Standard)</option>
+          <option value="google/nano-banana-pro">💎 Nano Banana Pro (~$0.05 - High Detail)</option>
+        </select>
+      </div>
 
       <!-- Step Navigation Tabs -->
       <div class="step-tabs">
@@ -322,17 +344,15 @@
       <!-- STEP 1: Room / Building Type -->
       <div class="step-content" id="step-1" style="display:none;">
         <div class="section-title" id="roomSectionTitle">Room & Space Type</div>
-        <div class="cards-grid" id="roomGrid">
-          <!-- Populated dynamically based on interior/exterior -->
-        </div>
+        <div class="cards-grid" id="roomGrid"></div>
       </div>
 
-      <!-- STEP 2: Style & Mood & Era -->
+      <!-- STEP 2: Style & Mood -->
       <div class="step-content" id="step-2" style="display:none;">
         <div class="section-title">Design Style</div>
         <div class="cards-grid" id="styleGrid"></div>
 
-        <div class="section-title" style="margin-top:10px;">Atmospheric Mood</div>
+        <div class="section-title" style="margin-top:8px;">Atmospheric Mood</div>
         <div class="cards-grid" id="moodGrid"></div>
       </div>
 
@@ -341,7 +361,7 @@
         <div class="section-title">Color Scheme</div>
         <div class="cards-grid" id="paletteGrid"></div>
 
-        <div class="section-title" style="margin-top:10px;">Custom Accent Color</div>
+        <div class="section-title" style="margin-top:8px;">Custom Accent Color</div>
         <input type="color" id="accentColor" value="#8B5CF6">
       </div>
 
@@ -350,7 +370,7 @@
         <div class="section-title">Wall Finish</div>
         <div class="cards-grid" id="wallGrid"></div>
 
-        <div class="section-title" style="margin-top:10px;">Floor Material</div>
+        <div class="section-title" style="margin-top:8px;">Floor Material</div>
         <div class="cards-grid" id="floorGrid"></div>
       </div>
 
@@ -359,10 +379,10 @@
         <div class="section-title">Wood Tone</div>
         <div class="cards-grid" id="woodGrid"></div>
 
-        <div class="section-title" style="margin-top:10px;">Metal Accent</div>
+        <div class="section-title" style="margin-top:8px;">Metal Accent</div>
         <div class="cards-grid" id="metalGrid"></div>
 
-        <div class="section-title" style="margin-top:10px;">Lighting Mood</div>
+        <div class="section-title" style="margin-top:8px;">Lighting Mood</div>
         <div class="cards-grid" id="lightingGrid"></div>
       </div>
 
@@ -370,7 +390,7 @@
       <div id="status"></div>
     </div>
 
-    <!-- RIGHT PANEL: Side-by-Side Image Comparison -->
+    <!-- RIGHT PANEL: Side-by-Side Image / Video Comparison -->
     <div class="preview-split">
       <!-- LEFT SIDE: Viewport Capture -->
       <div class="preview-card">
@@ -387,34 +407,39 @@
         </div>
       </div>
 
-      <!-- RIGHT SIDE: AI Photorealistic Render -->
+      <!-- RIGHT SIDE: AI Photorealistic Render / Walkthrough Video -->
       <div class="preview-card">
         <div class="preview-title">
-          2. AI Photorealistic Render
-          <span id="aiBadge">AI Output</span>
+          2. AI Render & Walkthrough
+          <span id="aiBadge">Output</span>
         </div>
         <div class="img-box" id="aiBox">
           <div class="placeholder-state" id="aiPlaceholder">
             <div style="font-size:32px; margin-bottom:8px;">🖼️</div>
-            <p>Rendered image will appear here side-by-side.</p>
+            <p>Rendered image or 3D video walkthrough will appear here.</p>
           </div>
 
           <div class="placeholder-state" id="aiLoading" style="display:none;">
             <div class="spinner"></div>
-            <p><b>Generating AI Render...</b></p>
-            <p style="font-size:11px; margin-top:4px;">Processing PBR lighting, materials & geometry</p>
+            <p id="loadingTitle"><b>Generating AI Render...</b></p>
+            <p id="loadingSub" style="font-size:11px; margin-top:4px;">Processing PBR lighting & materials</p>
           </div>
 
           <img id="aiImg" src="" style="display:none;" alt="AI Photorealistic Render">
+          <video id="aiVideo" controls autoplay loop style="display:none;"></video>
         </div>
-        <a id="downloadLink" class="download-btn" href="#" target="_blank" download="aisoft-render.png">Download HD Render</a>
+
+        <div class="action-row">
+          <button class="btn-video" id="videoBtn" style="display:none;" onclick="triggerVideoWalkthrough()">🎬 Generate 3D Video Walkthrough</button>
+          <a id="downloadLink" class="download-btn" style="display:none;" href="#" target="_blank" download="aisoft-render.png">Download Image</a>
+          <a id="downloadVideoLink" class="download-btn" style="display:none; background:#0d9488;" href="#" target="_blank" download="walkthrough.mp4">Download MP4 Video</a>
+        </div>
       </div>
     </div>
 
   </div>
 
   <script>
-    // State matching project's DEFAULT_QUESTIONNAIRE
     const questionnaire = {
       spaceType: "interior",
       roomType: "Living Room",
@@ -437,7 +462,8 @@
       specialElements: []
     };
 
-    let currentServerUrl = 'http://localhost:3000';
+    let currentServerUrl = 'https://pugin-five.vercel.app';
+    let lastRenderUrl = null;
 
     const ROOMS_INTERIOR = [
       { v: "Living Room", e: "🛋️", d: "Lounge & sitting area" },
@@ -563,10 +589,7 @@
       `).join('');
     }
 
-    function selectRoom(v) {
-      questionnaire.roomType = v;
-      renderRoomGrid();
-    }
+    function selectRoom(v) { questionnaire.roomType = v; renderRoomGrid(); }
 
     function renderStyleGrid() {
       document.getElementById('styleGrid').innerHTML = STYLES.map(s => `
@@ -585,7 +608,6 @@
         </div>
       `).join('');
     }
-
     function selectStyle(v) { questionnaire.primaryStyle = v; renderStyleGrid(); }
     function selectMood(v) { questionnaire.mood = v; renderStyleGrid(); }
 
@@ -648,7 +670,6 @@
     function selectMetal(v) { questionnaire.metalAccent = v; renderFurnitureGrids(); }
     function selectLighting(v) { questionnaire.lightingMood = v; renderFurnitureGrids(); }
 
-    // Initialize all grids
     renderRoomGrid();
     renderStyleGrid();
     renderPaletteGrid();
@@ -667,11 +688,15 @@
       renderBtn.disabled = true;
       showStatus('📸 Capturing SketchUp viewport...', 'loading');
 
-      // Reset placeholders
       document.getElementById('aiPlaceholder').style.display = 'none';
       document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
+      document.getElementById('loadingTitle').innerHTML = '<b>Generating AI Render...</b>';
+      document.getElementById('loadingSub').innerHTML = 'Processing PBR lighting & materials';
       document.getElementById('aiLoading').style.display = 'block';
       document.getElementById('downloadLink').style.display = 'none';
+      document.getElementById('downloadVideoLink').style.display = 'none';
+      document.getElementById('videoBtn').style.display = 'none';
 
       currentServerUrl = document.getElementById('serverUrl').value.trim().replace(/\/+$/, '');
       questionnaire.accentColor = document.getElementById('accentColor').value;
@@ -686,7 +711,6 @@
       }
     }
 
-    // Callback from Ruby after screen capture completes
     async function onViewportCaptured(result) {
       if (!result || !result.success) {
         const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
@@ -697,7 +721,6 @@
         return;
       }
 
-      // SHOW CAPTURED VIEWPORT IMAGE IMMEDIATELY ON THE LEFT SIDE!
       const vpImg = document.getElementById('viewportImg');
       vpImg.src = result.image;
       vpImg.style.display = 'block';
@@ -719,7 +742,8 @@
           },
           body: JSON.stringify({
             image: result.image,
-            questionnaire: questionnaire
+            questionnaire: questionnaire,
+            model: document.getElementById('modelSelect').value
           })
         });
 
@@ -727,6 +751,7 @@
 
         if (response.ok && data.output && data.output.length > 0) {
           const imgUrl = data.output[0];
+          lastRenderUrl = imgUrl;
           showStatus('✓ Render complete!', 'success');
           document.getElementById('renderBtn').disabled = false;
           
@@ -738,6 +763,8 @@
           const dlBtn = document.getElementById('downloadLink');
           dlBtn.href = imgUrl;
           dlBtn.style.display = 'inline-block';
+
+          document.getElementById('videoBtn').style.display = 'inline-block';
         } else {
           const errMsg = data.error || 'Server error occurred during rendering.';
           showStatus('❌ Render Failed: ' + errMsg, 'error');
@@ -750,6 +777,63 @@
         document.getElementById('renderBtn').disabled = false;
         document.getElementById('aiLoading').style.display = 'none';
         document.getElementById('aiPlaceholder').style.display = 'block';
+      }
+    }
+
+    async function triggerVideoWalkthrough() {
+      if (!lastRenderUrl) {
+        alert('Please render an image first!');
+        return;
+      }
+
+      const videoBtn = document.getElementById('videoBtn');
+      videoBtn.disabled = true;
+
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('loadingTitle').innerHTML = '<b>Creating 3D Video Walkthrough...</b>';
+      document.getElementById('loadingSub').innerHTML = 'Animating camera pan & motion path (15-30s)';
+      document.getElementById('aiLoading').style.display = 'block';
+      showStatus('🎬 Animating 3D walkthrough video clip...', 'loading');
+
+      try {
+        const videoApiUrl = currentServerUrl + '/api/replicate/video';
+        const response = await fetch(videoApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client': 'sketchup'
+          },
+          body: JSON.stringify({
+            image: lastRenderUrl,
+            prompt: "Smooth cinematic 3D architectural camera pan walkthrough of " + questionnaire.roomType + ", steady motion"
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.videoUrl) {
+          showStatus('✓ 3D Video Walkthrough Complete!', 'success');
+          videoBtn.disabled = false;
+
+          document.getElementById('aiLoading').style.display = 'none';
+          const videoEl = document.getElementById('aiVideo');
+          videoEl.src = data.videoUrl;
+          videoEl.style.display = 'block';
+
+          const dlVidBtn = document.getElementById('downloadVideoLink');
+          dlVidBtn.href = data.videoUrl;
+          dlVidBtn.style.display = 'inline-block';
+        } else {
+          showStatus('❌ Video Generation Failed: ' + (data.error || 'Server error'), 'error');
+          videoBtn.disabled = false;
+          document.getElementById('aiLoading').style.display = 'none';
+          document.getElementById('aiImg').style.display = 'block';
+        }
+      } catch (err) {
+        showStatus('❌ Connection Error creating video walkthrough.', 'error');
+        videoBtn.disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        document.getElementById('aiImg').style.display = 'block';
       }
     }
   </script>

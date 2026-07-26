@@ -368,10 +368,12 @@ export async function POST(request: Request) {
       output_format: "png",
     };
 
-    // Try nano-banana-pro first, then nano-banana-2, then nano-banana as last resort
+    // User model selection (defaults to fast/cheap model if requested)
+    const userModel = req.model || "google/nano-banana-2";
     const MODELS: Array<{ id: string; e003Retries: number }> = [
-      { id: "google/nano-banana-pro", e003Retries: 3 },
+      { id: userModel, e003Retries: 2 },
       { id: "google/nano-banana-2", e003Retries: 2 },
+      { id: "black-forest-labs/flux-1-schnell", e003Retries: 0 },
       { id: "google/nano-banana", e003Retries: 0 },
     ];
     const MAX_429_RETRIES = 4;
