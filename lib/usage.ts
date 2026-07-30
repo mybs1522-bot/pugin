@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
 
+export const TRIAL_IMAGE_LIMIT = 3;
+export const TRIAL_VIDEO_LIMIT = 1;
 export const TRIAL_GENERATION_LIMIT = 3;
 
 export interface UserRecord {
@@ -58,7 +60,6 @@ export async function setDeviceSession(email: string): Promise<string> {
   mem.lastActiveAt = now;
 
   try {
-    // Upsert session & user record into Supabase
     await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       active_session_id: sessionId,
@@ -172,6 +173,42 @@ export async function resetUserUsage(email: string): Promise<boolean> {
   return true;
 }
 
+export async function getImageCount(email: string): Promise<number> {
+  const norm = email.toLowerCase().trim();
+  const mem = ensureMemRecord(norm);
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("image_count, count")
+      .eq("email", norm)
+      .single();
+
+    const row = data as { image_count?: number; count?: number } | null;
+    const dbImg = row?.image_count ?? row?.count ?? 0;
+    return Math.max(dbImg, mem.imageCount);
+  } catch {
+    return mem.imageCount;
+  }
+}
+
+export async function getVideoCount(email: string): Promise<number> {
+  const norm = email.toLowerCase().trim();
+  const mem = ensureMemRecord(norm);
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("video_count")
+      .eq("email", norm)
+      .single();
+
+    const row = data as { video_count?: number } | null;
+    const dbVid = row?.video_count ?? 0;
+    return Math.max(dbVid, mem.videoCount);
+  } catch {
+    return mem.videoCount;
+  }
+}
+
 export async function getGenerationCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const mem = ensureMemRecord(norm);
@@ -195,7 +232,6 @@ export async function getGenerationCount(email: string): Promise<number> {
     const dbCount =
       row.count ?? (row.image_count || 0) + (row.video_count || 0);
 
-    // Keep highest count between DB and memory
     const finalCount = Math.max(dbCount, mem.count);
     mem.count = finalCount;
     return finalCount;
@@ -208,7 +244,6 @@ export async function incrementImageCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
-  // 1. Immediately update in-memory record first
   const mem = ensureMemRecord(norm);
   mem.imageCount += 1;
   mem.count += 1;
@@ -217,9 +252,7 @@ export async function incrementImageCount(email: string): Promise<number> {
   const nextImg = mem.imageCount;
   const nextTotal = mem.count;
 
-  // 2. Persist to Supabase
   try {
-    // Try full update with image_count
     const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       image_count: nextImg,
@@ -228,7 +261,6 @@ export async function incrementImageCount(email: string): Promise<number> {
     });
 
     if (error) {
-      // Fallback: update count column alone if image_count column doesn't exist
       await getSupabaseAdmin().from("user_usage").upsert({
         email: norm,
         count: nextTotal,
@@ -246,7 +278,6 @@ export async function incrementVideoCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
-  // 1. Immediately update in-memory record first
   const mem = ensureMemRecord(norm);
   mem.videoCount += 1;
   mem.count += 1;
@@ -255,7 +286,6 @@ export async function incrementVideoCount(email: string): Promise<number> {
   const nextVid = mem.videoCount;
   const nextTotal = mem.count;
 
-  // 2. Persist to Supabase
   try {
     const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
@@ -283,7 +313,6 @@ export async function getAllUsers(): Promise<
 > {
   const map = new Map<string, { email: string } & UserRecord>();
 
-  // 1. Load memory users first
   memoryUserCounts.forEach((val, emailKey) => {
     const memPaid = memoryPaidUsers.get(emailKey);
     map.set(emailKey, {
@@ -300,7 +329,6 @@ export async function getAllUsers(): Promise<
     });
   });
 
-  // 2. Fetch Supabase records and merge
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
@@ -334,7 +362,6 @@ export async function getAllUsers(): Promise<
         const dbImg = row.image_count ?? row.count ?? 0;
         const dbVid = row.video_count ?? 0;
 
-        // Choose maximum counts to prevent undercounting
         const finalCount = Math.max(dbCount, existingMem?.count ?? 0);
         const finalImg = Math.max(dbImg, existingMem?.imageCount ?? 0);
         const finalVid = Math.max(dbVid, existingMem?.videoCount ?? 0);

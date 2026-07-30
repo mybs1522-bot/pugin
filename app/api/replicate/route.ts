@@ -5,10 +5,10 @@ import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import {
   incrementImageCount,
-  getGenerationCount,
+  getImageCount,
   isUserPaid,
   verifyDeviceSession,
-  TRIAL_GENERATION_LIMIT,
+  TRIAL_IMAGE_LIMIT,
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
 
@@ -195,7 +195,7 @@ function buildModelInput(
     return {
       image: image,
       prompt: prompt,
-      prompt_strength: 0.5, // 50% preservation of original SketchUp lines & geometry
+      prompt_strength: 0.5,
       num_inference_steps: 30,
     };
   }
@@ -269,12 +269,13 @@ export async function POST(request: Request) {
 
     const paid = await isUserPaid(normEmail);
 
+    // 3 Image Trial Limit Check for Unpaid Users
     if (!paid) {
-      const currentCount = await getGenerationCount(normEmail);
-      if (currentCount >= TRIAL_GENERATION_LIMIT) {
+      const currentImageCount = await getImageCount(normEmail);
+      if (currentImageCount >= TRIAL_IMAGE_LIMIT) {
         return NextResponse.json(
           {
-            error: `Free trial limit reached (${TRIAL_GENERATION_LIMIT} renders). Contact admin to activate unlimited paid access for ${normEmail}.`,
+            error: `Free image trial limit reached (${TRIAL_IMAGE_LIMIT} image renders used). Contact admin to activate unlimited paid access for ${normEmail}.`,
             code: "payment_required",
           },
           { status: 403 }
@@ -303,24 +304,24 @@ export async function POST(request: Request) {
         ? buildExteriorPrompt(questionnaire)
         : buildEditPrompt(questionnaire ?? {});
 
-    const userModel = req.model;
+    // Model Routing Strategy:
+    // Trial Users -> ALWAYS Nano Banana Pro (google/nano-banana-pro)
+    // Paid Users  -> SHIFT to Nano Banana 2 (google/nano-banana-2)
+    const primaryModel = paid
+      ? "google/nano-banana-2"
+      : "google/nano-banana-pro";
+    const secondaryModel = paid
+      ? "google/nano-banana-pro"
+      : "google/nano-banana-2";
 
-    // Dedicated Image-to-Image models for preserving SketchUp geometry
     const MODELS: Array<{ id: string; e003Retries: number }> = [
+      { id: primaryModel, e003Retries: 2 },
+      { id: secondaryModel, e003Retries: 2 },
       {
         id: "timothybrooks/instruct-pix2pix:30c1d0b916a6f8ef208843f382a90098df241aa721f4864c0557457a4e69d7b4",
-        e003Retries: 2,
-      },
-      { id: "google/nano-banana-2", e003Retries: 2 },
-      {
-        id: "stability-ai/sdxl:770044d6f58696145417ab0ba094aed951c320d3f25c7e97843f4340d87ed1f8",
         e003Retries: 1,
       },
     ];
-
-    if (userModel && !userModel.includes("flux")) {
-      MODELS.unshift({ id: userModel, e003Retries: 2 });
-    }
 
     const MAX_429_RETRIES = 3;
     let output: unknown;
@@ -339,7 +340,7 @@ export async function POST(request: Request) {
       for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
         try {
           console.log(
-            `Trying architectural img2img model ${model} (attempt ${attempt + 1})…`
+            `Trying ${model} (attempt ${attempt + 1}) for ${paid ? "paid" : "trial"} user…`
           );
           output = await replicate.run(model as `${string}/${string}`, {
             input: modelInput,

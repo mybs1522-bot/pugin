@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import Replicate from "replicate";
 import {
   isUserPaid,
-  getGenerationCount,
+  getVideoCount,
   incrementVideoCount,
   verifyDeviceSession,
-  TRIAL_GENERATION_LIMIT,
+  TRIAL_VIDEO_LIMIT,
 } from "@/lib/usage";
 
 async function resolveVideoUrl(output: unknown): Promise<string> {
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     const normEmail = userEmail.toLowerCase().trim();
 
-    // Single PC Device Session Check:
+    // Single PC Device Session Check
     if (sessionId) {
       const validSession = await verifyDeviceSession(normEmail, sessionId);
       if (!validSession) {
@@ -69,12 +69,13 @@ export async function POST(request: Request) {
 
     const paid = await isUserPaid(normEmail);
 
+    // 1 Video Walkthrough Trial Limit Check for Unpaid Users
     if (!paid) {
-      const currentCount = await getGenerationCount(normEmail);
-      if (currentCount >= TRIAL_GENERATION_LIMIT) {
+      const currentVideoCount = await getVideoCount(normEmail);
+      if (currentVideoCount >= TRIAL_VIDEO_LIMIT) {
         return NextResponse.json(
           {
-            error: `Free trial limit reached. Contact admin to activate unlimited paid access for ${normEmail}.`,
+            error: `Free video trial limit reached (${TRIAL_VIDEO_LIMIT} video walkthrough used). Contact admin to activate unlimited paid access for ${normEmail}.`,
             code: "payment_required",
           },
           { status: 403 }
