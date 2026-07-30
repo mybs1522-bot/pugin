@@ -392,7 +392,7 @@ export async function POST(request: Request) {
 
     const url = await resolveOutputUrl(output);
 
-    await incrementImageCount(normEmail);
+    await incrementImageCount(normEmail, model);
     return NextResponse.json({ output: [url] }, { status: 200 });
   } catch (err) {
     console.error("Replicate API error:", err);

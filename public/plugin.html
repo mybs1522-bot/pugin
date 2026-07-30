@@ -344,10 +344,39 @@
     </div>
   </div>
 
+  <!-- SUPPORT / CONTACT MODAL -->
+  <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:420px; padding:24px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
+      <button onclick="toggleSupportModal(false)" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+      <div style="font-size:28px; margin-bottom:6px;">💬</div>
+      <h3 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:4px;">Contact Support & Ask Questions</h3>
+      <p style="font-size:11px; color:#a1a1aa; margin-bottom:16px; line-height:1.4;">Need help, found a bug, or have payment questions? Submit a message below and our team will review it!</p>
+
+      <div style="margin-bottom:12px;">
+        <label style="font-size:10px; text-transform:uppercase; font-weight:700; color:#a1a1aa; display:block; margin-bottom:4px;">Topic / Category</label>
+        <select id="supportCategory">
+          <option value="General Question">❓ General Question / Help</option>
+          <option value="Bug / Technical Issue">🐞 Technical Bug or Issue</option>
+          <option value="Payment & Access">💳 Payment & Account Access</option>
+          <option value="Feature Request">💡 Feature Request</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:10px; text-transform:uppercase; font-weight:700; color:#a1a1aa; display:block; margin-bottom:4px;">Your Message / Issue Details</label>
+        <textarea id="supportMessage" rows="4" placeholder="Type your question or report an issue here..." style="width:100%; background:#09090b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; padding:10px; font-size:12px; resize:none; outline:none;" required></textarea>
+      </div>
+
+      <button class="btn" id="btnSubmitSupport" onclick="submitSupportRequest()" style="margin-top:0;">Send Support Request</button>
+      <div id="supportStatus" style="margin-top:12px; font-size:11px; display:none; padding:8px; border-radius:8px;"></div>
+    </div>
+  </div>
+
   <header>
     <h2>AIsoft Render AI</h2>
     <div style="display:flex; align-items:center; gap:10px;">
       <div id="userAccountBadge"></div>
+      <button onclick="toggleSupportModal(true)" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer;">💬 Support</button>
       <span class="badge">Walkthrough & Render Studio</span>
     </div>
   </header>
@@ -362,9 +391,8 @@
       <div>
         <div class="section-title">AI Engine & Cost Model</div>
         <select id="modelSelect">
-          <option value="black-forest-labs/flux-schnell" selected>⚡ Flux Schnell (~$0.003 - Ultra Cheap & Fast)</option>
-          <option value="google/nano-banana-2">⚡ Nano Banana 2 (~$0.01 - Balanced Standard)</option>
-          <option value="google/nano-banana-pro">💎 Nano Banana Pro (~$0.05 - High Detail)</option>
+          <option value="google/nano-banana-pro" selected>💎 Nano Banana Pro (High Detail)</option>
+          <option value="google/nano-banana-2">⚡ Nano Banana 2 (Balanced Fast)</option>
         </select>
       </div>
 
@@ -542,6 +570,66 @@
         return JSON.parse(text);
       } catch (err) {
         return { error: 'Invalid response from server' };
+      }
+    }
+
+    /* ─── SUPPORT MODAL HANDLER ────────────────────────────────────────────── */
+    function toggleSupportModal(show) {
+      document.getElementById('supportModal').style.display = show ? 'flex' : 'none';
+      document.getElementById('supportStatus').style.display = 'none';
+    }
+
+    async function submitSupportRequest() {
+      const msg = document.getElementById('supportMessage').value.trim();
+      const cat = document.getElementById('supportCategory').value;
+      const statusEl = document.getElementById('supportStatus');
+
+      if (!msg) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-error';
+        statusEl.innerHTML = 'Please enter your message details.';
+        return;
+      }
+
+      document.getElementById('btnSubmitSupport').disabled = true;
+      statusEl.style.display = 'block';
+      statusEl.className = 'status-loading';
+      statusEl.innerHTML = 'Sending message to support...';
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail || 'anonymous@plugin.user',
+            message: msg,
+            category: cat
+          })
+        });
+
+        const data = await parseResponseJson(response);
+
+        if (response.ok && data.ok) {
+          statusEl.className = 'status-success';
+          statusEl.innerHTML = '✓ Message sent to support! We will review it shortly.';
+          document.getElementById('supportMessage').value = '';
+          setTimeout(() => {
+            toggleSupportModal(false);
+            document.getElementById('btnSubmitSupport').disabled = false;
+          }, 1500);
+        } else {
+          statusEl.className = 'status-error';
+          statusEl.innerHTML = '❌ ' + (data.error || 'Failed to send support request.');
+          document.getElementById('btnSubmitSupport').disabled = false;
+        }
+      } catch (err) {
+        statusEl.className = 'status-error';
+        statusEl.innerHTML = '❌ Connection error submitting support request.';
+        document.getElementById('btnSubmitSupport').disabled = false;
       }
     }
 

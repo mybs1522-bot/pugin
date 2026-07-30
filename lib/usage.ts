@@ -10,6 +10,7 @@ export interface UserRecord {
   videoCount: number;
   isPaid?: boolean;
   paymentMode?: string;
+  lastModelUsed?: string;
   activeSessionId?: string;
   signedUpAt: string;
   lastLoginAt: string;
@@ -20,6 +21,7 @@ export interface UserRecord {
 const memoryPaidUsers = new Map<string, { isPaid: boolean; mode: string }>();
 const memoryActiveSessions = new Map<string, string>(); // email -> activeSessionId
 const memoryUserLogins = new Map<string, string>(); // email -> lastLoginAt
+const memoryLastModels = new Map<string, string>(); // email -> lastModelUsed
 const memoryUserCounts = new Map<
   string,
   {
@@ -240,7 +242,10 @@ export async function getGenerationCount(email: string): Promise<number> {
   }
 }
 
-export async function incrementImageCount(email: string): Promise<number> {
+export async function incrementImageCount(
+  email: string,
+  modelUsed: string = "google/nano-banana-2"
+): Promise<number> {
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
@@ -248,6 +253,7 @@ export async function incrementImageCount(email: string): Promise<number> {
   mem.imageCount += 1;
   mem.count += 1;
   mem.lastActiveAt = now;
+  memoryLastModels.set(norm, modelUsed);
 
   const nextImg = mem.imageCount;
   const nextTotal = mem.count;
@@ -257,6 +263,7 @@ export async function incrementImageCount(email: string): Promise<number> {
       email: norm,
       image_count: nextImg,
       count: nextTotal,
+      last_model_used: modelUsed,
       last_active_at: now,
     });
 
@@ -274,7 +281,10 @@ export async function incrementImageCount(email: string): Promise<number> {
   return nextTotal;
 }
 
-export async function incrementVideoCount(email: string): Promise<number> {
+export async function incrementVideoCount(
+  email: string,
+  modelUsed: string = "stability-ai/stable-video-diffusion"
+): Promise<number> {
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
@@ -282,6 +292,7 @@ export async function incrementVideoCount(email: string): Promise<number> {
   mem.videoCount += 1;
   mem.count += 1;
   mem.lastActiveAt = now;
+  memoryLastModels.set(norm, modelUsed);
 
   const nextVid = mem.videoCount;
   const nextTotal = mem.count;
@@ -291,6 +302,7 @@ export async function incrementVideoCount(email: string): Promise<number> {
       email: norm,
       video_count: nextVid,
       count: nextTotal,
+      last_model_used: modelUsed,
       last_active_at: now,
     });
 
@@ -322,6 +334,7 @@ export async function getAllUsers(): Promise<
       videoCount: val.videoCount || 0,
       isPaid: !!(memPaid && memPaid.isPaid),
       paymentMode: memPaid ? memPaid.mode : "Free Trial",
+      lastModelUsed: memoryLastModels.get(emailKey) || "google/nano-banana-pro",
       activeSessionId: memoryActiveSessions.get(emailKey),
       signedUpAt: val.signedUpAt,
       lastLoginAt: memoryUserLogins.get(emailKey) || val.lastActiveAt,
@@ -343,6 +356,7 @@ export async function getAllUsers(): Promise<
         video_count?: number;
         is_paid?: boolean;
         payment_mode?: string;
+        last_model_used?: string;
         active_session_id?: string;
         signed_up_at: string;
         last_login_at?: string;
@@ -373,6 +387,11 @@ export async function getAllUsers(): Promise<
           videoCount: finalVid,
           isPaid: !!isPaid,
           paymentMode: paymentMode,
+          lastModelUsed:
+            row.last_model_used ||
+            memoryLastModels.get(emailKey) ||
+            existingMem?.lastModelUsed ||
+            (isPaid ? "google/nano-banana-2" : "google/nano-banana-pro"),
           activeSessionId:
             row.active_session_id ||
             memoryActiveSessions.get(emailKey) ||

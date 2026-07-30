@@ -20,6 +20,9 @@ import {
   CreditCard,
   Clock,
   KeyRound,
+  MessageSquare,
+  Sparkles,
+  HelpCircle,
 } from "lucide-react";
 
 interface UserRecord {
@@ -29,9 +32,19 @@ interface UserRecord {
   videoCount: number;
   isPaid?: boolean;
   paymentMode?: string;
+  lastModelUsed?: string;
   signedUpAt: string;
   lastLoginAt: string;
   lastActiveAt: string;
+}
+
+interface SupportTicket {
+  id: string;
+  email: string;
+  message: string;
+  category?: string;
+  status: "open" | "resolved";
+  createdAt: string;
 }
 
 interface Stats {
@@ -104,6 +117,38 @@ function StatusBadge({
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-400">
       Trial ({count}/{limit})
+    </span>
+  );
+}
+
+function ModelBadge({ model }: { model?: string }) {
+  if (!model) {
+    return <span className="text-xs text-zinc-500">—</span>;
+  }
+  if (model.includes("nano-banana-pro")) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/20 bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-300">
+        🍌 Nano Banana Pro
+      </span>
+    );
+  }
+  if (model.includes("nano-banana-2")) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-blue-500/20 bg-blue-500/15 px-2 py-0.5 text-xs font-semibold text-blue-300">
+        ⚡ Nano Banana 2
+      </span>
+    );
+  }
+  if (model.includes("instruct-pix2pix")) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-purple-500/20 bg-purple-500/15 px-2 py-0.5 text-xs font-semibold text-purple-300">
+        🎨 Instruct-Pix2Pix
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-300">
+      🤖 {model.split("/").pop()}
     </span>
   );
 }
@@ -188,7 +233,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Sign in to manage payments & usage
+            Sign in to manage payments & plugin support
           </p>
         </div>
 
@@ -260,13 +305,14 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 
 function Dashboard() {
   const [data, setData] = useState<AdminData | null>(null);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"all" | "images" | "videos">(
-    "all"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "all" | "images" | "videos" | "support"
+  >("all");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -278,6 +324,13 @@ function Dashboard() {
           const json = JSON.parse(text) as AdminData;
           setData(json);
         } catch {}
+      }
+
+      // Fetch support tickets
+      const tRes = await fetch("/api/support");
+      if (tRes.ok) {
+        const tJson = await tRes.json();
+        setTickets(tJson.tickets || []);
       }
     } finally {
       setLoading(false);
@@ -311,6 +364,24 @@ function Dashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, action: "reset" }),
+      });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleToggleTicketStatus(
+    id: string,
+    currentStatus: "open" | "resolved"
+  ) {
+    const nextStatus = currentStatus === "open" ? "resolved" : "open";
+    setActionLoading("ticket_" + id);
+    try {
+      await fetch("/api/support", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: nextStatus }),
       });
       await fetchData();
     } finally {
@@ -361,6 +432,8 @@ function Dashboard() {
     0
   );
 
+  const openTickets = tickets.filter((t) => t.status === "open").length;
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* HEADER */}
@@ -375,8 +448,8 @@ function Dashboard() {
                 Admin Management Studio
               </h1>
               <p className="text-xs text-zinc-400">
-                Payment Verification, Device Sessions & Multi-Table Usage
-                Analytics
+                Payment Verification, Active Model Tracking & Plugin Support
+                Inbox
               </p>
             </div>
           </div>
@@ -428,11 +501,11 @@ function Dashboard() {
             color="bg-blue-500/20 text-blue-400"
           />
           <StatCard
-            icon={UserCheck}
-            label="Paid Active Members"
-            value={users.filter((u) => u.isPaid).length}
-            sub="Unlimited access granted"
-            color="bg-emerald-500/20 text-emerald-400"
+            icon={MessageSquare}
+            label="Open Support Tickets"
+            value={openTickets}
+            sub="User questions & bug reports"
+            color="bg-amber-500/20 text-amber-400"
           />
         </div>
 
@@ -467,7 +540,7 @@ function Dashboard() {
 
         {/* TABLE FILTER TABS & SEARCH */}
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 p-1.5">
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 p-1.5">
             <button
               onClick={() => setActiveTab("all")}
               className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${
@@ -487,7 +560,7 @@ function Dashboard() {
               }`}
             >
               <ImageIcon className="h-3.5 w-3.5" />
-              🖼️ Image Renders Table
+              🖼️ Image Renders
             </button>
             <button
               onClick={() => setActiveTab("videos")}
@@ -498,7 +571,18 @@ function Dashboard() {
               }`}
             >
               <Video className="h-3.5 w-3.5" />
-              🎬 3D Videos Table
+              🎬 3D Videos
+            </button>
+            <button
+              onClick={() => setActiveTab("support")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "support"
+                  ? "bg-amber-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              💬 Support Messages {openTickets > 0 && `(${openTickets})`}
             </button>
           </div>
 
@@ -517,10 +601,10 @@ function Dashboard() {
             <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/50 p-4">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Users className="h-4 w-4 text-indigo-400" />
-                Comprehensive Member Signup Registry
+                Comprehensive Member Registry & Active Model Tracker
               </h3>
               <span className="text-xs text-zinc-400">
-                {filtered.length} total registered accounts
+                {filtered.length} registered accounts
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -528,10 +612,10 @@ function Dashboard() {
                 <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
                     <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">Active AI Model</th>
                     <th className="px-5 py-3.5">Payment Status</th>
                     <th className="px-5 py-3.5">Payment Mode</th>
-                    <th className="px-5 py-3.5">Image Renders</th>
-                    <th className="px-5 py-3.5">Video Walks</th>
+                    <th className="px-5 py-3.5">Images / Videos</th>
                     <th className="px-5 py-3.5">Last Login</th>
                     <th className="px-5 py-3.5 text-right">Admin Actions</th>
                   </tr>
@@ -556,6 +640,9 @@ function Dashboard() {
                           </div>
                         </td>
                         <td className="px-5 py-4">
+                          <ModelBadge model={u.lastModelUsed} />
+                        </td>
+                        <td className="px-5 py-4">
                           <StatusBadge
                             isPaid={u.isPaid}
                             count={u.count}
@@ -569,10 +656,8 @@ function Dashboard() {
                           />
                         </td>
                         <td className="px-5 py-4 font-semibold text-purple-300">
-                          {u.imageCount || u.count || 0} renders
-                        </td>
-                        <td className="px-5 py-4 font-semibold text-blue-300">
-                          {u.videoCount || 0} videos
+                          {u.imageCount || u.count || 0} imgs /{" "}
+                          {u.videoCount || 0} vids
                         </td>
                         <td className="px-5 py-4 text-zinc-400">
                           <div className="flex items-center gap-1.5">
@@ -620,7 +705,7 @@ function Dashboard() {
             <div className="flex items-center justify-between border-b border-white/10 bg-purple-950/40 p-4">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <ImageIcon className="h-4 w-4 text-purple-400" />
-                🖼️ Image Render Usage Breakdown
+                🖼️ Image Render Usage & Model Breakdown
               </h3>
               <span className="text-xs font-semibold text-purple-300">
                 {totalImageRenders} Total Image Renders
@@ -631,11 +716,11 @@ function Dashboard() {
                 <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
                     <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">Model Used</th>
                     <th className="px-5 py-3.5">Image Renders Used</th>
                     <th className="px-5 py-3.5">Payment Status</th>
                     <th className="px-5 py-3.5">Payment Mode</th>
                     <th className="px-5 py-3.5">Last Login</th>
-                    <th className="px-5 py-3.5">Last Image Render</th>
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -644,6 +729,9 @@ function Dashboard() {
                     <tr key={u.email} className="transition hover:bg-white/5">
                       <td className="px-5 py-4 font-medium text-white">
                         {u.email}
+                      </td>
+                      <td className="px-5 py-4">
+                        <ModelBadge model={u.lastModelUsed} />
                       </td>
                       <td className="px-5 py-4">
                         <span className="rounded-md border border-purple-500/30 bg-purple-500/20 px-2.5 py-1 text-xs font-bold text-purple-300">
@@ -665,9 +753,6 @@ function Dashboard() {
                       </td>
                       <td className="px-5 py-4 text-zinc-400">
                         {fmt(u.lastLoginAt)}
-                      </td>
-                      <td className="px-5 py-4 text-zinc-400">
-                        {fmt(u.lastActiveAt)}
                       </td>
                       <td className="px-5 py-4 text-right">
                         <button
@@ -710,7 +795,6 @@ function Dashboard() {
                     <th className="px-5 py-3.5">Payment Status</th>
                     <th className="px-5 py-3.5">Payment Mode</th>
                     <th className="px-5 py-3.5">Last Login</th>
-                    <th className="px-5 py-3.5">Last Video Motion</th>
                     <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -741,9 +825,6 @@ function Dashboard() {
                       <td className="px-5 py-4 text-zinc-400">
                         {fmt(u.lastLoginAt)}
                       </td>
-                      <td className="px-5 py-4 text-zinc-400">
-                        {fmt(u.lastActiveAt)}
-                      </td>
                       <td className="px-5 py-4 text-right">
                         <button
                           onClick={() => handleTogglePaid(u.email, !!u.isPaid)}
@@ -758,6 +839,94 @@ function Dashboard() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: SUPPORT MESSAGES & INQUIRIES TABLE */}
+        {activeTab === "support" && (
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="flex items-center justify-between border-b border-white/10 bg-amber-950/40 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <MessageSquare className="h-4 w-4 text-amber-400" />
+                💬 Plugin Support Messages & Help Requests Inbox
+              </h3>
+              <span className="text-xs font-semibold text-amber-300">
+                {tickets.length} total tickets ({openTickets} open)
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
+                  <tr>
+                    <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">Topic / Category</th>
+                    <th className="px-5 py-3.5">Message / Issue Details</th>
+                    <th className="px-5 py-3.5">Submitted At</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {tickets.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-5 py-8 text-center text-zinc-500"
+                      >
+                        No support messages submitted yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    tickets.map((t) => (
+                      <tr key={t.id} className="transition hover:bg-white/5">
+                        <td className="px-5 py-4 font-medium text-white">
+                          {t.email}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="rounded-md border border-amber-500/20 bg-zinc-800 px-2 py-1 text-xs font-medium text-amber-300">
+                            {t.category || "General Inquiry"}
+                          </span>
+                        </td>
+                        <td className="max-w-md px-5 py-4 font-normal break-words text-zinc-200">
+                          {t.message}
+                        </td>
+                        <td className="px-5 py-4 text-zinc-400">
+                          {fmt(t.createdAt)}
+                        </td>
+                        <td className="px-5 py-4">
+                          {t.status === "open" ? (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
+                              ● Open
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+                              ✓ Resolved
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <button
+                            onClick={() =>
+                              handleToggleTicketStatus(t.id, t.status)
+                            }
+                            disabled={actionLoading === "ticket_" + t.id}
+                            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                              t.status === "open"
+                                ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                            }`}
+                          >
+                            {t.status === "open"
+                              ? "✓ Mark Resolved"
+                              : "Reopen Ticket"}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
