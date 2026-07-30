@@ -42,7 +42,7 @@
       display: grid;
       grid-template-columns: 420px 1fr;
       gap: 16px;
-      height: calc(100vh - 65px);
+      height: calc(100vh - 105px);
     }
 
     .controls-panel {
@@ -198,7 +198,7 @@
       width: 100%;
       height: 100%;
       max-width: 100%;
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 150px);
       object-fit: contain;
       border-radius: 8px;
       border: 1px solid var(--border-color);
@@ -348,16 +348,21 @@
 
   <!-- SUPPORT CHAT MODAL -->
   <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:480px; height:580px; max-height:90vh; display:flex; flex-direction:column; padding:20px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:480px; height:600px; max-height:92vh; display:flex; flex-direction:column; padding:20px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
       <button onclick="toggleSupportModal(false)" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer; z-index:10;">✕</button>
 
       <!-- CHAT HEADER -->
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
         <div style="font-size:24px;">💬</div>
         <div>
           <h3 style="font-size:15px; font-weight:700; color:#fff;">Live Support Chat</h3>
           <p style="font-size:10px; color:#a1a1aa;">Ask questions & receive real-time admin replies</p>
         </div>
+      </div>
+
+      <!-- 24-HOUR RESOLUTION NOTICE -->
+      <div style="font-size:10px; color:#c7d2fe; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:6px 10px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+        ⏱️ <span>Support will reply within <b>24 hours</b>. You will receive a red badge notification & email update!</span>
       </div>
 
       <!-- CHAT MESSAGES CONTAINER -->
@@ -389,11 +394,20 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <div id="userAccountBadge"></div>
       <button onclick="toggleSupportModal(true)" id="btnSupportHeader" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
-        💬 Support <span id="supportBadgePill" style="display:none; background:#ef4444; color:#fff; border-radius:9999px; padding:1px 6px; font-size:999px;">🔴 1 New</span>
+        💬 Support <span id="supportBadgePill" style="display:none; background:#ef4444; color:#fff; border-radius:9999px; padding:1px 6px; font-size:9px; font-weight:800;">🔴 1 New</span>
       </button>
       <span class="badge">Walkthrough & Render Studio</span>
     </div>
   </header>
+
+  <!-- ANNOUNCEMENT & LIVE SUPPORT NOTIFICATION TICKER BAR -->
+  <div id="pluginTickerBar" style="background:linear-gradient(90deg, #1e1b4b, #311b92); border-bottom:1px solid rgba(255,255,255,0.15); padding:6px 12px; font-size:11px; color:#e0e7ff; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; border-radius:10px;">
+    <div style="display:flex; align-items:center; gap:8px; overflow:hidden;">
+      <span id="tickerTag" style="background:#4338ca; border-radius:9999px; padding:2px 8px; font-size:9px; font-weight:700; color:#fff; text-transform:uppercase; white-space:nowrap;">📢 Support Ticker</span>
+      <span id="tickerText" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Need help or have questions? Click <b>💬 Support</b> above. Support team responds within 24 hours!</span>
+    </div>
+    <button onclick="document.getElementById('pluginTickerBar').style.display='none'" style="background:none; border:none; color:#a1a1aa; font-size:14px; cursor:pointer; padding:0 4px;">✕</button>
+  </div>
 
   <div class="layout-container">
     <!-- LEFT PANEL: Controls -->
@@ -627,10 +641,21 @@
 
         const unread = data.unreadCount || 0;
         const pill = document.getElementById('supportBadgePill');
+        const tickerBar = document.getElementById('pluginTickerBar');
+        const tickerText = document.getElementById('tickerText');
+        const tickerTag = document.getElementById('tickerTag');
 
         if (unread > 0) {
           pill.style.display = 'inline-block';
-          pill.innerText = `🔴 ${unread} New`;
+          pill.innerText = `🔴 ${unread} New Reply`;
+
+          if (tickerBar && tickerText) {
+            tickerBar.style.display = 'flex';
+            tickerBar.style.background = 'linear-gradient(90deg, #7f1d1d, #991b1b)';
+            tickerTag.innerText = '🔔 SUPPORT REPLY';
+            tickerTag.style.background = '#dc2626';
+            tickerText.innerHTML = '<b>New Reply Received from Support!</b> Click <b>💬 Support</b> above to view message.';
+          }
 
           if (unread > lastUnreadCount) {
             showStatus(`🔔 New support reply from Admin! Click <b>💬 Support</b> to read.`, 'success');
@@ -682,7 +707,8 @@
         } else {
           activeTicketId = null;
           container.innerHTML = `<div style="text-align:center; color:#a1a1aa; font-size:11px; padding:30px;">
-            💬 No previous messages.<br/>Type your question below to start a chat with our support team!
+            💬 No previous messages.<br/>Type your question below to start a chat with our support team!<br/><br/>
+            ⏱️ <i>Support will reply within 24 hours.</i>
           </div>`;
         }
       } catch (err) {
@@ -707,7 +733,7 @@
       document.getElementById('btnSubmitSupport').disabled = true;
       statusEl.style.display = 'block';
       statusEl.className = 'status-loading';
-      statusEl.innerHTML = 'Sending message...';
+      statusEl.innerHTML = 'Sending message to support...';
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
@@ -740,10 +766,13 @@
         const data = await parseResponseJson(response);
 
         if (response.ok && data.ok) {
-          statusEl.style.display = 'none';
+          statusEl.className = 'status-success';
+          statusEl.innerHTML = '✓ Message sent! Support will reply within 24 hours. You will receive an email & in-app notification.';
           document.getElementById('supportMessage').value = '';
           loadUserSupportChat();
-          document.getElementById('btnSubmitSupport').disabled = false;
+          setTimeout(() => {
+            document.getElementById('btnSubmitSupport').disabled = false;
+          }, 1500);
         } else {
           statusEl.className = 'status-error';
           statusEl.innerHTML = '❌ ' + (data.error || 'Failed to send message.');
@@ -756,8 +785,8 @@
       }
     }
 
-    // Start background polling for support replies every 12s
-    setInterval(checkSupportNotifications, 12000);
+    // Start background polling for support replies every 10s
+    setInterval(checkSupportNotifications, 10000);
 
     /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
     let userEmail = localStorage.getItem('aisoft_user_email') || null;
