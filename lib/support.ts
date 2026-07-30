@@ -136,7 +136,6 @@ export async function addChatMessage(
 
   ticket.messages.push(newMsg);
   ticket.updatedAt = now;
-  ticket.status = sender === "admin" ? "resolved" : "open";
 
   if (sender === "admin") {
     ticket.unreadUserCount += 1;
