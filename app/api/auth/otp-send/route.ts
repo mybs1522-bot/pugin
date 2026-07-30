@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
     const { code, token } = createOTP(normalised, override);
 
     const resendApiKey = process.env.RESEND_API_KEY;
-    const gmailUser = process.env.GMAIL_USER;
-    const gmailPass = process.env.GMAIL_APP_PASSWORD;
+    const gmailUser = process.env.GMAIL_USER || "mybs1522@gmail.com";
+    const gmailPass = process.env.GMAIL_APP_PASSWORD || "agqarxxzmghwychm";
 
     let emailSent = false;
     let serviceUsed = "";
@@ -58,8 +58,6 @@ export async function POST(req: NextRequest) {
     if (resendApiKey) {
       try {
         const resend = new Resend(resendApiKey);
-
-        // Try domain email first, then fallback to onboarding@resend.dev
         const fromAddress =
           process.env.RESEND_FROM_EMAIL ||
           "AIsoft Render <onboarding@resend.dev>";
@@ -74,12 +72,14 @@ export async function POST(req: NextRequest) {
         if (!resendResult.error) {
           emailSent = true;
           serviceUsed = "Resend";
-          console.log(`✓ Email sent via Resend to ${normalised}`);
+          console.log(
+            `✓ Email sent via Resend to ${normalised} (ID: ${resendResult.data?.id})`
+          );
         } else {
           lastError =
             (resendResult.error as { message?: string }).message ||
-            "Resend error";
-          console.warn("Resend email failed:", lastError);
+            "Resend validation error";
+          console.warn("Resend email restricted/failed:", lastError);
         }
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err);
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. FALLBACK: Gmail SMTP (if Resend API key is missing or failed)
+    // 2. FALLBACK: Gmail SMTP (if Resend returned domain/unverified error or API key missing)
     if (!emailSent && gmailUser && gmailPass) {
       try {
         const transporter = nodemailer.createTransport({
@@ -103,8 +103,10 @@ export async function POST(req: NextRequest) {
         });
 
         emailSent = true;
-        serviceUsed = "Gmail SMTP";
-        console.log(`✓ Email sent via Gmail SMTP fallback to ${normalised}`);
+        serviceUsed = "Gmail SMTP Fallback";
+        console.log(
+          `✓ Email delivered via Gmail SMTP fallback to ${normalised}`
+        );
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err);
       }
@@ -117,8 +119,8 @@ export async function POST(req: NextRequest) {
         devCode: emailSent ? undefined : code,
         service: serviceUsed || "Fallback",
         message: emailSent
-          ? "Verification code sent to your email!"
-          : `Code generated: ${code} (Add RESEND_API_KEY to Vercel to send via Resend)`,
+          ? `Verification code sent to your email via ${serviceUsed}!`
+          : `Code generated: ${code}`,
         lastError: emailSent ? undefined : lastError,
       },
       { status: 200, headers: corsHeaders }
