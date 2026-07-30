@@ -534,6 +534,17 @@
     let currentServerUrl = getLiveServerUrl();
     let lastRenderUrl = null;
 
+    /* ─── SAFE RESPONSE PARSER TO PREVENT UNEXPECTED END OF JSON INPUT ───────── */
+    async function parseResponseJson(response) {
+      try {
+        const text = await response.text();
+        if (!text || !text.trim()) return {};
+        return JSON.parse(text);
+      } catch (err) {
+        return { error: 'Invalid response from server' };
+      }
+    }
+
     /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
     let userEmail = localStorage.getItem('aisoft_user_email') || null;
     let userSessionId = localStorage.getItem('aisoft_session_id') || null;
@@ -589,7 +600,7 @@
           body: JSON.stringify({ email: emailInput })
         });
 
-        const data = await response.json();
+        const data = await parseResponseJson(response);
         if ((response.ok || data.ok) && data.token) {
           window.pendingOtpToken = data.token;
           window.pendingEmail = emailInput;
@@ -638,7 +649,7 @@
           })
         });
 
-        const data = await response.json();
+        const data = await parseResponseJson(response);
         if (response.ok && data.ok) {
           userEmail = data.email;
           userSessionId = data.sessionId;
@@ -963,7 +974,7 @@
           })
         });
 
-        const data = await response.json();
+        const data = await parseResponseJson(response);
 
         if (response.ok && data.output && data.output.length > 0) {
           const imgUrl = data.output[0];
@@ -1063,7 +1074,7 @@
           })
         });
 
-        const data = await response.json();
+        const data = await parseResponseJson(response);
 
         if (response.ok && data.videoUrl) {
           showStatus('✓ 3D Video Walkthrough Complete!', 'success');
