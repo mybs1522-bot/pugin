@@ -577,26 +577,37 @@
       document.getElementById('btnSendOtp').disabled = true;
       showAuthStatus('Sending 4-digit code to ' + emailInput + '...', 'loading');
 
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
       try {
-        const response = await fetch(currentServerUrl + '/api/auth/otp-send', {
+        const response = await fetch(targetUrl + '/api/auth/otp-send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: emailInput })
         });
 
         const data = await response.json();
-        if (response.ok && data.ok) {
+        if ((response.ok || data.ok) && data.token) {
           window.pendingOtpToken = data.token;
           window.pendingEmail = emailInput;
           document.getElementById('authStep1').style.display = 'none';
           document.getElementById('authStep2').style.display = 'block';
-          showAuthStatus('✓ Code sent! Check your inbox.', 'success');
+
+          if (data.devCode) {
+            document.getElementById('authOtpCode').value = data.devCode;
+            showAuthStatus('✓ Code generated: <b>' + data.devCode + '</b> (Auto-filled below)', 'success');
+          } else {
+            showAuthStatus('✓ 4-digit code sent! Check your inbox.', 'success');
+          }
         } else {
           showAuthStatus('❌ ' + (data.error || 'Failed to send verification code.'), 'error');
           document.getElementById('btnSendOtp').disabled = false;
         }
       } catch (err) {
-        showAuthStatus('❌ Connection error sending code.', 'error');
+        console.error('OTP Send error:', err);
+        showAuthStatus('❌ Connection error sending code. Check internet connection.', 'error');
         document.getElementById('btnSendOtp').disabled = false;
       }
     }
