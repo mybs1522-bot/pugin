@@ -40,15 +40,25 @@ interface UserRecord {
   lastActiveAt: string;
 }
 
+interface ChatMessage {
+  id: string;
+  sender: "user" | "admin";
+  text: string;
+  createdAt: string;
+}
+
 interface SupportTicket {
   id: string;
   email: string;
-  message: string;
   category?: string;
   status: "open" | "resolved";
+  messages?: ChatMessage[];
+  unreadAdminCount?: number;
   replyMessage?: string;
   replyAt?: string;
   createdAt: string;
+  updatedAt?: string;
+  message?: string;
 }
 
 interface Stats {
@@ -346,7 +356,7 @@ function Dashboard() {
 
   useEffect(() => {
     void fetchData();
-    const id = setInterval(fetchData, 15_000);
+    const id = setInterval(fetchData, 10_000);
     return () => clearInterval(id);
   }, [fetchData]);
 
@@ -408,6 +418,7 @@ function Dashboard() {
           action: "reply",
           id: ticketId,
           replyMessage: text.trim(),
+          sender: "admin",
         }),
       });
       setReplyingTicketId(null);
@@ -462,6 +473,10 @@ function Dashboard() {
   );
 
   const openTickets = tickets.filter((t) => t.status === "open").length;
+  const unreadAdminTotal = tickets.reduce(
+    (acc, t) => acc + (t.unreadAdminCount || 0),
+    0
+  );
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -477,8 +492,8 @@ function Dashboard() {
                 Admin Management Studio
               </h1>
               <p className="text-xs text-zinc-400">
-                Payment Verification, Active Model Tracking & Plugin Support
-                Inbox
+                Payment Verification, Active Model Tracking & Real-Time Support
+                Chat
               </p>
             </div>
           </div>
@@ -531,9 +546,13 @@ function Dashboard() {
           />
           <StatCard
             icon={MessageSquare}
-            label="Open Support Tickets"
-            value={openTickets}
-            sub="User questions & bug reports"
+            label="Support Chat Inbox"
+            value={
+              unreadAdminTotal > 0
+                ? `${openTickets} (${unreadAdminTotal} Unread)`
+                : openTickets
+            }
+            sub="Live chat threads from plugin"
             color="bg-amber-500/20 text-amber-400"
           />
         </div>
@@ -611,7 +630,8 @@ function Dashboard() {
               }`}
             >
               <MessageSquare className="h-3.5 w-3.5" />
-              💬 Support Messages {openTickets > 0 && `(${openTickets})`}
+              💬 Support Chat{" "}
+              {unreadAdminTotal > 0 && `(🔴 ${unreadAdminTotal} New)`}
             </button>
           </div>
 
@@ -874,16 +894,16 @@ function Dashboard() {
           </div>
         )}
 
-        {/* TAB 4: SUPPORT MESSAGES & INQUIRIES TABLE */}
+        {/* TAB 4: REAL-TIME SUPPORT CHAT INBOX TABLE */}
         {activeTab === "support" && (
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-white/10 bg-amber-950/40 p-4">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <MessageSquare className="h-4 w-4 text-amber-400" />
-                💬 Plugin Support Messages & Help Requests Inbox
+                💬 Real-Time Live Support Chat Inbox
               </h3>
               <span className="text-xs font-semibold text-amber-300">
-                {tickets.length} total tickets ({openTickets} open)
+                {tickets.length} total chat threads ({openTickets} open)
               </span>
             </div>
             <div className="overflow-x-auto">
@@ -891,9 +911,9 @@ function Dashboard() {
                 <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
                     <th className="px-5 py-3.5">User Email</th>
-                    <th className="px-5 py-3.5">Topic / Category</th>
-                    <th className="px-5 py-3.5">Message / Issue Details</th>
-                    <th className="px-5 py-3.5">Submitted At</th>
+                    <th className="px-5 py-3.5">Category</th>
+                    <th className="px-5 py-3.5">Live Chat Thread</th>
+                    <th className="px-5 py-3.5">Last Activity</th>
                     <th className="px-5 py-3.5">Status</th>
                     <th className="px-5 py-3.5 text-right">Action</th>
                   </tr>
@@ -905,14 +925,21 @@ function Dashboard() {
                         colSpan={6}
                         className="px-5 py-8 text-center text-zinc-500"
                       >
-                        No support messages submitted yet.
+                        No support chat threads active yet.
                       </td>
                     </tr>
                   ) : (
                     tickets.map((t) => (
                       <tr key={t.id} className="transition hover:bg-white/5">
                         <td className="px-5 py-4 font-medium text-white">
-                          {t.email}
+                          <div className="flex items-center gap-2">
+                            {t.unreadAdminCount ? (
+                              <span className="animate-pulse rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-extrabold text-white">
+                                🔴 {t.unreadAdminCount} New
+                              </span>
+                            ) : null}
+                            {t.email}
+                          </div>
                         </td>
                         <td className="px-5 py-4">
                           <span className="rounded-md border border-amber-500/20 bg-zinc-800 px-2 py-1 text-xs font-medium text-amber-300">
@@ -920,26 +947,51 @@ function Dashboard() {
                           </span>
                         </td>
                         <td className="max-w-md px-5 py-4 font-normal break-words text-zinc-200">
-                          <div>{t.message}</div>
-                          {t.replyMessage && (
-                            <div className="mt-2.5 rounded-xl border border-indigo-500/30 bg-indigo-950/40 p-3 text-xs text-indigo-200">
-                              <div className="mb-1 flex items-center gap-1.5 font-semibold text-indigo-400">
-                                <CornerDownRight className="h-3.5 w-3.5" />✦
-                                Admin Response ({fmt(t.replyAt || "")}):
+                          {/* CHAT THREAD DISPLAY */}
+                          <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-white/10 bg-black/40 p-2">
+                            {(t.messages && t.messages.length > 0
+                              ? t.messages
+                              : [
+                                  {
+                                    id: "m0",
+                                    sender: "user",
+                                    text: t.message || "",
+                                    createdAt: t.createdAt,
+                                  },
+                                ]
+                            ).map((m, idx) => (
+                              <div
+                                key={m.id || idx}
+                                className={`flex flex-col ${
+                                  m.sender === "admin"
+                                    ? "items-end"
+                                    : "items-start"
+                                }`}
+                              >
+                                <span className="text-[9px] text-zinc-500">
+                                  {m.sender === "admin" ? "✦ Admin" : "👤 User"}{" "}
+                                  • {fmt(m.createdAt)}
+                                </span>
+                                <div
+                                  className={`mt-0.5 max-w-[85%] rounded-lg px-2.5 py-1.5 text-xs ${
+                                    m.sender === "admin"
+                                      ? "border border-indigo-500/40 bg-indigo-600/30 text-indigo-200"
+                                      : "border border-white/10 bg-zinc-800 text-zinc-200"
+                                  }`}
+                                >
+                                  {m.text}
+                                </div>
                               </div>
-                              <p className="whitespace-pre-wrap text-white">
-                                {t.replyMessage}
-                              </p>
-                            </div>
-                          )}
+                            ))}
+                          </div>
 
                           {replyingTicketId === t.id && (
-                            <div className="mt-3 rounded-xl border border-white/10 bg-zinc-900 p-3">
-                              <label className="mb-1 block text-xs font-semibold text-zinc-400">
-                                Write Support Reply to {t.email}:
+                            <div className="mt-3 rounded-xl border border-indigo-500/40 bg-zinc-900 p-3">
+                              <label className="mb-1 block text-xs font-semibold text-indigo-400">
+                                💬 Reply in Chat to {t.email}:
                               </label>
                               <textarea
-                                rows={3}
+                                rows={2}
                                 value={replyTextMap[t.id] || ""}
                                 onChange={(e) =>
                                   setReplyTextMap({
@@ -947,7 +999,7 @@ function Dashboard() {
                                     [t.id]: e.target.value,
                                   })
                                 }
-                                placeholder="Type your official answer or resolution here (will email user via Resend)…"
+                                placeholder="Type your response to user (will instantly appear in their plugin)..."
                                 className="w-full rounded-lg border border-white/10 bg-black p-2.5 text-xs text-white outline-none focus:border-indigo-500"
                               />
                               <div className="mt-2 flex justify-end gap-2">
@@ -966,20 +1018,20 @@ function Dashboard() {
                                 >
                                   <Send className="h-3 w-3" />
                                   {actionLoading === "reply_" + t.id
-                                    ? "Sending Email…"
-                                    : "Send Reply & Resolve"}
+                                    ? "Sending…"
+                                    : "Send Chat Reply 💬"}
                                 </button>
                               </div>
                             </div>
                           )}
                         </td>
                         <td className="px-5 py-4 text-zinc-400">
-                          {fmt(t.createdAt)}
+                          {fmt(t.updatedAt || t.createdAt)}
                         </td>
                         <td className="px-5 py-4">
                           {t.status === "open" ? (
                             <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-xs font-semibold text-amber-400">
-                              ● Open
+                              ● Active Chat
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
@@ -997,7 +1049,7 @@ function Dashboard() {
                               }
                               className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/30"
                             >
-                              ✉️ Reply
+                              💬 Reply
                             </button>
                             <button
                               onClick={() =>

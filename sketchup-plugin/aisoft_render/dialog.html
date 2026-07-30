@@ -315,6 +315,8 @@
       font-size: 12px;
       outline: none;
     }
+
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -344,20 +346,28 @@
     </div>
   </div>
 
-  <!-- SUPPORT / CONTACT MODAL -->
+  <!-- SUPPORT CHAT MODAL -->
   <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:440px; max-height:90vh; overflow-y:auto; padding:24px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
-      <button onclick="toggleSupportModal(false)" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
-      <div style="font-size:28px; margin-bottom:6px;">💬</div>
-      <h3 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:4px;">Contact Support & View Answers</h3>
-      <p style="font-size:11px; color:#a1a1aa; margin-bottom:16px; line-height:1.4;">Need help or have questions? Submit a message below or check admin replies to your previous inquiries!</p>
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:480px; height:580px; max-height:90vh; display:flex; flex-direction:column; padding:20px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
+      <button onclick="toggleSupportModal(false)" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer; z-index:10;">✕</button>
 
-      <!-- PAST INQUIRIES & ADMIN REPLIES BOX -->
-      <div id="supportHistoryBox" style="display:none; margin-bottom:16px;"></div>
+      <!-- CHAT HEADER -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+        <div style="font-size:24px;">💬</div>
+        <div>
+          <h3 style="font-size:15px; font-weight:700; color:#fff;">Live Support Chat</h3>
+          <p style="font-size:10px; color:#a1a1aa;">Ask questions & receive real-time admin replies</p>
+        </div>
+      </div>
 
-      <div style="margin-bottom:12px;">
-        <label style="font-size:10px; text-transform:uppercase; font-weight:700; color:#a1a1aa; display:block; margin-bottom:4px;">Topic / Category</label>
-        <select id="supportCategory">
+      <!-- CHAT MESSAGES CONTAINER -->
+      <div id="supportChatContainer" style="flex:1; overflow-y:auto; padding-right:4px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px;">
+        <div style="text-align:center; color:#71717a; font-size:11px; padding:20px;">Loading chat messages...</div>
+      </div>
+
+      <!-- CATEGORY SELECTOR FOR NEW INQUIRY -->
+      <div style="margin-bottom:8px;">
+        <select id="supportCategory" style="padding:6px 10px; font-size:11px;">
           <option value="General Question">❓ General Question / Help</option>
           <option value="Bug / Technical Issue">🐞 Technical Bug or Issue</option>
           <option value="Payment & Access">💳 Payment & Account Access</option>
@@ -365,13 +375,12 @@
         </select>
       </div>
 
-      <div style="margin-bottom:16px;">
-        <label style="font-size:10px; text-transform:uppercase; font-weight:700; color:#a1a1aa; display:block; margin-bottom:4px;">Your Message / Issue Details</label>
-        <textarea id="supportMessage" rows="3" placeholder="Type your question or report an issue here..." style="width:100%; background:#09090b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; color:#fff; padding:10px; font-size:12px; resize:none; outline:none;" required></textarea>
+      <!-- CHAT INPUT BAR -->
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <textarea id="supportMessage" rows="2" placeholder="Type your message to support..." style="flex:1; background:#09090b; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; resize:none; outline:none;" required></textarea>
+        <button class="btn" id="btnSubmitSupport" onclick="submitSupportRequest()" style="width:auto; padding:10px 16px; height:42px; margin-top:0; font-size:12px;">Send 💬</button>
       </div>
-
-      <button class="btn" id="btnSubmitSupport" onclick="submitSupportRequest()" style="margin-top:0;">Send Support Request</button>
-      <div id="supportStatus" style="margin-top:12px; font-size:11px; display:none; padding:8px; border-radius:8px;"></div>
+      <div id="supportStatus" style="margin-top:8px; font-size:11px; display:none; padding:6px 8px; border-radius:6px;"></div>
     </div>
   </div>
 
@@ -379,7 +388,9 @@
     <h2>AIsoft Render AI</h2>
     <div style="display:flex; align-items:center; gap:10px;">
       <div id="userAccountBadge"></div>
-      <button onclick="toggleSupportModal(true)" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer;">💬 Support</button>
+      <button onclick="toggleSupportModal(true)" id="btnSupportHeader" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+        💬 Support <span id="supportBadgePill" style="display:none; background:#ef4444; color:#fff; border-radius:9999px; padding:1px 6px; font-size:999px;">🔴 1 New</span>
+      </button>
       <span class="badge">Walkthrough & Render Studio</span>
     </div>
   </header>
@@ -564,6 +575,7 @@
 
     let currentServerUrl = getLiveServerUrl();
     let lastRenderUrl = null;
+    let activeTicketId = null;
 
     /* ─── SAFE RESPONSE PARSER TO PREVENT UNEXPECTED END OF JSON INPUT ───────── */
     async function parseResponseJson(response) {
@@ -576,16 +588,34 @@
       }
     }
 
-    /* ─── SUPPORT MODAL HANDLER ────────────────────────────────────────────── */
+    /* ─── SUPPORT CHAT & REAL-TIME NOTIFICATION SYSTEM ─────────────────────── */
+    let lastUnreadCount = 0;
+
     function toggleSupportModal(show) {
       document.getElementById('supportModal').style.display = show ? 'flex' : 'none';
       document.getElementById('supportStatus').style.display = 'none';
-      if (show) loadUserSupportHistory();
+      if (show) {
+        loadUserSupportChat();
+        markSupportRead();
+      }
     }
 
-    async function loadUserSupportHistory() {
-      const historyEl = document.getElementById('supportHistoryBox');
-      if (!historyEl || !userEmail) return;
+    async function markSupportRead() {
+      if (!userEmail) return;
+      document.getElementById('supportBadgePill').style.display = 'none';
+      lastUnreadCount = 0;
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail) + '&action=mark_read');
+      } catch (err) {}
+    }
+
+    async function checkSupportNotifications() {
+      if (!userEmail) return;
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
@@ -594,25 +624,72 @@
       try {
         const response = await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail));
         const data = await parseResponseJson(response);
-        if (data.tickets && data.tickets.length > 0) {
-          historyEl.style.display = 'block';
-          historyEl.innerHTML = '<div style="font-size:10px; font-weight:700; color:#a1a1aa; text-transform:uppercase; margin-bottom:6px;">Your Past Inquiries & Replies</div>' +
-            data.tickets.map(t => `
-              <div style="background:#09090b; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px; margin-bottom:8px; font-size:11px;">
-                <div style="color:#e4e4e7; margin-bottom:4px;"><b>Q:</b> ${t.message}</div>
-                ${t.replyMessage ? `
-                  <div style="background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); border-radius:6px; padding:6px; color:#818cf8; font-size:11px; margin-top:4px;">
-                    <b>✦ Admin Answer:</b> ${t.replyMessage}
-                  </div>
-                ` : `
-                  <div style="color:#eab308; font-size:10px;">⌛ Pending Admin Reply</div>
-                `}
-              </div>
-            `).join('');
+
+        const unread = data.unreadCount || 0;
+        const pill = document.getElementById('supportBadgePill');
+
+        if (unread > 0) {
+          pill.style.display = 'inline-block';
+          pill.innerText = `🔴 ${unread} New`;
+
+          if (unread > lastUnreadCount) {
+            showStatus(`🔔 New support reply from Admin! Click <b>💬 Support</b> to read.`, 'success');
+          }
         } else {
-          historyEl.style.display = 'none';
+          pill.style.display = 'none';
         }
+        lastUnreadCount = unread;
       } catch (err) {}
+    }
+
+    async function loadUserSupportChat() {
+      const container = document.getElementById('supportChatContainer');
+      if (!container || !userEmail) return;
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail));
+        const data = await parseResponseJson(response);
+
+        if (data.tickets && data.tickets.length > 0) {
+          const mainTicket = data.tickets[0];
+          activeTicketId = mainTicket.id;
+
+          let html = '';
+          (mainTicket.messages || []).forEach(m => {
+            const isAdmin = m.sender === 'admin';
+            html += `
+              <div style="display:flex; flex-direction:column; align-items:${isAdmin ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+                <div style="font-size:9px; color:#71717a; margin-bottom:2px; padding:0 4px;">
+                  ${isAdmin ? '✦ Admin Support' : '👤 You'}
+                </div>
+                <div style="max-width:82%; padding:10px 14px; border-radius:12px; font-size:12px; line-height:1.4; ${
+                  isAdmin 
+                    ? 'background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#ffffff;' 
+                    : 'background:#18181b; border:1px solid rgba(255,255,255,0.1); color:#e4e4e7;'
+                }">
+                  ${m.text.replace(/\n/g, '<br/>')}
+                </div>
+              </div>
+            `;
+          });
+
+          container.innerHTML = html;
+          container.scrollTop = container.scrollHeight;
+        } else {
+          activeTicketId = null;
+          container.innerHTML = `<div style="text-align:center; color:#a1a1aa; font-size:11px; padding:30px;">
+            💬 No previous messages.<br/>Type your question below to start a chat with our support team!
+          </div>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<div style="text-align:center; color:#f87171; font-size:11px; padding:20px;">
+          ❌ Failed to load chat history.
+        </div>`;
+      }
     }
 
     async function submitSupportRequest() {
@@ -623,51 +700,64 @@
       if (!msg) {
         statusEl.style.display = 'block';
         statusEl.className = 'status-error';
-        statusEl.innerHTML = 'Please enter your message details.';
+        statusEl.innerHTML = 'Please type a message.';
         return;
       }
 
       document.getElementById('btnSubmitSupport').disabled = true;
       statusEl.style.display = 'block';
       statusEl.className = 'status-loading';
-      statusEl.innerHTML = 'Sending message to support...';
+      statusEl.innerHTML = 'Sending message...';
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
         : 'https://pugin-five.vercel.app';
 
       try {
-        const response = await fetch(targetUrl + '/api/support', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        let payload = {};
+        if (activeTicketId) {
+          payload = {
+            action: 'send_message',
+            ticketId: activeTicketId,
+            text: msg,
+            sender: 'user',
+            email: userEmail
+          };
+        } else {
+          payload = {
             email: userEmail || 'anonymous@plugin.user',
             message: msg,
             category: cat
-          })
+          };
+        }
+
+        const response = await fetch(targetUrl + '/api/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         });
 
         const data = await parseResponseJson(response);
 
         if (response.ok && data.ok) {
-          statusEl.className = 'status-success';
-          statusEl.innerHTML = '✓ Message sent to support! We will review it shortly.';
+          statusEl.style.display = 'none';
           document.getElementById('supportMessage').value = '';
-          loadUserSupportHistory();
-          setTimeout(() => {
-            document.getElementById('btnSubmitSupport').disabled = false;
-          }, 1500);
+          loadUserSupportChat();
+          document.getElementById('btnSubmitSupport').disabled = false;
         } else {
           statusEl.className = 'status-error';
-          statusEl.innerHTML = '❌ ' + (data.error || 'Failed to send support request.');
+          statusEl.innerHTML = '❌ ' + (data.error || 'Failed to send message.');
           document.getElementById('btnSubmitSupport').disabled = false;
         }
       } catch (err) {
         statusEl.className = 'status-error';
-        statusEl.innerHTML = '❌ Connection error submitting support request.';
+        statusEl.innerHTML = '❌ Connection error sending message.';
         document.getElementById('btnSubmitSupport').disabled = false;
       }
     }
+
+    // Start background polling for support replies every 12s
+    setInterval(checkSupportNotifications, 12000);
 
     /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
     let userEmail = localStorage.getItem('aisoft_user_email') || null;
@@ -679,6 +769,7 @@
       } else {
         document.getElementById('authModal').style.display = 'none';
         updateHeaderUserBadge();
+        checkSupportNotifications();
       }
     }
 
@@ -785,6 +876,7 @@
           setTimeout(() => {
             document.getElementById('authModal').style.display = 'none';
             updateHeaderUserBadge();
+            checkSupportNotifications();
           }, 800);
         } else {
           showAuthStatus('❌ ' + (data.error || 'Invalid 4-digit code.'), 'error');
