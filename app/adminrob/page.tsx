@@ -171,9 +171,16 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
+      const text = await res.text();
+      let j: { error?: string } = {};
+      try {
+        if (text && text.trim()) j = JSON.parse(text);
+      } catch {}
+
       if (!res.ok) {
-        const j = (await res.json()) as { error?: string };
-        throw new Error(j.error ?? `HTTP ${res.status}`);
+        throw new Error(
+          j.error ?? `Invalid username or password (HTTP ${res.status})`
+        );
       }
       onSuccess();
     } catch (err) {
@@ -275,9 +282,12 @@ function Dashboard() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/users");
-      if (res.ok) {
-        const json = (await res.json()) as AdminData;
-        setData(json);
+      const text = await res.text();
+      if (res.ok && text && text.trim()) {
+        try {
+          const json = JSON.parse(text) as AdminData;
+          setData(json);
+        } catch {}
       }
     } finally {
       setLoading(false);
