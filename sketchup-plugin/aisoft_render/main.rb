@@ -23,8 +23,17 @@ module AIsoftRender
       }
 
       @dialog = UI::HtmlDialog.new(options)
+
+      # Remote-First Auto-Updating UI Architecture:
+      # Loads live UI directly from Vercel so any code/UI changes update instantly without re-installing .rbz!
+      remote_url = "https://pugin-five.vercel.app/plugin.html"
       html_path = File.join(__dir__, 'dialog.html')
-      @dialog.set_file(html_path)
+
+      begin
+        @dialog.set_url(remote_url)
+      rescue => e
+        @dialog.set_file(html_path)
+      end
 
       # Action callback from JS to capture SketchUp screen
       @dialog.add_action_callback("capture_viewport") do |action_context|
