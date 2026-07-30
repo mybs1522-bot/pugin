@@ -374,10 +374,7 @@ export async function POST(request: Request) {
 
     const url = await resolveOutputUrl(output);
 
-    if (!paid) {
-      await incrementImageCount(normEmail);
-    }
-
+    await incrementImageCount(normEmail);
     return NextResponse.json({ output: [url] }, { status: 200 });
   } catch (err) {
     console.error("Replicate API error:", err);

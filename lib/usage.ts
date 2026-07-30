@@ -14,7 +14,7 @@ export interface UserRecord {
   lastActiveAt: string;
 }
 
-// In-memory fallback store
+// In-memory fallback store to ensure zero data loss
 const memoryPaidUsers = new Map<string, { isPaid: boolean; mode: string }>();
 const memoryActiveSessions = new Map<string, string>(); // email -> activeSessionId
 const memoryUserLogins = new Map<string, string>(); // email -> lastLoginAt
@@ -29,20 +29,42 @@ const memoryUserCounts = new Map<
   }
 >();
 
+/** Ensure in-memory record exists */
+function ensureMemRecord(email: string) {
+  const norm = email.toLowerCase().trim();
+  if (!memoryUserCounts.has(norm)) {
+    const now = new Date().toISOString();
+    memoryUserCounts.set(norm, {
+      count: 0,
+      imageCount: 0,
+      videoCount: 0,
+      signedUpAt: now,
+      lastActiveAt: now,
+    });
+  }
+  return memoryUserCounts.get(norm)!;
+}
+
 export async function setDeviceSession(email: string): Promise<string> {
   const norm = email.toLowerCase().trim();
   const sessionId =
     "sess_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
   const now = new Date().toISOString();
+
   memoryActiveSessions.set(norm, sessionId);
   memoryUserLogins.set(norm, now);
 
+  const mem = ensureMemRecord(norm);
+  mem.lastActiveAt = now;
+
   try {
+    // Upsert session & user record into Supabase
     await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       active_session_id: sessionId,
       last_login_at: now,
       last_active_at: now,
+      count: mem.count,
     });
   } catch (err) {
     console.warn("Supabase active session update skipped:", err);
@@ -129,13 +151,11 @@ export async function setUserPaidStatus(
 
 export async function resetUserUsage(email: string): Promise<boolean> {
   const norm = email.toLowerCase().trim();
-  const existing = memoryUserCounts.get(norm);
-  if (existing) {
-    existing.count = 0;
-    existing.imageCount = 0;
-    existing.videoCount = 0;
-    existing.lastActiveAt = new Date().toISOString();
-  }
+  const mem = ensureMemRecord(norm);
+  mem.count = 0;
+  mem.imageCount = 0;
+  mem.videoCount = 0;
+  mem.lastActiveAt = new Date().toISOString();
 
   try {
     await getSupabaseAdmin().from("user_usage").upsert({
@@ -154,6 +174,8 @@ export async function resetUserUsage(email: string): Promise<boolean> {
 
 export async function getGenerationCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
+  const mem = ensureMemRecord(norm);
+
   try {
     const { data, error } = await getSupabaseAdmin()
       .from("user_usage")
@@ -162,16 +184,7 @@ export async function getGenerationCount(email: string): Promise<number> {
       .single();
 
     if (error || !data) {
-      if (!memoryUserCounts.has(norm)) {
-        memoryUserCounts.set(norm, {
-          count: 0,
-          imageCount: 0,
-          videoCount: 0,
-          signedUpAt: new Date().toISOString(),
-          lastActiveAt: new Date().toISOString(),
-        });
-      }
-      return memoryUserCounts.get(norm)!.count;
+      return mem.count;
     }
 
     const row = data as {
@@ -179,131 +192,122 @@ export async function getGenerationCount(email: string): Promise<number> {
       image_count?: number;
       video_count?: number;
     };
-    return row.count ?? (row.image_count || 0) + (row.video_count || 0);
+    const dbCount =
+      row.count ?? (row.image_count || 0) + (row.video_count || 0);
+
+    // Keep highest count between DB and memory
+    const finalCount = Math.max(dbCount, mem.count);
+    mem.count = finalCount;
+    return finalCount;
   } catch {
-    if (!memoryUserCounts.has(norm)) {
-      memoryUserCounts.set(norm, {
-        count: 0,
-        imageCount: 0,
-        videoCount: 0,
-        signedUpAt: new Date().toISOString(),
-        lastActiveAt: new Date().toISOString(),
-      });
-    }
-    return memoryUserCounts.get(norm)!.count;
+    return mem.count;
   }
 }
 
 export async function incrementImageCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
+  const now = new Date().toISOString();
+
+  // 1. Immediately update in-memory record first
+  const mem = ensureMemRecord(norm);
+  mem.imageCount += 1;
+  mem.count += 1;
+  mem.lastActiveAt = now;
+
+  const nextImg = mem.imageCount;
+  const nextTotal = mem.count;
+
+  // 2. Persist to Supabase
   try {
-    const { data } = await getSupabaseAdmin()
-      .from("user_usage")
-      .select("count, image_count, video_count")
-      .eq("email", norm)
-      .single();
-
-    const row = data as {
-      count?: number;
-      image_count?: number;
-      video_count?: number;
-    } | null;
-    const currentImg = row?.image_count ?? 0;
-    const currentVid = row?.video_count ?? 0;
-    const currentTotal = row?.count ?? currentImg + currentVid;
-
-    const nextImg = currentImg + 1;
-    const nextTotal = currentTotal + 1;
-    const now = new Date().toISOString();
-
-    const mem = memoryUserCounts.get(norm);
-    if (mem) {
-      mem.imageCount = nextImg;
-      mem.count = nextTotal;
-      mem.lastActiveAt = now;
-    }
-
-    await getSupabaseAdmin().from("user_usage").upsert({
+    // Try full update with image_count
+    const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       image_count: nextImg,
       count: nextTotal,
       last_active_at: now,
     });
 
-    return nextTotal;
-  } catch (err) {
-    console.warn("Supabase image increment skipped:", err);
-    const mem = memoryUserCounts.get(norm);
-    if (mem) {
-      mem.imageCount += 1;
-      mem.count += 1;
-      mem.lastActiveAt = new Date().toISOString();
-      return mem.count;
+    if (error) {
+      // Fallback: update count column alone if image_count column doesn't exist
+      await getSupabaseAdmin().from("user_usage").upsert({
+        email: norm,
+        count: nextTotal,
+        last_active_at: now,
+      });
     }
-    return 1;
+  } catch (err) {
+    console.warn("Supabase image increment warning:", err);
   }
+
+  return nextTotal;
 }
 
 export async function incrementVideoCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
+  const now = new Date().toISOString();
+
+  // 1. Immediately update in-memory record first
+  const mem = ensureMemRecord(norm);
+  mem.videoCount += 1;
+  mem.count += 1;
+  mem.lastActiveAt = now;
+
+  const nextVid = mem.videoCount;
+  const nextTotal = mem.count;
+
+  // 2. Persist to Supabase
   try {
-    const { data } = await getSupabaseAdmin()
-      .from("user_usage")
-      .select("count, image_count, video_count")
-      .eq("email", norm)
-      .single();
-
-    const row = data as {
-      count?: number;
-      image_count?: number;
-      video_count?: number;
-    } | null;
-    const currentImg = row?.image_count ?? 0;
-    const currentVid = row?.video_count ?? 0;
-    const currentTotal = row?.count ?? currentImg + currentVid;
-
-    const nextVid = currentVid + 1;
-    const nextTotal = currentTotal + 1;
-    const now = new Date().toISOString();
-
-    const mem = memoryUserCounts.get(norm);
-    if (mem) {
-      mem.videoCount = nextVid;
-      mem.count = nextTotal;
-      mem.lastActiveAt = now;
-    }
-
-    await getSupabaseAdmin().from("user_usage").upsert({
+    const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       video_count: nextVid,
       count: nextTotal,
       last_active_at: now,
     });
 
-    return nextTotal;
-  } catch (err) {
-    console.warn("Supabase video increment skipped:", err);
-    const mem = memoryUserCounts.get(norm);
-    if (mem) {
-      mem.videoCount += 1;
-      mem.count += 1;
-      mem.lastActiveAt = new Date().toISOString();
-      return mem.count;
+    if (error) {
+      await getSupabaseAdmin().from("user_usage").upsert({
+        email: norm,
+        count: nextTotal,
+        last_active_at: now,
+      });
     }
-    return 1;
+  } catch (err) {
+    console.warn("Supabase video increment warning:", err);
   }
+
+  return nextTotal;
 }
 
 export async function getAllUsers(): Promise<
   Array<{ email: string } & UserRecord>
 > {
+  const map = new Map<string, { email: string } & UserRecord>();
+
+  // 1. Load memory users first
+  memoryUserCounts.forEach((val, emailKey) => {
+    const memPaid = memoryPaidUsers.get(emailKey);
+    map.set(emailKey, {
+      email: emailKey,
+      count: val.count,
+      imageCount: val.imageCount || val.count,
+      videoCount: val.videoCount || 0,
+      isPaid: !!(memPaid && memPaid.isPaid),
+      paymentMode: memPaid ? memPaid.mode : "Free Trial",
+      activeSessionId: memoryActiveSessions.get(emailKey),
+      signedUpAt: val.signedUpAt,
+      lastLoginAt: memoryUserLogins.get(emailKey) || val.lastActiveAt,
+      lastActiveAt: val.lastActiveAt,
+    });
+  });
+
+  // 2. Fetch Supabase records and merge
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
       .select("*")
       .order("signed_up_at", { ascending: false });
 
-    const dbUsers = (data ?? []).map(
+    (data ?? []).forEach(
       (row: {
         email: string;
         count: number;
@@ -316,71 +320,55 @@ export async function getAllUsers(): Promise<
         last_login_at?: string;
         last_active_at: string;
       }) => {
-        const memPaid = memoryPaidUsers.get(row.email.toLowerCase());
+        const emailKey = row.email.toLowerCase();
+        const existingMem = map.get(emailKey);
+
+        const memPaid = memoryPaidUsers.get(emailKey);
         const isPaid = row.is_paid || (memPaid && memPaid.isPaid);
         const paymentMode =
           row.payment_mode ||
           (memPaid ? memPaid.mode : isPaid ? "Manual Admin" : "Free Trial");
 
-        return {
+        const dbCount =
+          row.count ?? (row.image_count || 0) + (row.video_count || 0);
+        const dbImg = row.image_count ?? row.count ?? 0;
+        const dbVid = row.video_count ?? 0;
+
+        // Choose maximum counts to prevent undercounting
+        const finalCount = Math.max(dbCount, existingMem?.count ?? 0);
+        const finalImg = Math.max(dbImg, existingMem?.imageCount ?? 0);
+        const finalVid = Math.max(dbVid, existingMem?.videoCount ?? 0);
+
+        map.set(emailKey, {
           email: row.email,
-          count: row.count ?? (row.image_count || 0) + (row.video_count || 0),
-          imageCount: row.image_count ?? row.count ?? 0,
-          videoCount: row.video_count ?? 0,
+          count: finalCount,
+          imageCount: finalImg,
+          videoCount: finalVid,
           isPaid: !!isPaid,
           paymentMode: paymentMode,
           activeSessionId:
             row.active_session_id ||
-            memoryActiveSessions.get(row.email.toLowerCase()),
-          signedUpAt: row.signed_up_at,
+            memoryActiveSessions.get(emailKey) ||
+            existingMem?.activeSessionId,
+          signedUpAt:
+            row.signed_up_at ||
+            existingMem?.signedUpAt ||
+            new Date().toISOString(),
           lastLoginAt:
             row.last_login_at ||
-            memoryUserLogins.get(row.email.toLowerCase()) ||
+            memoryUserLogins.get(emailKey) ||
+            existingMem?.lastLoginAt ||
             row.last_active_at,
-          lastActiveAt: row.last_active_at,
-        };
-      }
-    );
-
-    const map = new Map<string, { email: string } & UserRecord>();
-    dbUsers.forEach((u) => map.set(u.email.toLowerCase(), u));
-
-    memoryUserCounts.forEach((val, emailKey) => {
-      if (!map.has(emailKey)) {
-        const memPaid = memoryPaidUsers.get(emailKey);
-        map.set(emailKey, {
-          email: emailKey,
-          count: val.count,
-          imageCount: val.imageCount || val.count,
-          videoCount: val.videoCount || 0,
-          isPaid: !!(memPaid && memPaid.isPaid),
-          paymentMode: memPaid ? memPaid.mode : "Free Trial",
-          activeSessionId: memoryActiveSessions.get(emailKey),
-          signedUpAt: val.signedUpAt,
-          lastLoginAt: memoryUserLogins.get(emailKey) || val.lastActiveAt,
-          lastActiveAt: val.lastActiveAt,
+          lastActiveAt:
+            row.last_active_at ||
+            existingMem?.lastActiveAt ||
+            new Date().toISOString(),
         });
       }
-    });
-
-    return Array.from(map.values());
-  } catch {
-    const list: Array<{ email: string } & UserRecord> = [];
-    memoryUserCounts.forEach((val, emailKey) => {
-      const memPaid = memoryPaidUsers.get(emailKey);
-      list.push({
-        email: emailKey,
-        count: val.count,
-        imageCount: val.imageCount || val.count,
-        videoCount: val.videoCount || 0,
-        isPaid: !!(memPaid && memPaid.isPaid),
-        paymentMode: memPaid ? memPaid.mode : "Free Trial",
-        activeSessionId: memoryActiveSessions.get(emailKey),
-        signedUpAt: val.signedUpAt,
-        lastLoginAt: memoryUserLogins.get(emailKey) || val.lastActiveAt,
-        lastActiveAt: val.lastActiveAt,
-      });
-    });
-    return list;
+    );
+  } catch (err) {
+    console.warn("Supabase fetch warning in getAllUsers:", err);
   }
+
+  return Array.from(map.values());
 }
