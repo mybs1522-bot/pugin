@@ -23,6 +23,8 @@ import {
   MessageSquare,
   Sparkles,
   HelpCircle,
+  Send,
+  CornerDownRight,
 } from "lucide-react";
 
 interface UserRecord {
@@ -44,6 +46,8 @@ interface SupportTicket {
   message: string;
   category?: string;
   status: "open" | "resolved";
+  replyMessage?: string;
+  replyAt?: string;
   createdAt: string;
 }
 
@@ -314,6 +318,9 @@ function Dashboard() {
     "all" | "images" | "videos" | "support"
   >("all");
 
+  const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
+  const [replyTextMap, setReplyTextMap] = useState<Record<string, string>>({});
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -383,6 +390,28 @@ function Dashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status: nextStatus }),
       });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleSendReply(ticketId: string) {
+    const text = replyTextMap[ticketId];
+    if (!text || !text.trim()) return;
+    setActionLoading("reply_" + ticketId);
+    try {
+      await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "reply",
+          id: ticketId,
+          replyMessage: text.trim(),
+        }),
+      });
+      setReplyingTicketId(null);
+      setReplyTextMap((prev) => ({ ...prev, [ticketId]: "" }));
       await fetchData();
     } finally {
       setActionLoading(null);
@@ -891,7 +920,58 @@ function Dashboard() {
                           </span>
                         </td>
                         <td className="max-w-md px-5 py-4 font-normal break-words text-zinc-200">
-                          {t.message}
+                          <div>{t.message}</div>
+                          {t.replyMessage && (
+                            <div className="mt-2.5 rounded-xl border border-indigo-500/30 bg-indigo-950/40 p-3 text-xs text-indigo-200">
+                              <div className="mb-1 flex items-center gap-1.5 font-semibold text-indigo-400">
+                                <CornerDownRight className="h-3.5 w-3.5" />✦
+                                Admin Response ({fmt(t.replyAt || "")}):
+                              </div>
+                              <p className="whitespace-pre-wrap text-white">
+                                {t.replyMessage}
+                              </p>
+                            </div>
+                          )}
+
+                          {replyingTicketId === t.id && (
+                            <div className="mt-3 rounded-xl border border-white/10 bg-zinc-900 p-3">
+                              <label className="mb-1 block text-xs font-semibold text-zinc-400">
+                                Write Support Reply to {t.email}:
+                              </label>
+                              <textarea
+                                rows={3}
+                                value={replyTextMap[t.id] || ""}
+                                onChange={(e) =>
+                                  setReplyTextMap({
+                                    ...replyTextMap,
+                                    [t.id]: e.target.value,
+                                  })
+                                }
+                                placeholder="Type your official answer or resolution here (will email user via Resend)…"
+                                className="w-full rounded-lg border border-white/10 bg-black p-2.5 text-xs text-white outline-none focus:border-indigo-500"
+                              />
+                              <div className="mt-2 flex justify-end gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setReplyingTicketId(null)}
+                                  className="rounded-lg bg-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:text-white"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={actionLoading === "reply_" + t.id}
+                                  onClick={() => handleSendReply(t.id)}
+                                  className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+                                >
+                                  <Send className="h-3 w-3" />
+                                  {actionLoading === "reply_" + t.id
+                                    ? "Sending Email…"
+                                    : "Send Reply & Resolve"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </td>
                         <td className="px-5 py-4 text-zinc-400">
                           {fmt(t.createdAt)}
@@ -908,21 +988,31 @@ function Dashboard() {
                           )}
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <button
-                            onClick={() =>
-                              handleToggleTicketStatus(t.id, t.status)
-                            }
-                            disabled={actionLoading === "ticket_" + t.id}
-                            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
-                              t.status === "open"
-                                ? "bg-emerald-600 text-white hover:bg-emerald-500"
-                                : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
-                            }`}
-                          >
-                            {t.status === "open"
-                              ? "✓ Mark Resolved"
-                              : "Reopen Ticket"}
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() =>
+                                setReplyingTicketId(
+                                  replyingTicketId === t.id ? null : t.id
+                                )
+                              }
+                              className="inline-flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-500/20 px-2.5 py-1 text-xs font-semibold text-indigo-300 transition hover:bg-indigo-500/30"
+                            >
+                              ✉️ Reply
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleToggleTicketStatus(t.id, t.status)
+                              }
+                              disabled={actionLoading === "ticket_" + t.id}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                                t.status === "open"
+                                  ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                              }`}
+                            >
+                              {t.status === "open" ? "✓ Resolve" : "Reopen"}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))

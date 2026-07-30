@@ -6,6 +6,8 @@ export interface SupportTicket {
   message: string;
   category?: string;
   status: "open" | "resolved";
+  replyMessage?: string;
+  replyAt?: string;
   createdAt: string;
 }
 
@@ -49,6 +51,35 @@ export async function createSupportTicket(
   return ticket;
 }
 
+export async function replyToSupportTicket(
+  id: string,
+  replyText: string
+): Promise<SupportTicket | null> {
+  const now = new Date().toISOString();
+  let found = memoryTickets.find((t) => t.id === id);
+
+  if (found) {
+    found.replyMessage = replyText.trim();
+    found.replyAt = now;
+    found.status = "resolved";
+  }
+
+  try {
+    await getSupabaseAdmin()
+      .from("support_tickets")
+      .update({
+        reply_message: replyText.trim(),
+        reply_at: now,
+        status: "resolved",
+      })
+      .eq("id", id);
+  } catch (err) {
+    console.warn("Supabase support reply error:", err);
+  }
+
+  return found || null;
+}
+
 export async function getSupportTickets(): Promise<SupportTicket[]> {
   try {
     const { data } = await getSupabaseAdmin()
@@ -64,18 +95,24 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
           message: string;
           category?: string;
           status?: string;
+          reply_message?: string;
+          reply_at?: string;
           created_at: string;
-        }) => ({
-          id: row.id,
-          email: row.email,
-          message: row.message,
-          category: row.category || "General Inquiry",
-          status: (row.status as "open" | "resolved") || "open",
-          createdAt: row.created_at,
-        })
+        }) => {
+          const mem = memoryTickets.find((m) => m.id === row.id);
+          return {
+            id: row.id,
+            email: row.email,
+            message: row.message,
+            category: row.category || "General Inquiry",
+            status: (row.status as "open" | "resolved") || "open",
+            replyMessage: row.reply_message || mem?.replyMessage,
+            replyAt: row.reply_at || mem?.replyAt,
+            createdAt: row.created_at,
+          };
+        }
       );
 
-      // Merge memory tickets
       const ticketMap = new Map<string, SupportTicket>();
       dbTickets.forEach((t) => ticketMap.set(t.id, t));
       memoryTickets.forEach((t) => {
@@ -92,6 +129,14 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
   }
 
   return [...memoryTickets];
+}
+
+export async function getUserSupportTickets(
+  email: string
+): Promise<SupportTicket[]> {
+  const normEmail = email.toLowerCase().trim();
+  const all = await getSupportTickets();
+  return all.filter((t) => t.email.toLowerCase().trim() === normEmail);
 }
 
 export async function updateTicketStatus(
