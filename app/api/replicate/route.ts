@@ -327,6 +327,8 @@ export async function POST(request: Request) {
     let output: unknown;
     let lastError: string = "";
 
+    let usedModel = primaryModel;
+
     for (const { id: model, e003Retries } of MODELS) {
       let modelSucceeded = false;
       let e003Attempt = 0;
@@ -346,6 +348,7 @@ export async function POST(request: Request) {
             input: modelInput,
           });
           modelSucceeded = true;
+          usedModel = model;
           console.log(`✓ Used model: ${model}`);
           break;
         } catch (err) {
@@ -392,7 +395,7 @@ export async function POST(request: Request) {
 
     const url = await resolveOutputUrl(output);
 
-    await incrementImageCount(normEmail, model);
+    await incrementImageCount(normEmail, usedModel);
     return NextResponse.json({ output: [url] }, { status: 200 });
   } catch (err) {
     console.error("Replicate API error:", err);
