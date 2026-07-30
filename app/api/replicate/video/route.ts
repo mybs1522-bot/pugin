@@ -3,6 +3,7 @@ import Replicate from "replicate";
 import {
   isUserPaid,
   getGenerationCount,
+  incrementVideoCount,
   verifyDeviceSession,
   TRIAL_GENERATION_LIMIT,
 } from "@/lib/usage";
@@ -162,6 +163,7 @@ export async function POST(request: Request) {
       );
     }
 
+    await incrementVideoCount(normEmail);
     return NextResponse.json({ videoUrl }, { status: 200 });
   } catch (err) {
     console.error("Replicate Video API Error:", err);

@@ -15,19 +15,30 @@ import {
   CheckCircle,
   PlusCircle,
   RotateCcw,
+  Video,
+  Image as ImageIcon,
+  CreditCard,
+  Clock,
+  KeyRound,
 } from "lucide-react";
 
 interface UserRecord {
   email: string;
   count: number;
+  imageCount: number;
+  videoCount: number;
   isPaid?: boolean;
+  paymentMode?: string;
   signedUpAt: string;
+  lastLoginAt: string;
   lastActiveAt: string;
 }
 
 interface Stats {
   totalUsers: number;
   totalRenders: number;
+  totalImages?: number;
+  totalVideos?: number;
   trialUsers: number;
   exhaustedUsers: number;
   paidUsers?: number;
@@ -68,90 +79,68 @@ function StatCard({
   );
 }
 
-function TrialBar({
-  count,
-  limit,
-  isPaid,
-}: {
-  count: number;
-  limit: number;
-  isPaid?: boolean;
-}) {
-  if (isPaid) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300">
-          Unlimited ({count} renders)
-        </span>
-      </div>
-    );
-  }
-  const pct = Math.min((count / limit) * 100, 100);
-  const color =
-    count >= limit
-      ? "bg-red-500"
-      : count >= limit - 1
-        ? "bg-amber-500"
-        : "bg-emerald-500";
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/10">
-        <div
-          className={`h-full rounded-full ${color}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span className="text-xs text-zinc-400">
-        {count}/{limit}
-      </span>
-    </div>
-  );
-}
-
 function StatusBadge({
+  isPaid,
   count,
   limit,
-  isPaid,
 }: {
+  isPaid?: boolean;
   count: number;
   limit: number;
-  isPaid?: boolean;
 }) {
   if (isPaid) {
     return (
-      <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
         ✓ Paid Active
       </span>
     );
   }
   if (count >= limit)
     return (
-      <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-400">
-        Exhausted
-      </span>
-    );
-  if (count > 0)
-    return (
-      <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-400">
-        Trial active
+      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-400">
+        Exhausted ({count}/{limit})
       </span>
     );
   return (
-    <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-medium text-emerald-400">
-      New
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-400">
+      Trial ({count}/{limit})
+    </span>
+  );
+}
+
+function PaymentModeBadge({
+  mode,
+  isPaid,
+}: {
+  mode?: string;
+  isPaid?: boolean;
+}) {
+  if (isPaid) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-indigo-500/20 bg-indigo-500/15 px-2 py-0.5 text-xs font-medium text-indigo-300">
+        ⚡ {mode || "Manual Admin"}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
+      🎁 Free Trial
     </span>
   );
 }
 
 function fmt(iso: string) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
 }
 
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
@@ -199,28 +188,27 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Sign in to manage plugin payments
+            Sign in to manage payments & usage
           </p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm"
+          className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm"
         >
           {error && (
-            <div className="mb-5 rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-400">
+            <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-400">
               {error}
             </div>
           )}
 
           <div className="space-y-4">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+              <label className="mb-1 block text-xs font-medium text-zinc-300">
                 Username
               </label>
               <input
                 type="text"
-                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -230,13 +218,12 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-zinc-400">
+              <label className="mb-1 block text-xs font-medium text-zinc-300">
                 Password
               </label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
-                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -277,6 +264,9 @@ function Dashboard() {
   const [search, setSearch] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"all" | "images" | "videos">(
+    "all"
+  );
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -296,21 +286,17 @@ function Dashboard() {
 
   useEffect(() => {
     void fetchData();
-    const id = setInterval(fetchData, 20_000);
+    const id = setInterval(fetchData, 15_000);
     return () => clearInterval(id);
   }, [fetchData]);
 
-  async function togglePaid(email: string, currentPaid: boolean) {
+  async function handleTogglePaid(email: string, currentPaid: boolean) {
     setActionLoading(email);
     try {
       await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          action: "toggle_paid",
-          paid: !currentPaid,
-        }),
+        body: JSON.stringify({ email, paid: !currentPaid, action: "set_paid" }),
       });
       await fetchData();
     } finally {
@@ -318,13 +304,13 @@ function Dashboard() {
     }
   }
 
-  async function resetCount(email: string) {
-    setActionLoading(email + "_reset");
+  async function handleResetUsage(email: string) {
+    setActionLoading(email);
     try {
       await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, action: "reset_count" }),
+        body: JSON.stringify({ email, action: "reset" }),
       });
       await fetchData();
     } finally {
@@ -332,18 +318,19 @@ function Dashboard() {
     }
   }
 
-  async function handleAddUser(e: React.FormEvent) {
+  async function handleAddPaidEmail(e: React.FormEvent) {
     e.preventDefault();
     if (!newEmail || !newEmail.includes("@")) return;
-    setActionLoading("add");
+    setActionLoading("new");
     try {
       await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: newEmail,
-          action: "toggle_paid",
           paid: true,
+          action: "set_paid",
+          mode: "Manual Admin",
         }),
       });
       setNewEmail("");
@@ -353,242 +340,464 @@ function Dashboard() {
     }
   }
 
-  async function logout() {
+  async function handleLogout() {
     await fetch("/api/adminrob/auth", { method: "DELETE" });
     window.location.reload();
   }
 
-  const filtered =
-    data?.users.filter((u) =>
-      u.email.toLowerCase().includes(search.toLowerCase())
-    ) ?? [];
+  const users = data?.users ?? [];
+  const limit = data?.stats?.trialLimit ?? 3;
 
-  const stats = data?.stats;
+  const filtered = users.filter((u) =>
+    u.email.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalImageRenders = users.reduce(
+    (acc, u) => acc + (u.imageCount || u.count || 0),
+    0
+  );
+  const totalVideoRenders = users.reduce(
+    (acc, u) => acc + (u.videoCount || 0),
+    0
+  );
 
   return (
-    <div className="min-h-screen bg-zinc-950 px-4 py-10 text-white">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Admin Payment Portal
-            </h1>
-            <p className="mt-0.5 text-sm text-zinc-400">
-              Manage plugin user emails, grant paid access &amp; view render
-              counts
-            </p>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* HEADER */}
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-zinc-950/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-indigo-500/20 p-2 text-indigo-400">
+              <Lock className="h-5 w-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-white">
+                Admin Management Studio
+              </h1>
+              <p className="text-xs text-zinc-400">
+                Payment Verification, Device Sessions & Multi-Table Usage
+                Analytics
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
             <button
-              onClick={fetchData}
-              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/10"
+              onClick={() => void fetchData()}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 transition hover:bg-white/10 disabled:opacity-50"
             >
               <RefreshCw
-                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
               />
               Refresh
             </button>
             <button
-              onClick={logout}
-              className="flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-400 transition hover:bg-red-500/20"
+              onClick={handleLogout}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-400 transition hover:bg-red-500/20"
             >
-              <LogOut className="h-4 w-4" />
-              Logout
+              <LogOut className="h-3.5 w-3.5" />
+              Sign Out
             </button>
           </div>
         </div>
+      </header>
 
-        {/* Add/Activate Email Box */}
-        <form
-          onSubmit={handleAddUser}
-          className="mb-8 flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-5 sm:flex-row sm:items-center"
-        >
-          <div className="flex-1">
-            <h3 className="font-semibold text-emerald-300">
-              ⚡ Direct Activate Paid Access
-            </h3>
-            <p className="text-xs text-zinc-400">
-              Enter any user email to immediately grant full paid rendering
-              &amp; video walkthrough access in SketchUp:
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="email"
-              placeholder="user@example.com"
-              value={newEmail}
-              onChange={(e) => setNewEmail(e.target.value)}
-              className="rounded-xl border border-white/15 bg-zinc-900 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
-              required
-            />
-            <button
-              type="submit"
-              disabled={actionLoading === "add"}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Activate Paid
-            </button>
-          </div>
-        </form>
-
-        {/* Stat cards */}
-        <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <main className="mx-auto max-w-7xl px-6 py-8">
+        {/* STAT CARDS */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             icon={Users}
-            label="Total users"
-            value={stats?.totalUsers ?? "—"}
-            color="bg-indigo-500/30"
+            label="Total Signups"
+            value={data?.stats?.totalUsers ?? users.length}
+            sub="Unique verified PC accounts"
+            color="bg-indigo-500/20 text-indigo-400"
           />
           <StatCard
-            icon={CheckCircle}
-            label="Paid active"
-            value={stats?.paidUsers ?? 0}
-            sub="Unlimited access"
-            color="bg-emerald-500/30"
+            icon={ImageIcon}
+            label="Image Renders"
+            value={totalImageRenders}
+            sub="Total Flux & Nano images"
+            color="bg-purple-500/20 text-purple-400"
           />
           <StatCard
-            icon={BarChart3}
-            label="Total renders"
-            value={stats?.totalRenders ?? "—"}
-            color="bg-violet-500/30"
+            icon={Video}
+            label="Video Walkthroughs"
+            value={totalVideoRenders}
+            sub="3D Animated camera pans"
+            color="bg-blue-500/20 text-blue-400"
           />
           <StatCard
             icon={UserCheck}
-            label="Trial exhausted"
-            value={stats?.exhaustedUsers ?? "—"}
-            sub="need subscription"
-            color="bg-red-500/30"
+            label="Paid Active Members"
+            value={users.filter((u) => u.isPaid).length}
+            sub="Unlimited access granted"
+            color="bg-emerald-500/20 text-emerald-400"
           />
         </div>
 
-        {/* User table */}
-        <div className="rounded-2xl border border-white/10 bg-white/5">
-          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-            <h2 className="font-semibold text-zinc-200">
-              Users &amp; Payment Status ({filtered.length})
-            </h2>
+        {/* DIRECT EMAIL ACTIVATION BAR */}
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+          <h2 className="mb-2 text-base font-semibold text-white">
+            ⚡ Direct Email Paid Access Activation
+          </h2>
+          <p className="mb-4 text-xs text-zinc-400">
+            Enter any email address below to grant instant unlimited paid access
+            before or after sign-up.
+          </p>
+          <form onSubmit={handleAddPaidEmail} className="flex max-w-xl gap-3">
             <input
-              type="text"
-              placeholder="Search by email…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="user.email@example.com"
+              required
+              className="flex-1 rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
+            <button
+              type="submit"
+              disabled={actionLoading === "new"}
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+            >
+              <PlusCircle className="h-4 w-4" />
+              {actionLoading === "new" ? "Activating…" : "Activate Paid"}
+            </button>
+          </form>
+        </div>
+
+        {/* TABLE FILTER TABS & SEARCH */}
+        <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 p-1.5">
+            <button
+              onClick={() => setActiveTab("all")}
+              className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "all"
+                  ? "bg-white text-black shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              👥 All Signups ({filtered.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("images")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "images"
+                  ? "bg-purple-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <ImageIcon className="h-3.5 w-3.5" />
+              🖼️ Image Renders Table
+            </button>
+            <button
+              onClick={() => setActiveTab("videos")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "videos"
+                  ? "bg-blue-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Video className="h-3.5 w-3.5" />
+              🎬 3D Videos Table
+            </button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10 text-left text-xs tracking-wider text-zinc-500 uppercase">
-                  <th className="px-5 py-3">Email</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Usage</th>
-                  <th className="px-5 py-3">Signed up</th>
-                  <th className="px-5 py-3 text-right">Payment Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {!data && (
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search email address…"
+            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-indigo-500 sm:w-64"
+          />
+        </div>
+
+        {/* TAB 1: ALL SIGNUPS OVERVIEW TABLE */}
+        {activeTab === "all" && (
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/50 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <Users className="h-4 w-4 text-indigo-400" />
+                Comprehensive Member Signup Registry
+              </h3>
+              <span className="text-xs text-zinc-400">
+                {filtered.length} total registered accounts
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-5 py-10 text-center text-zinc-500"
-                    >
-                      Loading…
-                    </td>
+                    <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">Payment Status</th>
+                    <th className="px-5 py-3.5">Payment Mode</th>
+                    <th className="px-5 py-3.5">Image Renders</th>
+                    <th className="px-5 py-3.5">Video Walks</th>
+                    <th className="px-5 py-3.5">Last Login</th>
+                    <th className="px-5 py-3.5 text-right">Admin Actions</th>
                   </tr>
-                )}
-                {data && filtered.length === 0 && (
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-5 py-8 text-center text-zinc-500"
+                      >
+                        No user signups found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((u) => (
+                      <tr key={u.email} className="transition hover:bg-white/5">
+                        <td className="px-5 py-4 font-medium text-white">
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                            {u.email}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4">
+                          <StatusBadge
+                            isPaid={u.isPaid}
+                            count={u.count}
+                            limit={limit}
+                          />
+                        </td>
+                        <td className="px-5 py-4">
+                          <PaymentModeBadge
+                            mode={u.paymentMode}
+                            isPaid={u.isPaid}
+                          />
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-purple-300">
+                          {u.imageCount || u.count || 0} renders
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-blue-300">
+                          {u.videoCount || 0} videos
+                        </td>
+                        <td className="px-5 py-4 text-zinc-400">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-3 w-3 text-zinc-500" />
+                            {fmt(u.lastLoginAt)}
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() =>
+                                handleTogglePaid(u.email, !!u.isPaid)
+                              }
+                              disabled={actionLoading === u.email}
+                              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                                u.isPaid
+                                  ? "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                                  : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                              }`}
+                            >
+                              {u.isPaid ? "Revoke Paid" : "⚡ Activate Paid"}
+                            </button>
+                            <button
+                              onClick={() => handleResetUsage(u.email)}
+                              disabled={actionLoading === u.email}
+                              className="rounded-lg bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-400 transition hover:bg-zinc-700 hover:text-white"
+                              title="Reset trial render count to 0"
+                            >
+                              🔄 Reset
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: IMAGE RENDERS TABLE */}
+        {activeTab === "images" && (
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="flex items-center justify-between border-b border-white/10 bg-purple-950/40 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <ImageIcon className="h-4 w-4 text-purple-400" />
+                🖼️ Image Render Usage Breakdown
+              </h3>
+              <span className="text-xs font-semibold text-purple-300">
+                {totalImageRenders} Total Image Renders
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-5 py-10 text-center text-zinc-500"
-                    >
-                      No users found
-                    </td>
+                    <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">Image Renders Used</th>
+                    <th className="px-5 py-3.5">Payment Status</th>
+                    <th className="px-5 py-3.5">Payment Mode</th>
+                    <th className="px-5 py-3.5">Last Login</th>
+                    <th className="px-5 py-3.5">Last Image Render</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
                   </tr>
-                )}
-                {filtered.map((u) => (
-                  <tr key={u.email} className="transition hover:bg-white/5">
-                    <td className="px-5 py-3.5 font-mono text-sm text-zinc-200">
-                      {u.email}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <StatusBadge
-                        count={u.count}
-                        limit={stats?.trialLimit ?? 3}
-                        isPaid={u.isPaid}
-                      />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <TrialBar
-                        count={u.count}
-                        limit={stats?.trialLimit ?? 3}
-                        isPaid={u.isPaid}
-                      />
-                    </td>
-                    <td className="px-5 py-3.5 text-zinc-400">
-                      {fmt(u.signedUpAt)}
-                    </td>
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {filtered.map((u) => (
+                    <tr key={u.email} className="transition hover:bg-white/5">
+                      <td className="px-5 py-4 font-medium text-white">
+                        {u.email}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="rounded-md border border-purple-500/30 bg-purple-500/20 px-2.5 py-1 text-xs font-bold text-purple-300">
+                          {u.imageCount || u.count || 0} Images
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusBadge
+                          isPaid={u.isPaid}
+                          count={u.count}
+                          limit={limit}
+                        />
+                      </td>
+                      <td className="px-5 py-4">
+                        <PaymentModeBadge
+                          mode={u.paymentMode}
+                          isPaid={u.isPaid}
+                        />
+                      </td>
+                      <td className="px-5 py-4 text-zinc-400">
+                        {fmt(u.lastLoginAt)}
+                      </td>
+                      <td className="px-5 py-4 text-zinc-400">
+                        {fmt(u.lastActiveAt)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
                         <button
-                          onClick={() => togglePaid(u.email, !!u.isPaid)}
-                          disabled={actionLoading === u.email}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                          onClick={() => handleTogglePaid(u.email, !!u.isPaid)}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
                             u.isPaid
-                              ? "border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
-                              : "bg-emerald-600 text-white hover:bg-emerald-500"
+                              ? "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                              : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
                           }`}
                         >
-                          {actionLoading === u.email
-                            ? "Updating…"
-                            : u.isPaid
-                              ? "Revoke Paid"
-                              : "⚡ Grant Paid Access"}
+                          {u.isPaid ? "Revoke Paid" : "⚡ Activate Paid"}
                         </button>
-                        <button
-                          onClick={() => resetCount(u.email)}
-                          disabled={actionLoading === u.email + "_reset"}
-                          className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 transition hover:bg-white/10"
-                          title="Reset render count to 0"
-                        >
-                          <RotateCcw className="h-3 w-3" />
-                          Reset
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
+
+        {/* TAB 3: VIDEO WALKTHROUGHS TABLE */}
+        {activeTab === "videos" && (
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+            <div className="flex items-center justify-between border-b border-white/10 bg-blue-950/40 p-4">
+              <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                <Video className="h-4 w-4 text-blue-400" />
+                🎬 3D Video Walkthrough Renders Breakdown
+              </h3>
+              <span className="text-xs font-semibold text-blue-300">
+                {totalVideoRenders} Total Video Clips
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
+                  <tr>
+                    <th className="px-5 py-3.5">User Email</th>
+                    <th className="px-5 py-3.5">3D Videos Generated</th>
+                    <th className="px-5 py-3.5">Payment Status</th>
+                    <th className="px-5 py-3.5">Payment Mode</th>
+                    <th className="px-5 py-3.5">Last Login</th>
+                    <th className="px-5 py-3.5">Last Video Motion</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-zinc-300">
+                  {filtered.map((u) => (
+                    <tr key={u.email} className="transition hover:bg-white/5">
+                      <td className="px-5 py-4 font-medium text-white">
+                        {u.email}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className="rounded-md border border-blue-500/30 bg-blue-500/20 px-2.5 py-1 text-xs font-bold text-blue-300">
+                          {u.videoCount || 0} Video Clips
+                        </span>
+                      </td>
+                      <td className="px-5 py-4">
+                        <StatusBadge
+                          isPaid={u.isPaid}
+                          count={u.count}
+                          limit={limit}
+                        />
+                      </td>
+                      <td className="px-5 py-4">
+                        <PaymentModeBadge
+                          mode={u.paymentMode}
+                          isPaid={u.isPaid}
+                        />
+                      </td>
+                      <td className="px-5 py-4 text-zinc-400">
+                        {fmt(u.lastLoginAt)}
+                      </td>
+                      <td className="px-5 py-4 text-zinc-400">
+                        {fmt(u.lastActiveAt)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          onClick={() => handleTogglePaid(u.email, !!u.isPaid)}
+                          className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
+                            u.isPaid
+                              ? "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                              : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                          }`}
+                        >
+                          {u.isPaid ? "Revoke Paid" : "⚡ Activate Paid"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
 
-export default function AdminRobPage() {
+export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    fetch("/api/adminrob/check")
-      .then((r) => r.json())
-      .then((d) => setAuthed((d as { valid: boolean }).valid))
-      .catch(() => setAuthed(false));
+  const checkAuth = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/users");
+      setAuthed(res.ok);
+    } catch {
+      setAuthed(false);
+    }
   }, []);
 
-  if (authed === null)
+  useEffect(() => {
+    void checkAuth();
+  }, [checkAuth]);
+
+  if (authed === null) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-zinc-500">
-        Checking session…
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
+        <div className="text-center">
+          <div className="mb-3 inline-block h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+          <p className="text-xs text-zinc-500">Loading admin portal…</p>
+        </div>
       </div>
     );
+  }
 
-  if (!authed) return <LoginForm onSuccess={() => setAuthed(true)} />;
+  if (!authed) {
+    return <LoginForm onSuccess={() => setAuthed(true)} />;
+  }
 
   return <Dashboard />;
 }

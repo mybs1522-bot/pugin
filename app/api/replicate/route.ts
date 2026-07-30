@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 import {
-  incrementGenerationCount,
+  incrementImageCount,
   getGenerationCount,
   isUserPaid,
   verifyDeviceSession,
@@ -375,7 +375,7 @@ export async function POST(request: Request) {
     const url = await resolveOutputUrl(output);
 
     if (!paid) {
-      await incrementGenerationCount(normEmail);
+      await incrementImageCount(normEmail);
     }
 
     return NextResponse.json({ output: [url] }, { status: 200 });
