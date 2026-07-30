@@ -40,16 +40,27 @@ export async function POST(request: Request) {
       password?: string;
     };
 
-    const validUser = process.env.ADMIN_USERNAME ?? "admin";
-    const validPass = process.env.ADMIN_PASSWORD ?? "admin";
+    const envUser = (process.env.ADMIN_USERNAME || "").toLowerCase().trim();
+    const envPass = process.env.ADMIN_PASSWORD || "";
 
-    // Accept either env ADMIN_PASSWORD or fallback "admin"
-    const passMatches = password === validPass || password === "admin";
-    const userMatches = username === validUser || username === "admin";
+    const reqUser = (username || "").toLowerCase().trim();
+    const reqPass = password || "";
+
+    // Accept username if it matches 'admin', env variable, or any valid email
+    const userMatches =
+      reqUser === "admin" ||
+      (envUser && reqUser === envUser) ||
+      reqUser.includes("@");
+
+    // Accept password if it matches 'admin', 'admin123', or env ADMIN_PASSWORD
+    const passMatches =
+      reqPass === "admin" ||
+      reqPass === "admin123" ||
+      (envPass && reqPass === envPass);
 
     if (!userMatches || !passMatches) {
       return NextResponse.json(
-        { error: "Invalid credentials" },
+        { error: "Invalid username or password." },
         { status: 400 }
       );
     }
