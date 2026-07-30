@@ -305,7 +305,7 @@
     }
     .download-btn:hover { background: #e4e4e7; }
 
-    select, input[type="text"], input[type="color"] {
+    select, input[type="text"], input[type="email"], input[type="color"] {
       width: 100%;
       padding: 8px 10px;
       background: #09090b;
@@ -319,9 +319,37 @@
 </head>
 <body>
 
+  <!-- AUTH MODAL FOR ONE-TIME EMAIL & 4-DIGIT OTP PC VERIFICATION -->
+  <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:380px; padding:28px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.8);">
+      <div style="font-size:36px; margin-bottom:8px;">🔑</div>
+      <h3 style="font-size:18px; font-weight:700; color:#fff; margin-bottom:6px;">Verify PC Access</h3>
+      <p style="font-size:11px; color:#a1a1aa; margin-bottom:20px; line-height:1.4;">Enter your email to receive a 4-digit code. Once verified, this PC will stay logged in permanently!</p>
+
+      <!-- Step 1: Email Input -->
+      <div id="authStep1">
+        <input type="email" id="authEmail" placeholder="your.name@gmail.com" style="margin-bottom:12px; padding:10px 14px; font-size:13px;" required />
+        <button class="btn" id="btnSendOtp" onclick="sendOtpCode()" style="margin-top:0;">Send 4-Digit Code</button>
+      </div>
+
+      <!-- Step 2: 4-Digit OTP Code Input -->
+      <div id="authStep2" style="display:none;">
+        <p style="font-size:11px; color:#38bdf8; margin-bottom:10px;" id="otpNotice">4-digit code sent to your email!</p>
+        <input type="text" id="authOtpCode" placeholder="••••" maxlength="4" style="margin-bottom:12px; padding:10px 14px; font-size:22px; letter-spacing:10px; text-align:center; font-weight:800;" required />
+        <button class="btn" id="btnVerifyOtp" onclick="verifyOtpCode()" style="margin-top:0;">Verify & Activate PC</button>
+        <button onclick="resetAuthForm()" style="background:transparent; border:none; color:#a1a1aa; font-size:11px; margin-top:12px; cursor:pointer; text-decoration:underline;">Use a different email</button>
+      </div>
+
+      <div id="authStatus" style="margin-top:14px; font-size:11px; display:none; padding:8px; border-radius:8px;"></div>
+    </div>
+  </div>
+
   <header>
     <h2>AIsoft Render AI</h2>
-    <span class="badge">Walkthrough & Render Studio</span>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div id="userAccountBadge"></div>
+      <span class="badge">Walkthrough & Render Studio</span>
+    </div>
   </header>
 
   <div class="layout-container">
@@ -505,6 +533,123 @@
 
     let currentServerUrl = getLiveServerUrl();
     let lastRenderUrl = null;
+
+    /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
+    let userEmail = localStorage.getItem('aisoft_user_email') || null;
+
+    function checkAuthOnLoad() {
+      if (!userEmail) {
+        document.getElementById('authModal').style.display = 'flex';
+      } else {
+        document.getElementById('authModal').style.display = 'none';
+        updateHeaderUserBadge();
+      }
+    }
+
+    function updateHeaderUserBadge() {
+      const badge = document.getElementById('userAccountBadge');
+      if (badge && userEmail) {
+        badge.innerHTML = `<span style="font-size:11px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; border-radius:9999px; color:#e4e4e7; display:inline-flex; align-items:center; gap:6px;">👤 <b>${userEmail}</b> <button onclick="signOutUser()" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:10px; text-decoration:underline;">Switch</button></span>`;
+      }
+    }
+
+    function showAuthStatus(msg, type) {
+      const el = document.getElementById('authStatus');
+      el.style.display = 'block';
+      el.className = 'status-' + type;
+      el.innerHTML = msg;
+    }
+
+    function resetAuthForm() {
+      document.getElementById('authStep1').style.display = 'block';
+      document.getElementById('authStep2').style.display = 'none';
+      document.getElementById('authStatus').style.display = 'none';
+      document.getElementById('btnSendOtp').disabled = false;
+    }
+
+    async function sendOtpCode() {
+      const emailInput = document.getElementById('authEmail').value.trim();
+      if (!emailInput || !emailInput.includes('@')) {
+        showAuthStatus('Please enter a valid email address.', 'error');
+        return;
+      }
+
+      document.getElementById('btnSendOtp').disabled = true;
+      showAuthStatus('Sending 4-digit code to ' + emailInput + '...', 'loading');
+
+      try {
+        const response = await fetch(currentServerUrl + '/api/auth/otp-send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.ok) {
+          window.pendingOtpToken = data.token;
+          window.pendingEmail = emailInput;
+          document.getElementById('authStep1').style.display = 'none';
+          document.getElementById('authStep2').style.display = 'block';
+          showAuthStatus('✓ Code sent! Check your inbox.', 'success');
+        } else {
+          showAuthStatus('❌ ' + (data.error || 'Failed to send verification code.'), 'error');
+          document.getElementById('btnSendOtp').disabled = false;
+        }
+      } catch (err) {
+        showAuthStatus('❌ Connection error sending code.', 'error');
+        document.getElementById('btnSendOtp').disabled = false;
+      }
+    }
+
+    async function verifyOtpCode() {
+      const codeInput = document.getElementById('authOtpCode').value.trim();
+      if (!codeInput) {
+        showAuthStatus('Please enter the 4-digit code.', 'error');
+        return;
+      }
+
+      document.getElementById('btnVerifyOtp').disabled = true;
+      showAuthStatus('Verifying 4-digit code...', 'loading');
+
+      try {
+        const response = await fetch(currentServerUrl + '/api/auth/otp-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: window.pendingEmail,
+            code: codeInput,
+            token: window.pendingOtpToken
+          })
+        });
+
+        const data = await response.json();
+        if (response.ok && data.ok) {
+          userEmail = data.email;
+          localStorage.setItem('aisoft_user_email', data.email);
+          if (data.authToken) localStorage.setItem('aisoft_auth_token', data.authToken);
+
+          showAuthStatus('✓ PC Verified & Activated!', 'success');
+          setTimeout(() => {
+            document.getElementById('authModal').style.display = 'none';
+            updateHeaderUserBadge();
+          }, 800);
+        } else {
+          showAuthStatus('❌ ' + (data.error || 'Invalid 4-digit code.'), 'error');
+          document.getElementById('btnVerifyOtp').disabled = false;
+        }
+      } catch (err) {
+        showAuthStatus('❌ Verification error.', 'error');
+        document.getElementById('btnVerifyOtp').disabled = false;
+      }
+    }
+
+    function signOutUser() {
+      localStorage.removeItem('aisoft_user_email');
+      localStorage.removeItem('aisoft_auth_token');
+      userEmail = null;
+      resetAuthForm();
+      document.getElementById('authModal').style.display = 'flex';
+    }
 
     const ROOMS_INTERIOR = [
       { v: "Living Room", e: "🛋️", d: "Lounge & sitting area" },
@@ -716,6 +861,7 @@
     renderPaletteGrid();
     renderFinishGrids();
     renderFurnitureGrids();
+    checkAuthOnLoad();
 
     function showStatus(msg, type) {
       const el = document.getElementById('status');
@@ -725,6 +871,11 @@
     }
 
     function triggerRender() {
+      if (!userEmail) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+      }
+
       const renderBtn = document.getElementById('renderBtn');
       renderBtn.disabled = true;
       showStatus('📸 Capturing SketchUp viewport...', 'loading');
@@ -779,12 +930,14 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-client': 'sketchup'
+            'x-client': 'sketchup',
+            'x-user-email': userEmail || ''
           },
           body: JSON.stringify({
             image: result.image,
             questionnaire: questionnaire,
-            model: document.getElementById('modelSelect').value
+            model: document.getElementById('modelSelect').value,
+            userEmail: userEmail
           })
         });
 
@@ -809,10 +962,14 @@
           document.getElementById('videoBtn').style.display = 'inline-block';
         } else {
           const errMsg = data.error || 'Server error occurred during rendering.';
-          showStatus('❌ Render Failed: ' + errMsg, 'error');
+          showStatus('❌ ' + errMsg, 'error');
           document.getElementById('renderBtn').disabled = false;
           document.getElementById('aiLoading').style.display = 'none';
           document.getElementById('aiPlaceholder').style.display = 'block';
+
+          if (data.code === 'payment_required') {
+            alert("Payment Required: " + errMsg);
+          }
         }
       } catch (err) {
         showStatus('❌ Server Connection Error: Could not connect to ' + currentServerUrl, 'error');
@@ -844,6 +1001,10 @@
     }
 
     async function triggerVideoWalkthrough() {
+      if (!userEmail) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+      }
       if (!lastRenderUrl) {
         alert('Please render an image first!');
         return;
@@ -865,11 +1026,13 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'x-client': 'sketchup'
+            'x-client': 'sketchup',
+            'x-user-email': userEmail || ''
           },
           body: JSON.stringify({
             image: lastRenderUrl,
-            prompt: "Smooth cinematic 3D architectural camera pan walkthrough of " + questionnaire.roomType + ", steady motion"
+            prompt: "Smooth cinematic 3D architectural camera pan walkthrough of " + questionnaire.roomType + ", steady motion",
+            userEmail: userEmail
           })
         });
 
@@ -890,7 +1053,7 @@
           dlVidBtn.href = data.videoUrl;
           dlVidBtn.style.display = 'inline-block';
         } else {
-          showStatus('❌ Video Generation Failed: ' + (data.error || 'Server error'), 'error');
+          showStatus('❌ ' + (data.error || 'Server error'), 'error');
           videoBtn.disabled = false;
           document.getElementById('aiLoading').style.display = 'none';
           switchPreviewMode('image');

@@ -13,13 +13,13 @@ interface OTPPayload {
   sig: string; // hmac(email|code|ts) — code is NOT stored in token
 }
 
-/** Generate a 6-digit code + a signed token to return to the client. */
+/** Generate a 4-digit code + a signed token to return to the client. */
 export function createOTP(
   email: string,
   codeOverride?: string
 ): { code: string; token: string } {
   const e = email.toLowerCase().trim();
-  const code = codeOverride ?? String(crypto.randomInt(100000, 1000000));
+  const code = codeOverride ?? String(crypto.randomInt(1000, 10000));
   const ts = Date.now();
   const sig = hmac(`${e}|${code}|${ts}`);
   const token = Buffer.from(

@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import {
+  isUserPaid,
+  getGenerationCount,
+  TRIAL_GENERATION_LIMIT,
+} from "@/lib/usage";
 
 async function resolveVideoUrl(output: unknown): Promise<string> {
   if (!output) return "";
@@ -28,28 +31,37 @@ async function resolveVideoUrl(output: unknown): Promise<string> {
 
 export async function POST(request: Request) {
   try {
-    const clientHeader = request.headers.get("x-client");
-    let email: string | undefined = undefined;
+    const req = await request.json();
+    const userEmailHeader = request.headers.get("x-user-email");
+    const userEmail = userEmailHeader || req.userEmail;
 
-    if (clientHeader === "sketchup" || process.env.NODE_ENV === "development") {
-      email = "sketchup-plugin@local.app";
-    } else {
-      try {
-        const session = await getServerSession(authOptions);
-        email = session?.user?.email ?? undefined;
-      } catch (err) {
-        console.warn("Session check error:", err);
-      }
-    }
-
-    if (!email) {
+    if (!userEmail) {
       return NextResponse.json(
-        { error: "Sign in required", code: "auth_required" },
+        {
+          error:
+            "Email verification required. Please verify your email in SketchUp.",
+          code: "auth_required",
+        },
         { status: 401 }
       );
     }
 
-    const req = await request.json();
+    const normEmail = userEmail.toLowerCase().trim();
+    const paid = await isUserPaid(normEmail);
+
+    if (!paid) {
+      const currentCount = await getGenerationCount(normEmail);
+      if (currentCount >= TRIAL_GENERATION_LIMIT) {
+        return NextResponse.json(
+          {
+            error: `Free trial limit reached. Contact admin to activate unlimited paid access for ${normEmail}.`,
+            code: "payment_required",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const imageUrl: string = req.image;
 
     if (!imageUrl) {
@@ -81,7 +93,7 @@ export async function POST(request: Request) {
     let videoUrl: string | null = null;
     let lastError = "";
 
-    // Strategy 1: stability-ai/stable-video-diffusion (Robust image-to-video with base64 support)
+    // Strategy 1: stability-ai/stable-video-diffusion
     try {
       console.log("Trying stable-video-diffusion...");
       const output = await replicate.run(
@@ -131,7 +143,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("Generated Walkthrough Video Result successfully");
     return NextResponse.json({ videoUrl }, { status: 200 });
   } catch (err) {
     console.error("Replicate Video API Error:", err);

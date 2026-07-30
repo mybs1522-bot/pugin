@@ -12,11 +12,15 @@ import {
   LogOut,
   Eye,
   EyeOff,
+  CheckCircle,
+  PlusCircle,
+  RotateCcw,
 } from "lucide-react";
 
 interface UserRecord {
   email: string;
   count: number;
+  isPaid?: boolean;
   signedUpAt: string;
   lastActiveAt: string;
 }
@@ -26,6 +30,7 @@ interface Stats {
   totalRenders: number;
   trialUsers: number;
   exhaustedUsers: number;
+  paidUsers?: number;
   trialLimit: number;
 }
 
@@ -63,7 +68,24 @@ function StatCard({
   );
 }
 
-function TrialBar({ count, limit }: { count: number; limit: number }) {
+function TrialBar({
+  count,
+  limit,
+  isPaid,
+}: {
+  count: number;
+  limit: number;
+  isPaid?: boolean;
+}) {
+  if (isPaid) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300">
+          Unlimited ({count} renders)
+        </span>
+      </div>
+    );
+  }
   const pct = Math.min((count / limit) * 100, 100);
   const color =
     count >= limit
@@ -74,7 +96,10 @@ function TrialBar({ count, limit }: { count: number; limit: number }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/10">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <span className="text-xs text-zinc-400">
         {count}/{limit}
@@ -83,7 +108,22 @@ function TrialBar({ count, limit }: { count: number; limit: number }) {
   );
 }
 
-function StatusBadge({ count, limit }: { count: number; limit: number }) {
+function StatusBadge({
+  count,
+  limit,
+  isPaid,
+}: {
+  count: number;
+  limit: number;
+  isPaid?: boolean;
+}) {
+  if (isPaid) {
+    return (
+      <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
+        ✓ Paid Active
+      </span>
+    );
+  }
   if (count >= limit)
     return (
       <span className="rounded-full bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-400">
@@ -104,6 +144,7 @@ function StatusBadge({ count, limit }: { count: number; limit: number }) {
 }
 
 function fmt(iso: string) {
+  if (!iso) return "—";
   return new Date(iso).toLocaleString(undefined, {
     month: "short",
     day: "numeric",
@@ -150,7 +191,9 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
             <Lock className="h-7 w-7 text-indigo-400" />
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
-          <p className="mt-1 text-sm text-zinc-400">Sign in to continue</p>
+          <p className="mt-1 text-sm text-zinc-400">
+            Sign in to manage plugin payments
+          </p>
         </div>
 
         <form
@@ -174,7 +217,7 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder-zinc-600 transition outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 placeholder="admin"
               />
             </div>
@@ -190,13 +233,13 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-10 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-10 text-sm text-white placeholder-zinc-600 transition outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw((p) => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
                 >
                   {showPw ? (
                     <EyeOff className="h-4 w-4" />
@@ -225,6 +268,8 @@ function Dashboard() {
   const [data, setData] = useState<AdminData | null>(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -241,9 +286,62 @@ function Dashboard() {
 
   useEffect(() => {
     void fetchData();
-    const id = setInterval(fetchData, 30_000);
+    const id = setInterval(fetchData, 20_000);
     return () => clearInterval(id);
   }, [fetchData]);
+
+  async function togglePaid(email: string, currentPaid: boolean) {
+    setActionLoading(email);
+    try {
+      await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          action: "toggle_paid",
+          paid: !currentPaid,
+        }),
+      });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function resetCount(email: string) {
+    setActionLoading(email + "_reset");
+    try {
+      await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, action: "reset_count" }),
+      });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleAddUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newEmail || !newEmail.includes("@")) return;
+    setActionLoading("add");
+    try {
+      await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: newEmail,
+          action: "toggle_paid",
+          paid: true,
+        }),
+      });
+      setNewEmail("");
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   async function logout() {
     await fetch("/api/adminrob/auth", { method: "DELETE" });
@@ -261,11 +359,14 @@ function Dashboard() {
     <div className="min-h-screen bg-zinc-950 px-4 py-10 text-white">
       <div className="mx-auto max-w-6xl">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Admin Payment Portal
+            </h1>
             <p className="mt-0.5 text-sm text-zinc-400">
-              User signups &amp; render usage · Supabase
+              Manage plugin user emails, grant paid access &amp; view render
+              counts
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -273,7 +374,9 @@ function Dashboard() {
               onClick={fetchData}
               className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-300 transition hover:bg-white/10"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
               Refresh
             </button>
             <button
@@ -286,6 +389,40 @@ function Dashboard() {
           </div>
         </div>
 
+        {/* Add/Activate Email Box */}
+        <form
+          onSubmit={handleAddUser}
+          className="mb-8 flex flex-col gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-950/20 p-5 sm:flex-row sm:items-center"
+        >
+          <div className="flex-1">
+            <h3 className="font-semibold text-emerald-300">
+              ⚡ Direct Activate Paid Access
+            </h3>
+            <p className="text-xs text-zinc-400">
+              Enter any user email to immediately grant full paid rendering
+              &amp; video walkthrough access in SketchUp:
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="email"
+              placeholder="user@example.com"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              className="rounded-xl border border-white/15 bg-zinc-900 px-4 py-2 text-sm text-white outline-none focus:border-emerald-500"
+              required
+            />
+            <button
+              type="submit"
+              disabled={actionLoading === "add"}
+              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:opacity-50"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Activate Paid
+            </button>
+          </div>
+        </form>
+
         {/* Stat cards */}
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatCard
@@ -295,22 +432,17 @@ function Dashboard() {
             color="bg-indigo-500/30"
           />
           <StatCard
+            icon={CheckCircle}
+            label="Paid active"
+            value={stats?.paidUsers ?? 0}
+            sub="Unlimited access"
+            color="bg-emerald-500/30"
+          />
+          <StatCard
             icon={BarChart3}
             label="Total renders"
             value={stats?.totalRenders ?? "—"}
-            sub={
-              stats && stats.totalUsers
-                ? `avg ${(stats.totalRenders / stats.totalUsers).toFixed(1)} per user`
-                : undefined
-            }
             color="bg-violet-500/30"
-          />
-          <StatCard
-            icon={TrendingUp}
-            label="Trial active"
-            value={stats?.trialUsers ?? "—"}
-            sub={stats ? `of ${stats.trialLimit} free renders` : undefined}
-            color="bg-amber-500/30"
           />
           <StatCard
             icon={UserCheck}
@@ -321,60 +453,11 @@ function Dashboard() {
           />
         </div>
 
-        {/* Funnel */}
-        {data && (
-          <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-5">
-            <div className="mb-4 flex items-center gap-2">
-              <Activity className="h-4 w-4 text-zinc-400" />
-              <span className="text-sm font-medium text-zinc-300">
-                Conversion funnel
-              </span>
-            </div>
-            <div className="space-y-3">
-              {[
-                {
-                  label: "New (0 renders)",
-                  count: data.users.filter((u) => u.count === 0).length,
-                  color: "bg-emerald-500",
-                },
-                {
-                  label: `Tried (1–${stats!.trialLimit - 1} renders)`,
-                  count: data.users.filter(
-                    (u) => u.count > 0 && u.count < stats!.trialLimit
-                  ).length,
-                  color: "bg-amber-500",
-                },
-                {
-                  label: `Exhausted (≥ ${stats!.trialLimit} renders)`,
-                  count: stats!.exhaustedUsers,
-                  color: "bg-red-500",
-                },
-              ].map(({ label, count, color }) => {
-                const pct = stats!.totalUsers
-                  ? (count / stats!.totalUsers) * 100
-                  : 0;
-                return (
-                  <div key={label} className="flex items-center gap-3 text-sm">
-                    <span className="w-44 shrink-0 text-zinc-400">{label}</span>
-                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${color}`}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                    <span className="w-6 text-right text-zinc-300">{count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
         {/* User table */}
         <div className="rounded-2xl border border-white/10 bg-white/5">
           <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <h2 className="font-semibold text-zinc-200">
-              Users ({filtered.length})
+              Users &amp; Payment Status ({filtered.length})
             </h2>
             <input
               type="text"
@@ -388,12 +471,12 @@ function Dashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-zinc-500">
+                <tr className="border-b border-white/10 text-left text-xs tracking-wider text-zinc-500 uppercase">
                   <th className="px-5 py-3">Email</th>
                   <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Renders</th>
+                  <th className="px-5 py-3">Usage</th>
                   <th className="px-5 py-3">Signed up</th>
-                  <th className="px-5 py-3">Last active</th>
+                  <th className="px-5 py-3 text-right">Payment Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -426,16 +509,46 @@ function Dashboard() {
                       <StatusBadge
                         count={u.count}
                         limit={stats?.trialLimit ?? 3}
+                        isPaid={u.isPaid}
                       />
                     </td>
                     <td className="px-5 py-3.5">
-                      <TrialBar count={u.count} limit={stats?.trialLimit ?? 3} />
+                      <TrialBar
+                        count={u.count}
+                        limit={stats?.trialLimit ?? 3}
+                        isPaid={u.isPaid}
+                      />
                     </td>
                     <td className="px-5 py-3.5 text-zinc-400">
                       {fmt(u.signedUpAt)}
                     </td>
-                    <td className="px-5 py-3.5 text-zinc-400">
-                      {fmt(u.lastActiveAt)}
+                    <td className="px-5 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => togglePaid(u.email, !!u.isPaid)}
+                          disabled={actionLoading === u.email}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+                            u.isPaid
+                              ? "border border-amber-500/30 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+                              : "bg-emerald-600 text-white hover:bg-emerald-500"
+                          }`}
+                        >
+                          {actionLoading === u.email
+                            ? "Updating…"
+                            : u.isPaid
+                              ? "Revoke Paid"
+                              : "⚡ Grant Paid Access"}
+                        </button>
+                        <button
+                          onClick={() => resetCount(u.email)}
+                          disabled={actionLoading === u.email + "_reset"}
+                          className="flex items-center gap-1 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-zinc-300 transition hover:bg-white/10"
+                          title="Reset render count to 0"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          Reset
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

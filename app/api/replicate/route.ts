@@ -6,6 +6,7 @@ import { stripe } from "@/lib/stripe";
 import {
   incrementGenerationCount,
   getGenerationCount,
+  isUserPaid,
   TRIAL_GENERATION_LIMIT,
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
@@ -203,7 +204,6 @@ async function resolveOutputUrl(output: unknown): Promise<string> {
   if (!output) return "";
   let item = Array.isArray(output) ? output[output.length - 1] : output;
 
-  // Handles ReadableStream returned by models like flux-schnell
   if (item && typeof item === "object" && "getReader" in item) {
     const reader = (item as ReadableStream<Uint8Array>).getReader();
     const chunks: Uint8Array[] = [];
@@ -226,63 +226,37 @@ async function resolveOutputUrl(output: unknown): Promise<string> {
 /* ─── Route handler ──────────────────────────────────────────────────────── */
 export async function POST(request: Request) {
   try {
-    const clientHeader = request.headers.get("x-client");
-    let email: string | undefined = undefined;
+    const req = await request.json();
+    const userEmailHeader = request.headers.get("x-user-email");
+    const userEmail = userEmailHeader || req.userEmail;
 
-    if (clientHeader === "sketchup" || process.env.NODE_ENV === "development") {
-      email = "sketchup-plugin@local.app";
-    } else {
-      try {
-        const session = await getServerSession(authOptions);
-        email = session?.user?.email ?? undefined;
-      } catch (err) {
-        console.warn("Session check error:", err);
-      }
-    }
-
-    if (!email) {
+    if (!userEmail) {
       return NextResponse.json(
-        { error: "Sign in required", code: "auth_required" },
+        {
+          error:
+            "Email verification required. Please verify your email in SketchUp.",
+          code: "auth_required",
+        },
         { status: 401 }
       );
     }
 
-    let subscriptionActive = false;
-    if (process.env.STRIPE_SECRET_KEY && stripe) {
-      try {
-        const customers = await stripe.customers.list({ email, limit: 1 });
-        if (customers.data.length > 0) {
-          const subs = await stripe.subscriptions.list({
-            customer: customers.data[0].id,
-            status: "all",
-            limit: 5,
-          });
-          const active = subs.data.find(
-            (s) =>
-              (s.status === "active" || s.status === "trialing") &&
-              !s.cancel_at_period_end
-          );
-          subscriptionActive = !!active;
-        }
-      } catch (err) {
-        console.warn("Stripe check skipped:", err);
-      }
-    }
+    const normEmail = userEmail.toLowerCase().trim();
+    const paid = await isUserPaid(normEmail);
 
-    if (!subscriptionActive && email !== "sketchup-plugin@local.app") {
-      const currentCount = await getGenerationCount(email);
+    if (!paid) {
+      const currentCount = await getGenerationCount(normEmail);
       if (currentCount >= TRIAL_GENERATION_LIMIT) {
         return NextResponse.json(
           {
-            error: `Free trial limit reached (${TRIAL_GENERATION_LIMIT} renders). Please subscribe to continue.`,
-            code: "trial_exhausted",
+            error: `Free trial limit reached (${TRIAL_GENERATION_LIMIT} renders). Contact admin to activate unlimited paid access for ${normEmail}.`,
+            code: "payment_required",
           },
           { status: 403 }
         );
       }
     }
 
-    const req = await request.json();
     const image: string = req.image;
     const questionnaire: DesignQuestionnaire = req.questionnaire;
 
@@ -379,8 +353,8 @@ export async function POST(request: Request) {
 
     const url = await resolveOutputUrl(output);
 
-    if (email && email !== "sketchup-plugin@local.app") {
-      await incrementGenerationCount(email);
+    if (!paid) {
+      await incrementGenerationCount(normEmail);
     }
 
     return NextResponse.json({ output: [url] }, { status: 200 });

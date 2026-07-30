@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getAllUsers, TRIAL_GENERATION_LIMIT } from "@/lib/usage";
+import {
+  getAllUsers,
+  setUserPaidStatus,
+  resetUserUsage,
+  TRIAL_GENERATION_LIMIT,
+} from "@/lib/usage";
 import { verifyToken } from "@/app/api/adminrob/auth/route";
 
-export async function GET(request: Request) {
-  // Accept either the session cookie (adminrob dashboard) or a Bearer secret
+async function isAuthed(request: Request): Promise<boolean> {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("adminrob_session")?.value ?? "";
   const sessionValid = verifyToken(sessionToken);
@@ -14,17 +18,24 @@ export async function GET(request: Request) {
   const provided = auth.startsWith("Bearer ") ? auth.slice(7) : "";
   const bearerValid = secret ? provided === secret : false;
 
-  if (!sessionValid && !bearerValid) {
+  return sessionValid || bearerValid;
+}
+
+export async function GET(request: Request) {
+  if (!(await isAuthed(request))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const users = await getAllUsers();
 
   const totalRenders = users.reduce((sum, u) => sum + u.count, 0);
-  const trialUsers = users.filter((u) => u.count < TRIAL_GENERATION_LIMIT).length;
-  const exhaustedUsers = users.filter(
-    (u) => u.count >= TRIAL_GENERATION_LIMIT
+  const trialUsers = users.filter(
+    (u) => u.count < TRIAL_GENERATION_LIMIT
   ).length;
+  const exhaustedUsers = users.filter(
+    (u) => u.count >= TRIAL_GENERATION_LIMIT && !u.isPaid
+  ).length;
+  const paidUsers = users.filter((u) => u.isPaid).length;
 
   return NextResponse.json({
     stats: {
@@ -32,8 +43,38 @@ export async function GET(request: Request) {
       totalRenders,
       trialUsers,
       exhaustedUsers,
+      paidUsers,
       trialLimit: TRIAL_GENERATION_LIMIT,
     },
     users,
   });
+}
+
+export async function POST(request: Request) {
+  if (!(await isAuthed(request))) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const { email, action, paid } = await request.json();
+
+    if (!email) {
+      return NextResponse.json({ error: "Email required" }, { status: 400 });
+    }
+
+    if (action === "toggle_paid") {
+      await setUserPaidStatus(email, !!paid);
+      return NextResponse.json({ ok: true, isPaid: !!paid });
+    }
+
+    if (action === "reset_count") {
+      await resetUserUsage(email);
+      return NextResponse.json({ ok: true, reset: true });
+    }
+
+    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+  } catch (err) {
+    console.error("Admin user management error:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }
