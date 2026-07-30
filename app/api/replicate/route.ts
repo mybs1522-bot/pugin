@@ -115,7 +115,7 @@ function buildExteriorPrompt(q: DesignQuestionnaire): string {
   const style = `${ERA[q.era] ?? ""} ${q.primaryStyle} ${q.roomType}`.trim();
 
   const EXT_STRUCTURE_LOCK =
-    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK, NOT IMAGE GENERATION: ` +
+    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK: ` +
     `You are given an input image of a ${style} building. ` +
     `You MUST preserve with 100% fidelity: ` +
     `(1) exact camera angle, perspective, and distance, ` +
@@ -128,8 +128,7 @@ function buildExteriorPrompt(q: DesignQuestionnaire): string {
     `${palette ? `Color scheme: ${palette}. ` : ""}` +
     `${accentColorStr ? `Accent: ${accentColorStr}. ` : ""}` +
     `Surface changes: ${matChanges.join(", ")}. Sky: ${skyDesc}. ` +
-    `8K RAW photographic realism. ` +
-    EXT_STRUCTURE_LOCK
+    `8K RAW architectural photograph. `
   );
 }
 
@@ -160,7 +159,7 @@ function buildEditPrompt(q: DesignQuestionnaire): string {
   const style = `${ERA[q.era] ?? ""} ${q.primaryStyle} ${q.roomType}`.trim();
 
   const STRUCTURE_LOCK =
-    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK, NOT IMAGE GENERATION: ` +
+    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK: ` +
     `You are given an input image of a ${style}. ` +
     `You MUST preserve with 100% fidelity: ` +
     `(1) exact camera angle and perspective, ` +
@@ -170,11 +169,10 @@ function buildEditPrompt(q: DesignQuestionnaire): string {
   return (
     STRUCTURE_LOCK +
     `NOW apply photorealistic rendering quality to that exact layout. ` +
-    `Style: ${style}. V-Ray / Corona / Enscape quality. ` +
+    `Style: ${style}. V-Ray / Corona / Enscape render quality. ` +
     `Apply ONLY these surface changes: ${matChanges.join("; ")}. ` +
     `LIGHTING: ${lightDesc}. ` +
-    `8K photographic realism, RAW. ` +
-    STRUCTURE_LOCK
+    `8K photographic realism, RAW architectural photography.`
   );
 }
 
@@ -184,13 +182,21 @@ function buildModelInput(
   image: string,
   aspect_ratio?: string
 ) {
-  if (modelId.includes("flux")) {
+  if (modelId.includes("pix2pix")) {
     return {
-      prompt,
-      image,
-      aspect_ratio:
-        aspect_ratio === "match_input_image" ? "16:9" : aspect_ratio || "16:9",
-      output_format: "png",
+      image: image,
+      prompt: prompt,
+      image_guidance_scale: 1.5,
+      text_guidance_scale: 7.5,
+      num_inference_steps: 30,
+    };
+  }
+  if (modelId.includes("sdxl") || modelId.includes("stability")) {
+    return {
+      image: image,
+      prompt: prompt,
+      prompt_strength: 0.5, // 50% preservation of original SketchUp lines & geometry
+      num_inference_steps: 30,
     };
   }
   return {
@@ -246,9 +252,7 @@ export async function POST(request: Request) {
 
     const normEmail = userEmail.toLowerCase().trim();
 
-    // Single PC Device Session Check:
-    // Verify if this PC session is the current active session.
-    // If another PC logged in, log out this PC immediately!
+    // Single PC Device Session Check
     if (sessionId) {
       const validSession = await verifyDeviceSession(normEmail, sessionId);
       if (!validSession) {
@@ -299,13 +303,24 @@ export async function POST(request: Request) {
         ? buildExteriorPrompt(questionnaire)
         : buildEditPrompt(questionnaire ?? {});
 
-    const userModel = req.model || "google/nano-banana-2";
+    const userModel = req.model;
+
+    // Dedicated Image-to-Image models for preserving SketchUp geometry
     const MODELS: Array<{ id: string; e003Retries: number }> = [
-      { id: userModel, e003Retries: 2 },
+      {
+        id: "timothybrooks/instruct-pix2pix:30c1d0b916a6f8ef208843f382a90098df241aa721f4864c0557457a4e69d7b4",
+        e003Retries: 2,
+      },
       { id: "google/nano-banana-2", e003Retries: 2 },
-      { id: "black-forest-labs/flux-schnell", e003Retries: 0 },
-      { id: "google/nano-banana", e003Retries: 0 },
+      {
+        id: "stability-ai/sdxl:770044d6f58696145417ab0ba094aed951c320d3f25c7e97843f4340d87ed1f8",
+        e003Retries: 1,
+      },
     ];
+
+    if (userModel && !userModel.includes("flux")) {
+      MODELS.unshift({ id: userModel, e003Retries: 2 });
+    }
 
     const MAX_429_RETRIES = 3;
     let output: unknown;
@@ -323,7 +338,9 @@ export async function POST(request: Request) {
 
       for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
         try {
-          console.log(`Trying ${model} (attempt ${attempt + 1})…`);
+          console.log(
+            `Trying architectural img2img model ${model} (attempt ${attempt + 1})…`
+          );
           output = await replicate.run(model as `${string}/${string}`, {
             input: modelInput,
           });
