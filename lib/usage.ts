@@ -5,16 +5,73 @@ export const TRIAL_GENERATION_LIMIT = 3;
 export interface UserRecord {
   count: number;
   isPaid?: boolean;
+  activeSessionId?: string;
   signedUpAt: string;
   lastActiveAt: string;
 }
 
-// In-memory fallback store for active paid users when DB is unconfigured
+// In-memory fallback store for active paid users & device sessions
 const memoryPaidUsers = new Set<string>();
+const memoryActiveSessions = new Map<string, string>(); // email -> activeSessionId
 const memoryUserCounts = new Map<
   string,
   { count: number; signedUpAt: string; lastActiveAt: string }
 >();
+
+export async function setDeviceSession(email: string): Promise<string> {
+  const norm = email.toLowerCase().trim();
+  const sessionId =
+    "sess_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+  memoryActiveSessions.set(norm, sessionId);
+
+  try {
+    await getSupabaseAdmin().from("user_usage").upsert({
+      email: norm,
+      active_session_id: sessionId,
+      last_active_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn("Supabase active session update skipped:", err);
+  }
+
+  return sessionId;
+}
+
+export async function verifyDeviceSession(
+  email: string,
+  sessionId?: string
+): Promise<boolean> {
+  const norm = email.toLowerCase().trim();
+  if (!sessionId) return false;
+
+  const currentMemSession = memoryActiveSessions.get(norm);
+  if (currentMemSession) {
+    return currentMemSession === sessionId;
+  }
+
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("active_session_id")
+      .eq("email", norm)
+      .single();
+
+    const dbSession = (data as { active_session_id?: string })
+      ?.active_session_id;
+    if (dbSession) {
+      memoryActiveSessions.set(norm, dbSession);
+      return dbSession === sessionId;
+    }
+  } catch {
+    // If no session recorded yet, accept current
+    memoryActiveSessions.set(norm, sessionId);
+    return true;
+  }
+
+  // Fallback: set and accept session if none stored
+  memoryActiveSessions.set(norm, sessionId);
+  return true;
+}
 
 export async function isUserPaid(email: string): Promise<boolean> {
   const norm = email.toLowerCase().trim();
@@ -156,12 +213,16 @@ export async function getAllUsers(): Promise<
         email: string;
         count: number;
         is_paid?: boolean;
+        active_session_id?: string;
         signed_up_at: string;
         last_active_at: string;
       }) => ({
         email: row.email,
         count: row.count,
         isPaid: row.is_paid || memoryPaidUsers.has(row.email.toLowerCase()),
+        activeSessionId:
+          row.active_session_id ||
+          memoryActiveSessions.get(row.email.toLowerCase()),
         signedUpAt: row.signed_up_at,
         lastActiveAt: row.last_active_at,
       })
@@ -177,6 +238,7 @@ export async function getAllUsers(): Promise<
           email: emailKey,
           count: val.count,
           isPaid: memoryPaidUsers.has(emailKey),
+          activeSessionId: memoryActiveSessions.get(emailKey),
           signedUpAt: val.signedUpAt,
           lastActiveAt: val.lastActiveAt,
         });
@@ -191,6 +253,7 @@ export async function getAllUsers(): Promise<
         email: emailKey,
         count: val.count,
         isPaid: memoryPaidUsers.has(emailKey),
+        activeSessionId: memoryActiveSessions.get(emailKey),
         signedUpAt: val.signedUpAt,
         lastActiveAt: val.lastActiveAt,
       });

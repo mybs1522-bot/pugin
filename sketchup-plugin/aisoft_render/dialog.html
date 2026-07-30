@@ -536,9 +536,10 @@
 
     /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
     let userEmail = localStorage.getItem('aisoft_user_email') || null;
+    let userSessionId = localStorage.getItem('aisoft_session_id') || null;
 
     function checkAuthOnLoad() {
-      if (!userEmail) {
+      if (!userEmail || !userSessionId) {
         document.getElementById('authModal').style.display = 'flex';
       } else {
         document.getElementById('authModal').style.display = 'none';
@@ -599,7 +600,7 @@
             document.getElementById('authOtpCode').value = data.devCode;
             showAuthStatus('✓ Code generated: <b>' + data.devCode + '</b> (Auto-filled below)', 'success');
           } else {
-            showAuthStatus('✓ 4-digit code sent! Check your inbox.', 'success');
+            showAuthStatus('✓ 4-digit code sent via ' + (data.service || 'email') + '!', 'success');
           }
         } else {
           showAuthStatus('❌ ' + (data.error || 'Failed to send verification code.'), 'error');
@@ -607,7 +608,7 @@
         }
       } catch (err) {
         console.error('OTP Send error:', err);
-        showAuthStatus('❌ Connection error sending code. Check internet connection.', 'error');
+        showAuthStatus('❌ Connection error sending code.', 'error');
         document.getElementById('btnSendOtp').disabled = false;
       }
     }
@@ -622,8 +623,12 @@
       document.getElementById('btnVerifyOtp').disabled = true;
       showAuthStatus('Verifying 4-digit code...', 'loading');
 
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
       try {
-        const response = await fetch(currentServerUrl + '/api/auth/otp-verify', {
+        const response = await fetch(targetUrl + '/api/auth/otp-verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -636,7 +641,9 @@
         const data = await response.json();
         if (response.ok && data.ok) {
           userEmail = data.email;
+          userSessionId = data.sessionId;
           localStorage.setItem('aisoft_user_email', data.email);
+          if (data.sessionId) localStorage.setItem('aisoft_session_id', data.sessionId);
           if (data.authToken) localStorage.setItem('aisoft_auth_token', data.authToken);
 
           showAuthStatus('✓ PC Verified & Activated!', 'success');
@@ -656,8 +663,10 @@
 
     function signOutUser() {
       localStorage.removeItem('aisoft_user_email');
+      localStorage.removeItem('aisoft_session_id');
       localStorage.removeItem('aisoft_auth_token');
       userEmail = null;
+      userSessionId = null;
       resetAuthForm();
       document.getElementById('authModal').style.display = 'flex';
     }
@@ -942,13 +951,15 @@
           headers: {
             'Content-Type': 'application/json',
             'x-client': 'sketchup',
-            'x-user-email': userEmail || ''
+            'x-user-email': userEmail || '',
+            'x-session-id': userSessionId || ''
           },
           body: JSON.stringify({
             image: result.image,
             questionnaire: questionnaire,
             model: document.getElementById('modelSelect').value,
-            userEmail: userEmail
+            userEmail: userEmail,
+            sessionId: userSessionId
           })
         });
 
@@ -978,7 +989,10 @@
           document.getElementById('aiLoading').style.display = 'none';
           document.getElementById('aiPlaceholder').style.display = 'block';
 
-          if (data.code === 'payment_required') {
+          if (data.code === 'session_invalid') {
+            alert("⚠️ " + errMsg);
+            signOutUser();
+          } else if (data.code === 'payment_required') {
             alert("Payment Required: " + errMsg);
           }
         }
@@ -1038,12 +1052,14 @@
           headers: {
             'Content-Type': 'application/json',
             'x-client': 'sketchup',
-            'x-user-email': userEmail || ''
+            'x-user-email': userEmail || '',
+            'x-session-id': userSessionId || ''
           },
           body: JSON.stringify({
             image: lastRenderUrl,
             prompt: "Smooth cinematic 3D architectural camera pan walkthrough of " + questionnaire.roomType + ", steady motion",
-            userEmail: userEmail
+            userEmail: userEmail,
+            sessionId: userSessionId
           })
         });
 
@@ -1068,6 +1084,11 @@
           videoBtn.disabled = false;
           document.getElementById('aiLoading').style.display = 'none';
           switchPreviewMode('image');
+
+          if (data.code === 'session_invalid') {
+            alert("⚠️ " + (data.error || "Logged in on another computer. You have been logged out."));
+            signOutUser();
+          }
         }
       } catch (err) {
         showStatus('❌ Connection Error creating video walkthrough.', 'error');

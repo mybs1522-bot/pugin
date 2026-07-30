@@ -3,6 +3,7 @@ import Replicate from "replicate";
 import {
   isUserPaid,
   getGenerationCount,
+  verifyDeviceSession,
   TRIAL_GENERATION_LIMIT,
 } from "@/lib/usage";
 
@@ -33,7 +34,9 @@ export async function POST(request: Request) {
   try {
     const req = await request.json();
     const userEmailHeader = request.headers.get("x-user-email");
+    const sessionIdHeader = request.headers.get("x-session-id");
     const userEmail = userEmailHeader || req.userEmail;
+    const sessionId = sessionIdHeader || req.sessionId;
 
     if (!userEmail) {
       return NextResponse.json(
@@ -47,6 +50,22 @@ export async function POST(request: Request) {
     }
 
     const normEmail = userEmail.toLowerCase().trim();
+
+    // Single PC Device Session Check:
+    if (sessionId) {
+      const validSession = await verifyDeviceSession(normEmail, sessionId);
+      if (!validSession) {
+        return NextResponse.json(
+          {
+            error:
+              "This email logged in on another computer. You have been logged out of this PC.",
+            code: "session_invalid",
+          },
+          { status: 401 }
+        );
+      }
+    }
+
     const paid = await isUserPaid(normEmail);
 
     if (!paid) {

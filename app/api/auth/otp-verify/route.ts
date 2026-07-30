@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyOTP } from "@/lib/otp";
-import { getGenerationCount } from "@/lib/usage";
+import { getGenerationCount, setDeviceSession } from "@/lib/usage";
 import crypto from "crypto";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers":
-    "Content-Type, Authorization, x-client, x-user-email",
+    "Content-Type, Authorization, x-client, x-user-email, x-session-id",
 };
 
 export async function OPTIONS() {
@@ -37,10 +37,14 @@ export async function POST(req: NextRequest) {
     const normalisedEmail = email.toLowerCase().trim();
     await getGenerationCount(normalisedEmail);
 
+    // Single PC Enforcement: Create brand new active session ID for this PC
+    // This immediately invalidates/logs out any other computer logged into this email!
+    const sessionId = await setDeviceSession(normalisedEmail);
+
     const secret = process.env.NEXTAUTH_SECRET || "fallback-secret-key-123456";
     const authToken = crypto
       .createHmac("sha256", secret)
-      .update(`auth-device|${normalisedEmail}`)
+      .update(`auth-device|${normalisedEmail}|${sessionId}`)
       .digest("hex");
 
     return NextResponse.json(
@@ -48,6 +52,7 @@ export async function POST(req: NextRequest) {
         ok: true,
         email: normalisedEmail,
         authToken,
+        sessionId,
       },
       { status: 200, headers: corsHeaders }
     );
