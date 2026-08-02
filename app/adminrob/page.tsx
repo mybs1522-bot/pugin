@@ -25,7 +25,9 @@ import {
   HelpCircle,
   Send,
   CornerDownRight,
+  FileText,
 } from "lucide-react";
+import { AdminServiceLeads } from "@/components/admin-service-leads";
 
 interface UserRecord {
   email: string;
@@ -325,8 +327,8 @@ function Dashboard() {
   const [newEmail, setNewEmail] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "all" | "images" | "videos" | "support"
-  >("all");
+    "leads" | "all" | "images" | "videos" | "support"
+  >("leads");
 
   const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
   const [replyTextMap, setReplyTextMap] = useState<Record<string, string>>({});
@@ -590,6 +592,17 @@ function Dashboard() {
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 p-1.5">
             <button
+              onClick={() => setActiveTab("leads")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "leads"
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              📋 Service Leads
+            </button>
+            <button
               onClick={() => setActiveTab("all")}
               className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${
                 activeTab === "all"
@@ -635,14 +648,19 @@ function Dashboard() {
             </button>
           </div>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search email address…"
-            className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-indigo-500 sm:w-64"
-          />
+          {activeTab !== "leads" && (
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search email address…"
+              className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-indigo-500 sm:w-64"
+            />
+          )}
         </div>
+
+        {/* TAB 0: SERVICE LEADS TABLE (10 PER PAGE, NOTES LOGGER, 4 STATUSES) */}
+        {activeTab === "leads" && <AdminServiceLeads />}
 
         {/* TAB 1: ALL SIGNUPS OVERVIEW TABLE */}
         {activeTab === "all" && (
