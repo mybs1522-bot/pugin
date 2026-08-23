@@ -542,7 +542,7 @@
           </div>
 
           <img id="aiImg" src="" style="display:none;" alt="AI Photorealistic Render">
-          <video id="aiVideo" controls autoplay loop style="display:none;"></video>
+          <video id="aiVideo" controls autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="display:none;"></video>
         </div>
 
         <div class="action-row">
@@ -1278,13 +1278,23 @@
 
       document.getElementById('aiPlaceholder').style.display = 'none';
 
-      if (mode === 'video' && aiVideo.src) {
+      if (mode === 'video' && aiVideo && (aiVideo.src || aiVideo.currentSrc)) {
         aiImg.style.display = 'none';
         aiVideo.style.display = 'block';
         if (btnImg) btnImg.classList.remove('active');
         if (btnVid) btnVid.classList.add('active');
+        aiVideo.muted = true;
+        const playPromise = aiVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => {
+            console.log("Autoplay paused:", e);
+          });
+        }
       } else {
-        aiVideo.style.display = 'none';
+        if (aiVideo) {
+          try { aiVideo.pause(); } catch(e) {}
+          aiVideo.style.display = 'none';
+        }
         aiImg.style.display = 'block';
         if (btnVid) btnVid.classList.remove('active');
         if (btnImg) btnImg.classList.add('active');
@@ -1337,10 +1347,24 @@
 
           document.getElementById('aiLoading').style.display = 'none';
           const videoEl = document.getElementById('aiVideo');
+          
+          if (lastRenderUrl) {
+            videoEl.poster = lastRenderUrl;
+          }
+          videoEl.muted = true;
+          videoEl.setAttribute('playsinline', '');
           videoEl.src = data.videoUrl;
+          videoEl.load();
 
           document.getElementById('viewModeToggle').style.display = 'flex';
           switchPreviewMode('video');
+
+          const playPromise = videoEl.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.log("Autoplay deferred, user can tap to play:", e);
+            });
+          }
 
           const dlVidBtn = document.getElementById('downloadVideoLink');
           dlVidBtn.href = data.videoUrl;
