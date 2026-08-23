@@ -535,10 +535,20 @@ export async function getAllUsers(): Promise<
   });
 
   try {
-    const { data } = await getSupabaseAdmin()
+    const supabasePromise = getSupabaseAdmin()
       .from("user_usage")
       .select("*")
       .order("signed_up_at", { ascending: false });
+
+    const timeoutPromise = new Promise<{ data: null }>((resolve) =>
+      setTimeout(() => resolve({ data: null }), 1000)
+    );
+
+    const res = (await Promise.race([supabasePromise, timeoutPromise])) as {
+      data?: any[] | null;
+    };
+
+    const data = res?.data;
 
     (data ?? []).forEach(
       (row: {
