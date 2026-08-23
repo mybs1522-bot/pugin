@@ -7,6 +7,7 @@ import {
   incrementImageCount,
   getImageCount,
   isUserPaid,
+  getUserModels,
   verifyDeviceSession,
   TRIAL_IMAGE_LIMIT,
 } from "@/lib/usage";
@@ -342,8 +343,11 @@ export async function POST(request: Request) {
     const mimeType = match ? match[1] : "image/png";
     const base64Data = match ? match[2] : image;
 
+    const userModels = await getUserModels(normEmail);
+    const assignedModel = userModels.imageModel || "google/nano-banana-pro";
+
     console.log(
-      `Generating render via Google AI Studio Nano Banana Pro for ${normEmail}...`
+      `Generating render via model (${assignedModel}) for ${normEmail}...`
     );
 
     const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${geminiKey}`;

@@ -37,6 +37,8 @@ interface UserRecord {
   isPaid?: boolean;
   status?: "paid" | "trial" | "cancelled";
   paymentMode?: string;
+  imageModel?: string;
+  videoModel?: string;
   lastModelUsed?: string;
   signedUpAt: string;
   lastLoginAt: string;
@@ -464,6 +466,29 @@ function Dashboard() {
     }
   }
 
+  async function handleSetModels(
+    email: string,
+    imageModel: string,
+    videoModel: string
+  ) {
+    setActionLoading("model_" + email);
+    try {
+      await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          action: "set_models",
+          imageModel,
+          videoModel,
+        }),
+      });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
   async function handleResetUsage(email: string) {
     setActionLoading(email);
     try {
@@ -771,8 +796,13 @@ function Dashboard() {
                     <th className="px-5 py-3.5">Name</th>
                     <th className="px-5 py-3.5">Email</th>
                     <th className="px-5 py-3.5">Status</th>
-                    <th className="px-5 py-3.5">Image Renders</th>
-                    <th className="px-5 py-3.5">Video Renders</th>
+                    <th className="px-5 py-3.5">
+                      Image Model (Silent Backend)
+                    </th>
+                    <th className="px-5 py-3.5">
+                      Video Model (Silent Backend)
+                    </th>
+                    <th className="px-5 py-3.5">Renders</th>
                     <th className="px-5 py-3.5">Date & Time</th>
                     <th className="px-5 py-3.5 text-right">Admin Actions</th>
                   </tr>
@@ -781,7 +811,7 @@ function Dashboard() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="px-5 py-8 text-center text-zinc-500"
                       >
                         No registered plugin users found.
@@ -791,6 +821,10 @@ function Dashboard() {
                     filtered.map((u) => {
                       const currentStatus: "paid" | "trial" | "cancelled" =
                         u.status || (u.isPaid ? "paid" : "trial");
+                      const currentImgModel =
+                        u.imageModel || "google/nano-banana-pro";
+                      const currentVidModel =
+                        u.videoModel || "stability-ai/stable-video-diffusion";
                       return (
                         <tr
                           key={u.email}
@@ -814,14 +848,65 @@ function Dashboard() {
                             />
                           </td>
                           <td className="px-5 py-4">
-                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/15 px-3 py-1 font-bold text-purple-300">
-                              🖼️ {u.imageCount || u.count || 0} Images
-                            </span>
+                            <select
+                              value={currentImgModel}
+                              onChange={(e) =>
+                                handleSetModels(
+                                  u.email,
+                                  e.target.value,
+                                  currentVidModel
+                                )
+                              }
+                              disabled={actionLoading === "model_" + u.email}
+                              className="rounded-lg border border-purple-500/30 bg-purple-950/40 px-2.5 py-1 text-xs font-semibold text-purple-200 outline-none focus:border-purple-400"
+                            >
+                              <option value="google/nano-banana-pro">
+                                🍌 Google Nano Banana Pro
+                              </option>
+                              <option value="google/nano-banana-2">
+                                ⚡ Google Nano Banana 2
+                              </option>
+                              <option value="flux-depth-pro">
+                                🎨 FLUX Depth Pro
+                              </option>
+                              <option value="sdxl-controlnet">
+                                🌆 SDXL ControlNet
+                              </option>
+                            </select>
                           </td>
                           <td className="px-5 py-4">
-                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/15 px-3 py-1 font-bold text-blue-300">
-                              🎬 {u.videoCount || 0} Videos
-                            </span>
+                            <select
+                              value={currentVidModel}
+                              onChange={(e) =>
+                                handleSetModels(
+                                  u.email,
+                                  currentImgModel,
+                                  e.target.value
+                                )
+                              }
+                              disabled={actionLoading === "model_" + u.email}
+                              className="rounded-lg border border-blue-500/30 bg-blue-950/40 px-2.5 py-1 text-xs font-semibold text-blue-200 outline-none focus:border-blue-400"
+                            >
+                              <option value="stability-ai/stable-video-diffusion">
+                                🎥 Stable Video Diffusion
+                              </option>
+                              <option value="luma-dream-machine">
+                                🎬 Luma Dream Machine
+                              </option>
+                              <option value="wan-video-2.1">
+                                🚀 Wan 2.1 Video Engine
+                              </option>
+                            </select>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex flex-col gap-1 text-[11px] font-semibold">
+                              <span className="text-purple-300">
+                                🖼️ {u.imageCount || u.count || 0} imgs
+                              </span>
+                              <span className="text-blue-300">
+                                🎬 {u.videoCount || 0} vids
+                              </span>
+                            </div>
                           </td>
                           <td className="px-5 py-4 text-zinc-400">
                             <div className="flex items-center gap-1.5">

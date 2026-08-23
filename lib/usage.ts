@@ -13,6 +13,8 @@ export interface UserRecord {
   isPaid?: boolean;
   status?: "paid" | "trial" | "cancelled";
   paymentMode?: string;
+  imageModel?: string;
+  videoModel?: string;
   lastModelUsed?: string;
   activeSessionId?: string;
   signedUpAt: string;
@@ -231,6 +233,50 @@ export async function setUserStatus(
   } catch (err) {
     console.warn("Supabase status update skipped:", err);
   }
+
+  return true;
+}
+
+export async function getUserModels(
+  email: string
+): Promise<{ imageModel: string; videoModel: string }> {
+  const norm = email.toLowerCase().trim();
+  const memStatus = memoryUserStatuses.get(norm);
+  const diskMap = loadDiskUsers();
+  const diskUser = diskMap.get(norm);
+
+  const imageModel = diskUser?.imageModel || "google/nano-banana-pro";
+  const videoModel =
+    diskUser?.videoModel || "stability-ai/stable-video-diffusion";
+
+  return { imageModel, videoModel };
+}
+
+export async function setUserModels(
+  email: string,
+  imageModel: string,
+  videoModel: string
+): Promise<boolean> {
+  const norm = email.toLowerCase().trim();
+  const diskMap = loadDiskUsers();
+  const existing = diskMap.get(norm);
+  const now = new Date().toISOString();
+
+  saveDiskUserRecord({
+    email: norm,
+    count: existing?.count || 0,
+    imageCount: existing?.imageCount || 0,
+    videoCount: existing?.videoCount || 0,
+    isPaid: existing?.isPaid || false,
+    status: existing?.status || "trial",
+    paymentMode: existing?.paymentMode || "Free Trial",
+    imageModel,
+    videoModel,
+    lastModelUsed: imageModel,
+    signedUpAt: existing?.signedUpAt || now,
+    lastLoginAt: existing?.lastLoginAt || now,
+    lastActiveAt: now,
+  });
 
   return true;
 }

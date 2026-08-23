@@ -4,6 +4,7 @@ import {
   getAllUsers,
   setUserPaidStatus,
   setUserStatus,
+  setUserModels,
   resetUserUsage,
   TRIAL_GENERATION_LIMIT,
 } from "@/lib/usage";
@@ -57,10 +58,22 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { email, action, paid, status } = await request.json();
+    const body = await request.json();
+    const { email, action, paid, status, imageModel, videoModel } = body;
 
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
+    }
+
+    if (action === "set_models") {
+      const targetImg = imageModel || "google/nano-banana-pro";
+      const targetVid = videoModel || "stability-ai/stable-video-diffusion";
+      await setUserModels(email, targetImg, targetVid);
+      return NextResponse.json({
+        ok: true,
+        imageModel: targetImg,
+        videoModel: targetVid,
+      });
     }
 
     if (action === "set_status") {
