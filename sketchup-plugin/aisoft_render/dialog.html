@@ -1343,7 +1343,7 @@
           }
         }
       } catch (err) {
-        showStatus('❌ Server Connection Error: Could not connect to ' + currentServerUrl, 'error');
+        showStatus('❌ ' + (err.message || 'Connection Error'), 'error');
         document.getElementById('renderBtn').disabled = false;
         document.getElementById('aiLoading').style.display = 'none';
         document.getElementById('aiPlaceholder').style.display = 'block';
