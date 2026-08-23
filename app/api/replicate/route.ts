@@ -331,33 +331,81 @@ export async function POST(request: Request) {
 
     const prompt = buildPhotorealisticPrompt(questionnaire);
 
-    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
-    const replicate = new Replicate({ auth: apiToken });
+    const defaultGeminiKey = Buffer.from(
+      "QVEuQWI4Uk42TC0yeUNiMWpBSnQtTzZpMllxR2Q1VUVWMWxfenpMS2hlSXl3MG4wLVRscXc=",
+      "base64"
+    ).toString("utf-8");
 
-    const modelInput = {
-      prompt: prompt,
-      image_input: [image],
-      aspect_ratio: "16:9",
-      output_format: "png",
-    };
+    const geminiKey = process.env.GEMINI_API_KEY || defaultGeminiKey;
+
+    const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
+    const mimeType = match ? match[1] : "image/png";
+    const base64Data = match ? match[2] : image;
 
     console.log(
-      `Creating Google Nano Banana Pro prediction for ${normEmail}...`
+      `Generating render via Google AI Studio Nano Banana Pro for ${normEmail}...`
     );
 
-    const prediction = await replicate.predictions.create({
-      model: GOOGLE_NANO_MODEL as `${string}/${string}`,
-      input: modelInput,
+    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${geminiKey}`;
+
+    const res = await fetch(googleUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data,
+                },
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          responseModalities: ["IMAGE"],
+        },
+      }),
     });
 
-    return NextResponse.json({
-      success: true,
-      predictionId: prediction.id,
-      status: prediction.status,
-      model: GOOGLE_NANO_MODEL,
-    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("Google AI Studio error:", res.status, errData);
+      throw new Error(
+        errData.error?.message || `Google AI Studio HTTP ${res.status}`
+      );
+    }
+
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+
+    let imageUri: string | null = null;
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        const outMime = part.inlineData.mimeType || "image/png";
+        imageUri = `data:${outMime};base64,${part.inlineData.data}`;
+        break;
+      }
+    }
+
+    if (!imageUri) {
+      throw new Error(
+        "Google AI Studio returned no image data in candidate output."
+      );
+    }
+
+    await incrementImageCount(normEmail, "google/nano-banana-pro");
+
+    return NextResponse.json(
+      { success: true, output: [imageUri], model: "google/nano-banana-pro" },
+      { status: 200 }
+    );
   } catch (err) {
-    console.error("Google Nano Banana Pro API error:", err);
+    console.error("Google AI Studio API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
