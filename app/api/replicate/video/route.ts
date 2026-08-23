@@ -8,26 +8,55 @@ import {
   TRIAL_VIDEO_LIMIT,
 } from "@/lib/usage";
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 async function resolveVideoUrl(output: unknown): Promise<string> {
   if (!output) return "";
   let item = Array.isArray(output) ? output[output.length - 1] : output;
+  if (!item) return "";
 
-  if (item && typeof item === "object" && "getReader" in item) {
-    const reader = (item as ReadableStream<Uint8Array>).getReader();
-    const chunks: Uint8Array[] = [];
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) chunks.push(value);
-    }
-    const buffer = Buffer.concat(chunks);
-    return `data:video/mp4;base64,${buffer.toString("base64")}`;
-  }
-
+  // 1. Direct string URL
   if (typeof item === "string") return item;
-  if (item && typeof item === "object" && "url" in item) {
-    return String((item as { url: unknown }).url);
+
+  // 2. Replicate FileOutput object (has url() method or url property)
+  if (typeof item === "object") {
+    if ("url" in item) {
+      if (typeof (item as any).url === "function") {
+        try {
+          const u = (item as any).url();
+          if (u) return typeof u === "string" ? u : u.href || String(u);
+        } catch {}
+      } else if (typeof (item as any).url === "string") {
+        return (item as any).url;
+      }
+    }
+
+    if (typeof (item as any).toString === "function") {
+      const str = (item as any).toString();
+      if (str && (str.startsWith("http://") || str.startsWith("https://"))) {
+        return str;
+      }
+    }
+
+    // 3. Fallback: ReadableStream binary chunks
+    if ("getReader" in item) {
+      try {
+        const reader = (item as ReadableStream<Uint8Array>).getReader();
+        const chunks: Uint8Array[] = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) chunks.push(value);
+        }
+        const buffer = Buffer.concat(chunks);
+        return `data:video/mp4;base64,${buffer.toString("base64")}`;
+      } catch (e) {
+        console.warn("Error reading stream chunks for video:", e);
+      }
+    }
   }
+
   return String(item);
 }
 
@@ -114,11 +143,13 @@ export async function POST(request: Request) {
     let videoUrl: string | null = null;
     let lastError = "";
 
-    // Strategy 1: stability-ai/stable-video-diffusion
+    // Strategy 1: stability-ai/stable-video-diffusion (latest working version)
     try {
-      console.log("Trying stable-video-diffusion...");
+      console.log(
+        "Trying stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438..."
+      );
       const output = await replicate.run(
-        "stability-ai/stable-video-diffusion:3f0463197e5427de3e788a65d03522c562947dcb732e147160ed0ba936e3d9d7",
+        "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
         {
           input: {
             input_image: imageUrl,

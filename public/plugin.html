@@ -579,11 +579,11 @@
     };
 
     function getLiveServerUrl() {
-      const serverInput = document.getElementById('serverUrl');
-      if (serverInput && serverInput.value.trim()) return serverInput.value.trim().replace(/\/+$/, '');
-      if (window.location.origin && window.location.origin !== 'null' && window.location.origin !== 'file://') {
+      if (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:')) {
         return window.location.origin.replace(/\/+$/, '');
       }
+      const serverInput = document.getElementById('serverUrl');
+      if (serverInput && serverInput.value.trim()) return serverInput.value.trim().replace(/\/+$/, '');
       return 'https://pugin-five.vercel.app';
     }
 
@@ -595,10 +595,20 @@
     async function parseResponseJson(response) {
       try {
         const text = await response.text();
-        if (!text || !text.trim()) return {};
-        return JSON.parse(text);
+        if (!text || !text.trim()) {
+          return { error: response.status ? `Server error (Status ${response.status})` : 'Empty response from server' };
+        }
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          // If server returned plain text or HTML error
+          if (text.includes('<html') || text.includes('<!DOCTYPE')) {
+            return { error: `Server error (${response.status || 500}: ${response.statusText || 'Request failed'})` };
+          }
+          return { error: text.substring(0, 150) };
+        }
       } catch (err) {
-        return { error: 'Invalid response from server' };
+        return { error: 'Failed to read response from server' };
       }
     }
 

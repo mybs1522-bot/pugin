@@ -207,26 +207,52 @@ function buildModelInput(
   };
 }
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 async function resolveOutputUrl(output: unknown): Promise<string> {
   if (!output) return "";
   let item = Array.isArray(output) ? output[output.length - 1] : output;
-
-  if (item && typeof item === "object" && "getReader" in item) {
-    const reader = (item as ReadableStream<Uint8Array>).getReader();
-    const chunks: Uint8Array[] = [];
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) chunks.push(value);
-    }
-    const buffer = Buffer.concat(chunks);
-    return `data:image/png;base64,${buffer.toString("base64")}`;
-  }
+  if (!item) return "";
 
   if (typeof item === "string") return item;
-  if (item && typeof item === "object" && "url" in item) {
-    return String((item as { url: unknown }).url);
+
+  if (typeof item === "object") {
+    if ("url" in item) {
+      if (typeof (item as any).url === "function") {
+        try {
+          const u = (item as any).url();
+          if (u) return typeof u === "string" ? u : u.href || String(u);
+        } catch {}
+      } else if (typeof (item as any).url === "string") {
+        return (item as any).url;
+      }
+    }
+
+    if (typeof (item as any).toString === "function") {
+      const str = (item as any).toString();
+      if (str && (str.startsWith("http://") || str.startsWith("https://"))) {
+        return str;
+      }
+    }
+
+    if ("getReader" in item) {
+      try {
+        const reader = (item as ReadableStream<Uint8Array>).getReader();
+        const chunks: Uint8Array[] = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (value) chunks.push(value);
+        }
+        const buffer = Buffer.concat(chunks);
+        return `data:image/png;base64,${buffer.toString("base64")}`;
+      } catch (e) {
+        console.warn("Error reading stream chunks for image:", e);
+      }
+    }
   }
+
   return String(item);
 }
 
