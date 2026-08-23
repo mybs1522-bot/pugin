@@ -1,4 +1,6 @@
 import { getSupabaseAdmin } from "@/lib/supabase";
+import fs from "fs";
+import path from "path";
 
 export const TRIAL_IMAGE_LIMIT = 3;
 export const TRIAL_VIDEO_LIMIT = 1;
@@ -16,6 +18,51 @@ export interface UserRecord {
   signedUpAt: string;
   lastLoginAt: string;
   lastActiveAt: string;
+}
+
+function getDiskStorePath(): string {
+  try {
+    const tmpDir = "/tmp";
+    if (fs.existsSync(tmpDir)) {
+      return path.join(tmpDir, "pugin_users_registry.json");
+    }
+  } catch {}
+  return path.join(process.cwd(), ".users_registry.json");
+}
+
+function loadDiskUsers(): Map<string, { email: string } & UserRecord> {
+  const map = new Map<string, { email: string } & UserRecord>();
+  try {
+    const filePath = getDiskStorePath();
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      if (raw && raw.trim()) {
+        const list = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          list.forEach((u: { email: string } & UserRecord) => {
+            if (u && u.email) {
+              map.set(u.email.toLowerCase().trim(), u);
+            }
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Disk load warning:", err);
+  }
+  return map;
+}
+
+function saveDiskUserRecord(u: { email: string } & UserRecord) {
+  try {
+    const diskMap = loadDiskUsers();
+    diskMap.set(u.email.toLowerCase().trim(), u);
+    const filePath = getDiskStorePath();
+    const list = Array.from(diskMap.values());
+    fs.writeFileSync(filePath, JSON.stringify(list, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Disk save warning:", err);
+  }
 }
 
 // In-memory fallback store to ensure zero data loss
@@ -157,13 +204,29 @@ export async function setUserStatus(
   memoryUserStatuses.set(norm, status);
   memoryPaidUsers.set(norm, { isPaid, mode: paymentMode });
 
+  const diskMap = loadDiskUsers();
+  const existing = diskMap.get(norm);
+  const now = new Date().toISOString();
+
+  saveDiskUserRecord({
+    email: norm,
+    count: existing?.count || 0,
+    imageCount: existing?.imageCount || 0,
+    videoCount: existing?.videoCount || 0,
+    isPaid,
+    status,
+    paymentMode,
+    signedUpAt: existing?.signedUpAt || now,
+    lastLoginAt: existing?.lastLoginAt || now,
+    lastActiveAt: now,
+  });
+
   try {
     await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
       is_paid: isPaid,
-      status: status,
       payment_mode: paymentMode,
-      last_active_at: new Date().toISOString(),
+      last_active_at: now,
     });
   } catch (err) {
     console.warn("Supabase status update skipped:", err);
@@ -182,20 +245,30 @@ export async function registerTrialUser(email: string): Promise<boolean> {
   const mem = ensureMemRecord(norm);
   mem.lastActiveAt = now;
 
+  saveDiskUserRecord({
+    email: norm,
+    count: mem.count || 0,
+    imageCount: mem.imageCount || 0,
+    videoCount: mem.videoCount || 0,
+    isPaid: false,
+    status: "trial",
+    paymentMode: "14-Day Free Trial",
+    signedUpAt: now,
+    lastLoginAt: now,
+    lastActiveAt: now,
+  });
+
   try {
     await getSupabaseAdmin()
       .from("user_usage")
       .upsert({
         email: norm,
-        status: "trial",
-        payment_mode: "14-Day Free Trial",
         is_paid: false,
+        payment_mode: "14-Day Free Trial",
         signed_up_at: now,
         last_login_at: now,
         last_active_at: now,
         count: mem.count || 0,
-        image_count: mem.imageCount || 0,
-        video_count: mem.videoCount || 0,
       });
   } catch (err) {
     console.warn("Supabase trial registration skipped:", err);
@@ -375,22 +448,40 @@ export async function incrementVideoCount(
 export async function getAllUsers(): Promise<
   Array<{ email: string } & UserRecord>
 > {
-  const map = new Map<string, { email: string } & UserRecord>();
+  const map = loadDiskUsers();
 
   memoryUserCounts.forEach((val, emailKey) => {
     const memPaid = memoryPaidUsers.get(emailKey);
+    const existing = map.get(emailKey);
     map.set(emailKey, {
       email: emailKey,
-      count: val.count,
-      imageCount: val.imageCount || val.count,
-      videoCount: val.videoCount || 0,
-      isPaid: !!(memPaid && memPaid.isPaid),
-      paymentMode: memPaid ? memPaid.mode : "Free Trial",
-      lastModelUsed: memoryLastModels.get(emailKey) || "google/nano-banana-pro",
-      activeSessionId: memoryActiveSessions.get(emailKey),
-      signedUpAt: val.signedUpAt,
-      lastLoginAt: memoryUserLogins.get(emailKey) || val.lastActiveAt,
-      lastActiveAt: val.lastActiveAt,
+      count: Math.max(val.count, existing?.count || 0),
+      imageCount: Math.max(
+        val.imageCount || val.count,
+        existing?.imageCount || 0
+      ),
+      videoCount: Math.max(val.videoCount || 0, existing?.videoCount || 0),
+      isPaid: !!(memPaid ? memPaid.isPaid : existing?.isPaid),
+      status:
+        memoryUserStatuses.get(emailKey) ||
+        existing?.status ||
+        (existing?.isPaid ? "paid" : "trial"),
+      paymentMode: memPaid
+        ? memPaid.mode
+        : existing?.paymentMode || "Free Trial",
+      lastModelUsed:
+        memoryLastModels.get(emailKey) ||
+        existing?.lastModelUsed ||
+        "google/nano-banana-pro",
+      activeSessionId:
+        memoryActiveSessions.get(emailKey) || existing?.activeSessionId,
+      signedUpAt: existing?.signedUpAt || val.signedUpAt,
+      lastLoginAt:
+        memoryUserLogins.get(emailKey) ||
+        existing?.lastLoginAt ||
+        val.lastActiveAt,
+      lastActiveAt:
+        val.lastActiveAt || existing?.lastActiveAt || new Date().toISOString(),
     });
   });
 
