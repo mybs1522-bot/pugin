@@ -15,7 +15,8 @@ import type { DesignQuestionnaire } from "@/types";
 
 async function renderWithOpenAI(
   image: string,
-  prompt: string
+  prompt: string,
+  modelName: string = "gpt-image-2"
 ): Promise<string> {
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey)
@@ -27,20 +28,44 @@ async function renderWithOpenAI(
   const buffer = Buffer.from(base64Data, "base64");
   const file = await toFile(buffer, "sketchup_view.png", { type: "image/png" });
 
-  const response = await openai.images.edit({
-    model: "gpt-image-1",
-    image: file,
-    prompt: prompt,
-  });
+  const targetModel = modelName.includes("1.5")
+    ? "gpt-image-1.5"
+    : modelName.includes("gpt-image-1") && !modelName.includes("1.5")
+      ? "gpt-image-1"
+      : "gpt-image-2";
 
-  const firstItem = response.data?.[0];
-  if (firstItem?.b64_json) {
-    return `data:image/png;base64,${firstItem.b64_json}`;
+  const modelsToTry = [
+    targetModel,
+    "gpt-image-2",
+    "gpt-image-1.5",
+    "gpt-image-1",
+  ].filter((v, i, a) => a.indexOf(v) === i);
+
+  let lastErr = "";
+  for (const m of modelsToTry) {
+    try {
+      console.log(`Rendering with OpenAI model: ${m}...`);
+      const response = await openai.images.edit({
+        model: m,
+        image: file,
+        prompt: prompt,
+      });
+
+      const firstItem = response.data?.[0];
+      if (firstItem?.b64_json) {
+        return `data:image/png;base64,${firstItem.b64_json}`;
+      }
+      if (firstItem?.url) {
+        return firstItem.url;
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      lastErr = msg;
+      console.warn(`OpenAI model ${m} failed, trying next...`, msg);
+    }
   }
-  if (firstItem?.url) {
-    return firstItem.url;
-  }
-  throw new Error("OpenAI returned an empty image output.");
+
+  throw new Error(lastErr || "OpenAI returned an empty image output.");
 }
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
@@ -70,140 +95,146 @@ const PALETTE: Record<string, string> = {
   pastel: "soft pastel palette of muted delicate hues",
 };
 const WALL: Record<string, string> = {
-  white: "white wall color",
-  cream: "warm cream wall color",
-  "light-gray": "soft gray wall color",
-  beige: "warm beige wall color",
-  dark: "deep dark wall color",
-  textured: "textured wall finish",
-  "wood-paneled": "wood-toned wall accent",
+  white: "crisp matte white plaster wall finish",
+  cream: "warm cream lime-washed wall finish",
+  "light-gray": "soft light-gray micro-cement wall finish",
+  beige: "warm sandy beige plaster wall finish",
+  dark: "deep charcoal matte accent wall finish",
+  textured: "tactile Venetian plaster wall finish",
+  "wood-paneled": "fluted natural timber wood wall paneling",
 };
 const FLOOR: Record<string, string> = {
-  "light-hardwood": "light ash blonde hardwood flooring",
-  "dark-hardwood": "rich dark walnut hardwood flooring",
-  marble: "luxurious marble stone flooring",
-  concrete: "polished concrete flooring",
-  carpet: "plush carpet flooring",
-  tile: "large format ceramic porcelain tile flooring",
-  herringbone: "elegant herringbone parquet flooring",
+  "light-hardwood": "light blonde Scandinavian hardwood parquet flooring",
+  "dark-hardwood":
+    "rich dark walnut hardwood flooring with subtle satin reflection",
+  marble:
+    "polished Italian Calacatta marble slab flooring with soft contact reflections",
+  concrete: "seamless polished architectural concrete flooring",
+  carpet: "plush high-density wool loop carpet flooring",
+  tile: "large format matte porcelain architectural floor tiles",
+  herringbone: "classic French oak herringbone parquet flooring",
 };
 const WOOD: Record<string, string> = {
-  "light-ash": "light ash birch wood furniture",
-  "medium-oak": "warm medium oak wood furniture",
-  "dark-walnut": "deep dark walnut wood furniture",
-  "painted-white": "painted white lacquered furniture",
+  "light-ash": "light ash Scandinavian timber cabinetry",
+  "medium-oak": "warm natural European oak cabinetry and millwork",
+  "dark-walnut": "rich American dark walnut cabinetry with natural wood grain",
+  "painted-white": "satin white lacquered cabinetry",
   none: "",
 };
 const METAL: Record<string, string> = {
-  "brushed-gold": "brushed gold brass metal accents and hardware",
-  "polished-silver": "polished chrome silver metal accents",
-  "matte-black": "matte black metal hardware and accents",
-  "aged-bronze": "aged bronze copper metal accents",
+  "brushed-gold":
+    "brushed warm brass gold metal hardware with subtle satin sheen",
+  "polished-silver": "polished chrome architectural hardware",
+  "matte-black": "matte black architectural metal accents and hardware",
+  "aged-bronze": "patinated antique bronze metal hardware",
   none: "",
 };
 
 const EXT_FACADE: Record<string, string> = {
-  white: "crisp white render/plaster facade",
-  cream: "warm cream painted stucco facade",
-  "light-gray": "light gray cement render facade",
-  beige: "sandy beige stone cladding facade",
-  dark: "dark charcoal or slate facade",
-  textured: "textured exposed aggregate facade",
-  "wood-paneled": "natural timber cladding facade",
+  white: "crisp white architectural plaster facade",
+  cream: "warm cream stucco and travertine facade",
+  "light-gray": "board-formed architectural concrete facade",
+  beige: "natural Jura limestone cladding facade",
+  dark: "charred Shou Sugi Ban timber and dark zinc facade",
+  textured: "tactile textured sandstone cladding facade",
+  "wood-paneled": "vertical natural cedar timber rainscreen facade",
 };
 const EXT_GROUND: Record<string, string> = {
-  "light-hardwood": "light sandstone paving",
-  "dark-hardwood": "dark basalt or granite paving",
-  marble: "polished marble paving",
-  concrete: "brushed concrete pathway",
-  carpet: "lush manicured lawn",
-  tile: "large format outdoor porcelain tiles",
-  herringbone: "herringbone brick paving",
+  "light-hardwood": "light natural sandstone terrace paving",
+  "dark-hardwood": "dark granite outdoor paving",
+  marble: "honed marble terrace paving",
+  concrete: "smooth architectural concrete terrace paving",
+  carpet: "lush manicured landscape lawn",
+  tile: "large format non-slip porcelain terrace tiles",
+  herringbone: "herringbone clay brick terrace paving",
 };
 
 const LIGHT_TO_SKY: Record<string, string> = {
   minimal:
-    "dramatic twilight dusk sky with deep blue-purple gradient, city glow on horizon",
+    "dramatic twilight blue-hour sky with warm interior window glow and architectural spotlighting",
   moderate:
-    "overcast soft cloudy sky, diffused daylight, subtle blue-grey clouds",
+    "soft diffused overcast daylight with subtle natural cloud gradient",
   abundant:
-    "vivid golden hour sky with warm orange and pink clouds, long directional sunlight",
+    "warm directional golden-hour sunlight with crisp architectural shadows",
 };
-
-function buildExteriorPrompt(q: DesignQuestionnaire): string {
-  const matChanges: string[] = [];
-  if (EXT_FACADE[q.wallFinish]) matChanges.push(EXT_FACADE[q.wallFinish]);
-  if (EXT_GROUND[q.floorMaterial]) matChanges.push(EXT_GROUND[q.floorMaterial]);
-  if (WOOD[q.woodTone])
-    matChanges.push(`${WOOD[q.woodTone]} on doors and frames`);
-  if (METAL[q.metalAccent])
-    matChanges.push(`${METAL[q.metalAccent]} on railings and fixtures`);
-  const palette = PALETTE[q.colorPalette] ?? "";
-  const accentColorStr = q.accentColor
-    ? `custom accent color ${q.accentColor}`
-    : "";
-  const skyDesc = LIGHT_TO_SKY[q.naturalLight] ?? LIGHT_TO_SKY["abundant"];
-  const style = `${ERA[q.era] ?? ""} ${q.primaryStyle} ${q.roomType}`.trim();
-
-  const EXT_STRUCTURE_LOCK =
-    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK: ` +
-    `You are given an input image of a ${style} building. ` +
-    `You MUST preserve with 100% fidelity: ` +
-    `(1) exact camera angle, perspective, and distance, ` +
-    `(2) exact building massing — every wall, roof plane, overhang stays identical, ` +
-    `(3) exact window positions, sizes, and shapes. `;
-
-  return (
-    EXT_STRUCTURE_LOCK +
-    `NOW apply photorealistic rendering quality to that exact building. ` +
-    `${palette ? `Color scheme: ${palette}. ` : ""}` +
-    `${accentColorStr ? `Accent: ${accentColorStr}. ` : ""}` +
-    `Surface changes: ${matChanges.join(", ")}. Sky: ${skyDesc}. ` +
-    `8K RAW architectural photograph. `
-  );
-}
 
 const INTERIOR_LIGHT_DESC: Record<string, string> = {
   "bright-natural":
-    "bright cool daylight streaming through windows with sharp window shadows",
+    "bright natural daylight streaming through windows with soft realistic window shadows",
   "warm-ambient":
-    "warm golden ambient light from lamps and recessed lighting at 2700K",
+    "warm 2700K ambient illumination from recessed ceiling downlights with natural IES light cone falloff and glowing pendant lights",
   "dramatic-spotlit":
-    "dramatic directional spotlighting with high contrast deep shadows",
-  "soft-diffused": "soft even diffused light, neutral temperature",
+    "dramatic architectural spotlighting with high-contrast soft shadows and focused accent lights",
+  "soft-diffused":
+    "soft even ambient daylight with gentle balanced interior fill lighting",
 };
 
-function buildEditPrompt(q: DesignQuestionnaire): string {
-  const matChanges: string[] = [];
-  if (WALL[q.wallFinish]) matChanges.push(`walls: ${WALL[q.wallFinish]}`);
-  if (FLOOR[q.floorMaterial])
-    matChanges.push(`floor: ${FLOOR[q.floorMaterial]}`);
-  if (PALETTE[q.colorPalette])
-    matChanges.push(`color scheme: ${PALETTE[q.colorPalette]}`);
-  if (q.accentColor) matChanges.push(`custom accent color ${q.accentColor}`);
-  if (WOOD[q.woodTone]) matChanges.push(`wood: ${WOOD[q.woodTone]}`);
-  if (METAL[q.metalAccent]) matChanges.push(`metal: ${METAL[q.metalAccent]}`);
-  if (MOOD[q.mood]) matChanges.push(MOOD[q.mood]);
+function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+  // If user made NO selection or left default (Auto Realism Viewport Mode)
+  if (!q || !q.primaryStyle || (q.primaryStyle as string) === "auto") {
+    return (
+      "Award-winning architectural photograph of this exact space, published in Architectural Digest. " +
+      "Masterful Corona Renderer / V-Ray physical camera capture. " +
+      "Maintain 100% exact 3D geometry, walls, window openings, doors, cabinetry, and furniture positions with complete precision. " +
+      "Transform flat computer graphics into hyper-realistic physical materials: rich authentic wood grain textures with subtle specular sheen, " +
+      "polished Italian marble / stone flooring with realistic soft contact reflections and grout seams, " +
+      "matte emulsion wall paint with tactile micro-plaster texture, brushed brass and matte metal hardware. " +
+      "Lighting: physically accurate global illumination, soft natural daylight streaming through windows, " +
+      "warm 2700K recessed downlights with realistic IES light cone falloff, glowing designer pendant lamps, " +
+      "deep ambient occlusion in corners, crisp contact shadows beneath all furniture, soft bloom on light sources. " +
+      "Shot on Hasselblad H6D-100c, 24mm tilt-shift architectural lens, photorealistic 8K, crisp depth of field, RAW magazine quality."
+    );
+  }
 
-  const lightDesc =
-    INTERIOR_LIGHT_DESC[q.lightingMood] ?? INTERIOR_LIGHT_DESC["warm-ambient"];
-  const style = `${ERA[q.era] ?? ""} ${q.primaryStyle} ${q.roomType}`.trim();
+  const isExterior = q.spaceType === "exterior";
+  const styleStr =
+    `${q.era ? `${ERA[q.era] ?? q.era} ` : ""}${q.primaryStyle || "Modern"} ${q.roomType || (isExterior ? "Architecture" : "Interior")}`.trim();
 
-  const STRUCTURE_LOCK =
-    `ABSOLUTE HARD RULE — THIS IS AN IMAGE EDITING TASK: ` +
-    `You are given an input image of a ${style}. ` +
-    `You MUST preserve with 100% fidelity: ` +
-    `(1) exact camera angle and perspective, ` +
-    `(2) exact positions of every piece of furniture, ` +
-    `(3) exact room dimensions, wall layout, window positions. `;
+  const matDetails: string[] = [];
+  if (q.wallFinish && (WALL[q.wallFinish] || EXT_FACADE[q.wallFinish])) {
+    matDetails.push(
+      isExterior ? EXT_FACADE[q.wallFinish] : `walls: ${WALL[q.wallFinish]}`
+    );
+  }
+  if (
+    q.floorMaterial &&
+    (FLOOR[q.floorMaterial] || EXT_GROUND[q.floorMaterial])
+  ) {
+    matDetails.push(
+      isExterior
+        ? EXT_GROUND[q.floorMaterial]
+        : `floors: ${FLOOR[q.floorMaterial]}`
+    );
+  }
+  if (q.woodTone && WOOD[q.woodTone]) {
+    matDetails.push(`cabinetry & woodwork: ${WOOD[q.woodTone]}`);
+  }
+  if (q.metalAccent && METAL[q.metalAccent]) {
+    matDetails.push(`metal hardware: ${METAL[q.metalAccent]}`);
+  }
+  if (q.colorPalette && PALETTE[q.colorPalette]) {
+    matDetails.push(`color scheme: ${PALETTE[q.colorPalette]}`);
+  }
+  if (q.accentColor) {
+    matDetails.push(`custom accent tone: ${q.accentColor}`);
+  }
+  if (q.mood && MOOD[q.mood]) {
+    matDetails.push(`mood: ${MOOD[q.mood]}`);
+  }
+
+  const lightingDesc = isExterior
+    ? (LIGHT_TO_SKY[q.naturalLight] ??
+      "golden hour natural daylight with soft shadows")
+    : (INTERIOR_LIGHT_DESC[q.lightingMood] ??
+      "warm 2700K ambient glow with realistic downlights and soft window daylight");
 
   return (
-    STRUCTURE_LOCK +
-    `NOW apply photorealistic rendering quality to that exact layout. ` +
-    `Style: ${style}. V-Ray / Corona / Enscape render quality. ` +
-    `Apply ONLY these surface changes: ${matChanges.join("; ")}. ` +
-    `LIGHTING: ${lightDesc}. ` +
-    `8K photographic realism, RAW architectural photography.`
+    `Award-winning architectural photograph of this ${styleStr}. ` +
+    `Masterful V-Ray / Corona Renderer photorealism, published in Architectural Digest. ` +
+    `Preserve with 100% precision the exact 3D geometry, walls, windows, doors, cabinetry, and furniture layout from the input view. ` +
+    `Render with physical PBR materials: ${matDetails.length > 0 ? matDetails.join(", ") + ". " : "authentic luxury textures. "}` +
+    `Lighting: ${lightingDesc}, physically accurate global illumination, contact shadows (ambient occlusion), natural specular highlights. ` +
+    `Shot on Hasselblad H6D-100c, 24mm tilt-shift architectural lens, photorealistic 8K, RAW magazine quality.`
   );
 }
 
@@ -343,35 +374,28 @@ export async function POST(request: Request) {
     const image: string = req.image;
     const questionnaire: DesignQuestionnaire = req.questionnaire;
 
-    const apiToken = process.env.REPLICATE_API_TOKEN;
-    if (!apiToken) {
-      return NextResponse.json(
-        {
-          error:
-            "REPLICATE_API_TOKEN is missing on Vercel server. Go to Vercel Settings -> Environment Variables, add REPLICATE_API_TOKEN, then Redeploy.",
-        },
-        { status: 400 }
-      );
-    }
+    const prompt = buildPhotorealisticPrompt(questionnaire);
 
-    const replicate = new Replicate({ auth: apiToken });
-
-    const prompt =
-      questionnaire?.spaceType === "exterior"
-        ? buildExteriorPrompt(questionnaire)
-        : buildEditPrompt(questionnaire ?? {});
-
-    const selectedModel = req.model || "";
+    const selectedModel = req.model || "openai/gpt-image-2";
     const isOpenAI =
-      selectedModel.includes("openai") || selectedModel.includes("gpt");
+      selectedModel.includes("openai") ||
+      selectedModel.includes("gpt") ||
+      Boolean(
+        process.env.OPENAI_API_KEY &&
+        !req.model?.includes("google") &&
+        !req.model?.includes("banana")
+      );
 
-    if (isOpenAI) {
+    if (isOpenAI && process.env.OPENAI_API_KEY) {
       console.log(
-        `Generating render with OpenAI gpt-image-1 for ${normEmail}...`
+        `Generating render with OpenAI (model: ${selectedModel}) for ${normEmail}...`
       );
       try {
-        const url = await renderWithOpenAI(image, prompt);
-        await incrementImageCount(normEmail, "openai/gpt-image-1");
+        const url = await renderWithOpenAI(image, prompt, selectedModel);
+        await incrementImageCount(
+          normEmail,
+          selectedModel || "openai/gpt-image-2"
+        );
         return NextResponse.json({ output: [url] }, { status: 200 });
       } catch (err) {
         console.error(
@@ -380,6 +404,19 @@ export async function POST(request: Request) {
         );
       }
     }
+
+    const apiToken = process.env.REPLICATE_API_TOKEN;
+    if (!apiToken) {
+      return NextResponse.json(
+        {
+          error:
+            "REPLICATE_API_TOKEN or OPENAI_API_KEY is missing on Vercel server. Please add them in Vercel Settings -> Environment Variables.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const replicate = new Replicate({ auth: apiToken });
 
     // Model Routing Strategy:
     // Trial Users -> ALWAYS Nano Banana Pro (google/nano-banana-pro)

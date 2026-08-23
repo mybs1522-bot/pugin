@@ -417,11 +417,11 @@
 
       <!-- AI Model Quality & Cost Selector -->
       <div>
-        <div class="section-title">AI Engine & Cost Model</div>
+        <div class="section-title">AI Engine & Photorealism Model</div>
         <select id="modelSelect">
-          <option value="openai/gpt-image-1" selected>✨ OpenAI GPT-Image-1 (Photorealistic)</option>
-          <option value="google/nano-banana-pro">💎 Nano Banana Pro (High Detail)</option>
-          <option value="google/nano-banana-2">⚡ Nano Banana 2 (Balanced Fast)</option>
+          <option value="openai/gpt-image-2" selected>✨ OpenAI GPT-Image-2 (Ultra-Realistic Flagship)</option>
+          <option value="openai/gpt-image-1.5">💎 OpenAI GPT-Image-1.5 (High Detail)</option>
+          <option value="google/nano-banana-pro">⚡ Nano Banana Pro (Balanced Fast)</option>
         </select>
       </div>
 
@@ -1030,12 +1030,15 @@
       { v: "soft-diffused", label: "Soft Diffused", d: "Gentle even shadows" }
     ];
 
+    let userCustomized = false;
+
     function switchStep(idx) {
       document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
       document.querySelectorAll('.step-content').forEach((s, i) => s.style.display = i === idx ? 'flex' : 'none');
     }
 
     function selectSpace(type) {
+      userCustomized = true;
       questionnaire.spaceType = type;
       document.getElementById('space-interior').classList.toggle('selected', type === 'interior');
       document.getElementById('space-exterior').classList.toggle('selected', type === 'exterior');
@@ -1062,7 +1065,7 @@
       `).join('');
     }
 
-    function selectRoom(v) { questionnaire.roomType = v; renderRoomGrid(); }
+    function selectRoom(v) { userCustomized = true; questionnaire.roomType = v; renderRoomGrid(); }
 
     function renderStyleGrid() {
       document.getElementById('styleGrid').innerHTML = STYLES.map(s => `
@@ -1081,8 +1084,8 @@
         </div>
       `).join('');
     }
-    function selectStyle(v) { questionnaire.primaryStyle = v; renderStyleGrid(); }
-    function selectMood(v) { questionnaire.mood = v; renderStyleGrid(); }
+    function selectStyle(v) { userCustomized = true; questionnaire.primaryStyle = v; renderStyleGrid(); }
+    function selectMood(v) { userCustomized = true; questionnaire.mood = v; renderStyleGrid(); }
 
     function renderPaletteGrid() {
       document.getElementById('paletteGrid').innerHTML = PALETTES.map(p => `
@@ -1095,7 +1098,7 @@
         </div>
       `).join('');
     }
-    function selectPalette(v) { questionnaire.colorPalette = v; renderPaletteGrid(); }
+    function selectPalette(v) { userCustomized = true; questionnaire.colorPalette = v; renderPaletteGrid(); }
 
     function renderFinishGrids() {
       document.getElementById('wallGrid').innerHTML = WALLS.map(w => `
@@ -1114,8 +1117,8 @@
         </div>
       `).join('');
     }
-    function selectWall(v) { questionnaire.wallFinish = v; renderFinishGrids(); }
-    function selectFloor(v) { questionnaire.floorMaterial = v; renderFinishGrids(); }
+    function selectWall(v) { userCustomized = true; questionnaire.wallFinish = v; renderFinishGrids(); }
+    function selectFloor(v) { userCustomized = true; questionnaire.floorMaterial = v; renderFinishGrids(); }
 
     function renderFurnitureGrids() {
       document.getElementById('woodGrid').innerHTML = WOODS.map(w => `
@@ -1139,9 +1142,9 @@
         </div>
       `).join('');
     }
-    function selectWood(v) { questionnaire.woodTone = v; renderFurnitureGrids(); }
-    function selectMetal(v) { questionnaire.metalAccent = v; renderFurnitureGrids(); }
-    function selectLighting(v) { questionnaire.lightingMood = v; renderFurnitureGrids(); }
+    function selectWood(v) { userCustomized = true; questionnaire.woodTone = v; renderFurnitureGrids(); }
+    function selectMetal(v) { userCustomized = true; questionnaire.metalAccent = v; renderFurnitureGrids(); }
+    function selectLighting(v) { userCustomized = true; questionnaire.lightingMood = v; renderFurnitureGrids(); }
 
     renderRoomGrid();
     renderStyleGrid();
@@ -1245,6 +1248,10 @@
 
       try {
         const apiUrl = currentServerUrl + '/api/replicate';
+        const payloadQuestionnaire = userCustomized 
+          ? questionnaire 
+          : { ...questionnaire, primaryStyle: "auto" };
+
         const response = await fetch(apiUrl, {
           method: 'POST',
           headers: {
@@ -1255,7 +1262,7 @@
           },
           body: JSON.stringify({
             image: optimizedImage,
-            questionnaire: questionnaire,
+            questionnaire: payloadQuestionnaire,
             model: document.getElementById('modelSelect').value,
             userEmail: userEmail,
             sessionId: userSessionId
