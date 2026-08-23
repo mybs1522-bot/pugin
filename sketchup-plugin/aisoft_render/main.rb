@@ -46,9 +46,14 @@ module AIsoftRender
     def capture_and_send_to_js
       view = Sketchup.active_model.active_view
       
-      # Use exact active viewport width and height to preserve perspective & aspect ratio
-      width = view.vpwidth > 0 ? view.vpwidth : 1280
-      height = view.vpheight > 0 ? view.vpheight : 720
+      # Use exact active viewport width and height scaled to max 1536px to preserve aspect ratio while preventing oversized payloads
+      raw_w = view.vpwidth > 0 ? view.vpwidth : 1280
+      raw_h = view.vpheight > 0 ? view.vpheight : 720
+
+      max_dim = 1536.0
+      scale = [max_dim / raw_w, max_dim / raw_h, 1.0].min
+      width = (raw_w * scale).round
+      height = (raw_h * scale).round
 
       temp_image_path = File.join(Dir.tmpdir, "sketchup_view_#{Time.now.to_i}.png")
 
