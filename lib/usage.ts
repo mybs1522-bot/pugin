@@ -172,6 +172,38 @@ export async function setUserStatus(
   return true;
 }
 
+export async function registerTrialUser(email: string): Promise<boolean> {
+  const norm = email.toLowerCase().trim();
+  const now = new Date().toISOString();
+
+  memoryUserStatuses.set(norm, "trial");
+  memoryUserLogins.set(norm, now);
+
+  const mem = ensureMemRecord(norm);
+  mem.lastActiveAt = now;
+
+  try {
+    await getSupabaseAdmin()
+      .from("user_usage")
+      .upsert({
+        email: norm,
+        status: "trial",
+        payment_mode: "14-Day Free Trial",
+        is_paid: false,
+        signed_up_at: now,
+        last_login_at: now,
+        last_active_at: now,
+        count: mem.count || 0,
+        image_count: mem.imageCount || 0,
+        video_count: mem.videoCount || 0,
+      });
+  } catch (err) {
+    console.warn("Supabase trial registration skipped:", err);
+  }
+
+  return true;
+}
+
 export async function resetUserUsage(email: string): Promise<boolean> {
   const norm = email.toLowerCase().trim();
   const mem = ensureMemRecord(norm);

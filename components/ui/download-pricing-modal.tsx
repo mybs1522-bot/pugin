@@ -33,24 +33,32 @@ export function DownloadPricingModal({
     setStep("email");
   };
 
-  const handleConfirmEmailTrial = (e: React.FormEvent) => {
+  const handleConfirmEmailTrial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes("@")) return;
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-      setStep("done");
+    try {
+      await fetch("/api/trial", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+    } catch (err) {
+      console.warn("Trial registration API warning:", err);
+    }
 
-      // Trigger automatic download of the SketchUp Plugin archive (.rbz)
-      const downloadLink = document.createElement("a");
-      downloadLink.href = "/aisoft_render.rbz";
-      downloadLink.download = "aisoft_render.rbz";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    }, 600);
+    setLoading(false);
+    setStep("done");
+
+    // Trigger automatic download of the SketchUp Plugin archive (.rbz)
+    const downloadLink = document.createElement("a");
+    downloadLink.href = "/aisoft_render.rbz";
+    downloadLink.download = "aisoft_render.rbz";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
 
   const handleManualDownload = () => {
