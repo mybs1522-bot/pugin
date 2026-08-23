@@ -630,7 +630,14 @@
         <div class="cards-grid" id="lightingGrid"></div>
       </div>
 
-      <button class="btn" id="renderBtn" onclick="triggerRender()">Render Current Viewport</button>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button class="btn" id="renderBtn" onclick="triggerAIRender()" style="flex:1; background:linear-gradient(135deg, #4f46e5, #9333ea); margin-top:0;">
+          ✨ Render Photorealistic AI Image
+        </button>
+        <button class="btn" id="recaptureBtn" onclick="requestViewportCapture()" style="width:auto; padding:0 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#a1a1aa; font-size:11px; margin-top:0;" title="Re-capture SketchUp screen">
+          📸 Refresh
+        </button>
+      </div>
       <div id="status"></div>
     </div>
 
@@ -751,6 +758,7 @@
         overlay.style.visibility = 'hidden';
         setTimeout(() => {
           overlay.style.display = 'none';
+          requestViewportCapture();
         }, 600);
       }, 1400);
     }
@@ -1492,15 +1500,69 @@
       }
     }
 
+    let capturedViewportImageData = null;
+
+    function requestViewportCapture() {
+      showStatus('📸 Capturing SketchUp viewport...', 'loading');
+      if (window.sketchup) {
+        sketchup.capture_viewport();
+      } else {
+        // Web preview fallback
+        onViewportCaptured({
+          success: true,
+          image: '/master_prompt_render.png',
+          width: 1920,
+          height: 1080
+        });
+      }
+    }
+
+    function onViewportCaptured(result) {
+      if (!result || !result.success) {
+        const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
+        showStatus('❌ Screen Capture Failed: ' + err, 'error');
+        return;
+      }
+
+      capturedViewportImageData = result.image;
+
+      const vpImg = document.getElementById('viewportImg');
+      vpImg.src = result.image;
+      vpImg.style.display = 'block';
+      document.getElementById('viewportPlaceholder').style.display = 'none';
+      
+      const hint = document.getElementById('pinHintBadge');
+      if (hint) hint.style.display = 'inline-flex';
+      const bar = document.getElementById('materialPickerBar');
+      if (bar) bar.style.display = 'block';
+
+      if (result.width && result.height) {
+        document.getElementById('dimBadge').innerText = result.width + 'x' + result.height;
+      }
+
+      showStatus('🎯 Viewport captured! Click any surface on the image above to customize materials & colors, then click Render.', 'success');
+      renderMaterialPinsUI();
+    }
+
     function triggerRender() {
+      triggerAIRender();
+    }
+
+    async function triggerAIRender() {
       if (!userEmail) {
         document.getElementById('authModal').style.display = 'flex';
         return;
       }
 
+      if (!capturedViewportImageData) {
+        requestViewportCapture();
+        showStatus('📸 Viewport capturing... Please click Render again in a moment.', 'loading');
+        return;
+      }
+
       const renderBtn = document.getElementById('renderBtn');
       renderBtn.disabled = true;
-      showStatus('📸 Capturing SketchUp viewport...', 'loading');
+      showStatus('📸 Optimizing viewport & custom materials...', 'loading');
 
       document.getElementById('aiPlaceholder').style.display = 'none';
       document.getElementById('aiImg').style.display = 'none';
@@ -1515,72 +1577,7 @@
       currentServerUrl = getLiveServerUrl();
       questionnaire.accentColor = document.getElementById('accentColor').value;
 
-      if (window.sketchup) {
-        sketchup.capture_viewport();
-      } else {
-        showStatus('❌ Error: SketchUp Ruby bridge not found. Run inside SketchUp.', 'error');
-        renderBtn.disabled = false;
-        document.getElementById('aiLoading').style.display = 'none';
-        document.getElementById('aiPlaceholder').style.display = 'block';
-      }
-    }
-
-    function optimizeImagePayload(base64Str, maxWidth = 1536, maxHeight = 1536, quality = 0.90) {
-      return new Promise((resolve) => {
-        if (!base64Str || typeof base64Str !== 'string' || !base64Str.startsWith('data:image')) {
-          return resolve(base64Str);
-        }
-        const img = new Image();
-        img.onload = () => {
-          let w = img.width;
-          let h = img.height;
-          
-          if (w > maxWidth || h > maxHeight) {
-            const ratio = Math.min(maxWidth / w, maxHeight / h);
-            w = Math.round(w * ratio);
-            h = Math.round(h * ratio);
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          
-          const optimized = canvas.toDataURL('image/jpeg', quality);
-          resolve(optimized);
-        };
-        img.onerror = () => resolve(base64Str);
-        img.src = base64Str;
-      });
-    }
-
-    async function onViewportCaptured(result) {
-      if (!result || !result.success) {
-        const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
-        showStatus('❌ Screen Capture Failed: ' + err, 'error');
-        document.getElementById('renderBtn').disabled = false;
-        document.getElementById('aiLoading').style.display = 'none';
-        document.getElementById('aiPlaceholder').style.display = 'block';
-        return;
-      }
-
-      const vpImg = document.getElementById('viewportImg');
-      vpImg.src = result.image;
-      vpImg.style.display = 'block';
-      document.getElementById('viewportPlaceholder').style.display = 'none';
-      const hint = document.getElementById('pinHintBadge');
-      if (hint) hint.style.display = 'inline-flex';
-      const bar = document.getElementById('materialPickerBar');
-      if (bar) bar.style.display = 'block';
-
-      if (result.width && result.height) {
-        document.getElementById('dimBadge').innerText = result.width + 'x' + result.height;
-      }
-
-      showStatus('✨ Viewport captured! Optimizing & rendering...', 'loading');
-
-      const optimizedImage = await optimizeImagePayload(result.image);
+      const optimizedImage = await optimizeImagePayload(capturedViewportImageData);
 
       try {
         const apiUrl = currentServerUrl + '/api/replicate';
@@ -1620,7 +1617,7 @@
             while (true) {
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
-              showStatus(`🍌 Google Nano Banana Pro Rendering (${elapsed}s)...`, 'loading');
+              showStatus(`🍌 Rendering Photorealistic AI Image (${elapsed}s)...`, 'loading');
               document.getElementById('loadingSub').innerHTML = `Processing Gemini vision spatial rendering (${elapsed}s)`;
 
               try {
