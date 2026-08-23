@@ -170,71 +170,76 @@ const INTERIOR_LIGHT_DESC: Record<string, string> = {
 };
 
 function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
-  // If user made NO selection or left default (Auto Realism Viewport Mode)
-  if (!q || !q.primaryStyle || (q.primaryStyle as string) === "auto") {
-    return (
-      "Award-winning architectural photograph of this exact space, published in Architectural Digest. " +
-      "Masterful Corona Renderer / V-Ray physical camera capture. " +
-      "Maintain 100% exact 3D geometry, walls, window openings, doors, cabinetry, and furniture positions with complete precision. " +
-      "Transform flat computer graphics into hyper-realistic physical materials: rich authentic wood grain textures with subtle specular sheen, " +
-      "polished Italian marble / stone flooring with realistic soft contact reflections and grout seams, " +
-      "matte emulsion wall paint with tactile micro-plaster texture, brushed brass and matte metal hardware. " +
-      "Lighting: physically accurate global illumination, soft natural daylight streaming through windows, " +
-      "warm 2700K recessed downlights with realistic IES light cone falloff, glowing designer pendant lamps, " +
-      "deep ambient occlusion in corners, crisp contact shadows beneath all furniture, soft bloom on light sources. " +
-      "Shot on Hasselblad H6D-100c, 24mm tilt-shift architectural lens, photorealistic 8K, crisp depth of field, RAW magazine quality."
-    );
-  }
+  const isExterior = q?.spaceType === "exterior";
 
-  const isExterior = q.spaceType === "exterior";
-  const styleStr =
-    `${q.era ? `${ERA[q.era] ?? q.era} ` : ""}${q.primaryStyle || "Modern"} ${q.roomType || (isExterior ? "Architecture" : "Interior")}`.trim();
-
-  const matDetails: string[] = [];
-  if (q.wallFinish && (WALL[q.wallFinish] || EXT_FACADE[q.wallFinish])) {
-    matDetails.push(
-      isExterior ? EXT_FACADE[q.wallFinish] : `walls: ${WALL[q.wallFinish]}`
-    );
-  }
-  if (
-    q.floorMaterial &&
-    (FLOOR[q.floorMaterial] || EXT_GROUND[q.floorMaterial])
-  ) {
-    matDetails.push(
-      isExterior
+  // If exterior space
+  if (isExterior) {
+    const facadeMat =
+      q?.wallFinish && EXT_FACADE[q.wallFinish]
+        ? EXT_FACADE[q.wallFinish]
+        : "authentic architectural facade cladding";
+    const groundMat =
+      q?.floorMaterial && EXT_GROUND[q.floorMaterial]
         ? EXT_GROUND[q.floorMaterial]
-        : `floors: ${FLOOR[q.floorMaterial]}`
+        : "realistic stone paving and landscaping";
+    const skyLighting =
+      q?.naturalLight && LIGHT_TO_SKY[q.naturalLight]
+        ? LIGHT_TO_SKY[q.naturalLight]
+        : "natural daylight with soft architectural shadows";
+
+    return (
+      "Transform the provided SketchUp exterior into an extremely photorealistic, premium architectural photograph. " +
+      "CRITICAL: Preserve the original building design exactly. Do not redesign, remodel, or reinterpret the building massing. " +
+      "Maintain the exact architectural geometry, facade proportions, roof planes, window and door placements, overhangs, balconies, materials, ground landscape layout, camera perspective, and composition from the source image. " +
+      "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections: " +
+      `${facadeMat}, ${groundMat}, authentic timber accents, and architectural glass with realistic subtle outdoor reflections and transparency. ` +
+      "LIGHTING: " +
+      skyLighting +
+      ", physically accurate global illumination, soft realistic contact shadows, and natural atmospheric depth. " +
+      "CAMERA: Captured by a professional architectural photographer using a full-frame camera and 24–35mm architectural tilt-shift lens. Keep vertical architectural lines straight and realistic. " +
+      "PHOTOGRAPHIC QUALITY: Genuine high-end architectural photograph, physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, published in Architectural Record magazine. " +
+      "AUTHENTICITY: Do not make it look like an AI-generated image or CGI render. Avoid plastic materials, glowing edges, fake bloom, or cinematic effects. Aim for quiet, breathtaking realism."
     );
   }
-  if (q.woodTone && WOOD[q.woodTone]) {
-    matDetails.push(`cabinetry & woodwork: ${WOOD[q.woodTone]}`);
-  }
-  if (q.metalAccent && METAL[q.metalAccent]) {
-    matDetails.push(`metal hardware: ${METAL[q.metalAccent]}`);
-  }
-  if (q.colorPalette && PALETTE[q.colorPalette]) {
-    matDetails.push(`color scheme: ${PALETTE[q.colorPalette]}`);
-  }
-  if (q.accentColor) {
-    matDetails.push(`custom accent tone: ${q.accentColor}`);
-  }
-  if (q.mood && MOOD[q.mood]) {
-    matDetails.push(`mood: ${MOOD[q.mood]}`);
-  }
 
-  const lightingDesc = isExterior
-    ? (LIGHT_TO_SKY[q.naturalLight] ??
-      "golden hour natural daylight with soft shadows")
-    : (INTERIOR_LIGHT_DESC[q.lightingMood] ??
-      "warm 2700K ambient glow with realistic downlights and soft window daylight");
+  // If user customized specific finishes
+  const customFinishes: string[] = [];
+  if (q?.wallFinish && WALL[q.wallFinish])
+    customFinishes.push(`walls: ${WALL[q.wallFinish]}`);
+  if (q?.floorMaterial && FLOOR[q.floorMaterial])
+    customFinishes.push(`flooring: ${FLOOR[q.floorMaterial]}`);
+  if (q?.woodTone && WOOD[q.woodTone])
+    customFinishes.push(`cabinetry & woodwork: ${WOOD[q.woodTone]}`);
+  if (q?.metalAccent && METAL[q.metalAccent])
+    customFinishes.push(`metal hardware: ${METAL[q.metalAccent]}`);
+  if (q?.colorPalette && PALETTE[q.colorPalette])
+    customFinishes.push(`color scheme: ${PALETTE[q.colorPalette]}`);
+  if (q?.accentColor) customFinishes.push(`accent tone: ${q.accentColor}`);
+  if (q?.lightingMood && INTERIOR_LIGHT_DESC[q.lightingMood])
+    customFinishes.push(`lighting: ${INTERIOR_LIGHT_DESC[q.lightingMood]}`);
+
+  const customMaterialsNote =
+    customFinishes.length > 0
+      ? ` Apply these specific finishes: ${customFinishes.join(", ")}.`
+      : " Keep the exact original color palette and material colors from the SketchUp image without randomly changing finishes.";
 
   return (
-    `Award-winning architectural photograph of this ${styleStr}. ` +
-    `Masterful V-Ray / Corona Renderer photorealism, published in Architectural Digest. ` +
-    `Preserve with 100% precision the exact 3D geometry, walls, windows, doors, cabinetry, and furniture layout from the input view. ` +
-    `Render with physical PBR materials: ${matDetails.length > 0 ? matDetails.join(", ") + ". " : "authentic luxury textures. "}` +
-    `Lighting: ${lightingDesc}, physically accurate global illumination, contact shadows (ambient occlusion), natural specular highlights. ` +
-    `Shot on Hasselblad H6D-100c, 24mm tilt-shift architectural lens, photorealistic 8K, RAW magazine quality.`
+    "Transform the provided SketchUp interior into an extremely photorealistic, premium architectural photograph. " +
+    "CRITICAL: Preserve the original design exactly. Do not redesign, remodel, rearrange, or reinterpret the space. " +
+    "Maintain the exact architecture, room proportions, camera perspective, wall positions, ceiling geometry, cabinetry, furniture, openings, shelves, doors, windows, built-ins, material placement, colors, finishes, and overall composition from the source image. " +
+    "The goal is to make the SketchUp scene look like it was actually photographed inside a beautifully designed real interior, not like a 3D render. " +
+    "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections, edge variation, realistic wood grain, natural stone variation, believable glass, realistic metal response, fabric texture, ceramic and painted-surface response. " +
+    "Materials should have different optical properties rather than looking uniformly glossy or perfectly smooth. Avoid exaggerated reflections, excessive gloss, plastic-looking surfaces, perfectly clean CGI materials, and artificial texture overlays. " +
+    "Add extremely subtle real-world imperfections: tiny tonal variations, slight material irregularities, natural surface variation, realistic seams and joints, and believable construction details." +
+    customMaterialsNote +
+    " " +
+    "LIGHTING: Create beautiful, physically realistic architectural lighting with soft natural daylight entering from existing openings, realistic ambient illumination, subtle indirect bounced light, physically accurate artificial lighting where existing fixtures are present, soft contact shadows, realistic light falloff, gentle occlusion in corners and joints. " +
+    "The lighting should feel calm, sophisticated, warm and naturally exposed (2700K). Do NOT over-light the room. Do NOT make every surface equally bright. Allow realistic areas of shadow and controlled highlights. Preserve depth and contrast. Light should naturally bounce between walls, floors, ceilings and furniture. " +
+    "Avoid glowing walls, excessive bloom, dramatic god rays, overexposed windows, crushed blacks, or artificial orange lighting. " +
+    "CAMERA: Captured by a professional architectural photographer using a full-frame camera and high-quality 24–35mm architectural lens. Keep vertical architectural lines straight and realistic. Use subtle photographic depth and lens characteristics, but keep the entire interior predominantly sharp. No distortion. Camera height should feel like a real person standing naturally inside the room (1.4–1.6m). " +
+    "PHOTOGRAPHIC QUALITY: Genuine high-end interior photograph: physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, realistic shadow detail, restrained color grading, natural white balance, subtle lens characteristics, extremely fine material detail, realistic ambient occlusion, physically accurate reflections. Resemble a photograph from a premium architecture and interior-design magazine. " +
+    "COMPOSITION: Keep the original camera composition and geometry. Do not add or remove furniture, plants, artwork, decorative objects, lights, windows, doors, or architectural elements. " +
+    "AUTHENTICITY: Most importantly, do not make it look like an AI-generated image or a CGI render. Avoid perfect CGI surfaces, excessive sharpness, plastic materials, fake reflections, unrealistic shadows, floating objects, warped furniture, distorted geometry, glowing edges, excessive bloom, oversaturated colors, or artificial volumetric lighting. Aim for quiet realism rather than visual effects."
   );
 }
 
