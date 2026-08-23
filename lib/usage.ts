@@ -564,5 +564,8 @@ export async function getAllUsers(): Promise<
     console.warn("Supabase fetch warning in getAllUsers:", err);
   }
 
-  return Array.from(map.values());
+  return Array.from(map.values()).map((u) => ({
+    ...u,
+    status: u.status || (u.isPaid ? "paid" : "trial"),
+  }));
 }
