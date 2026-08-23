@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
+import OpenAI, { toFile } from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
@@ -11,6 +12,36 @@ import {
   TRIAL_IMAGE_LIMIT,
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
+
+async function renderWithOpenAI(
+  image: string,
+  prompt: string
+): Promise<string> {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey)
+    throw new Error("OPENAI_API_KEY is not configured on server.");
+  const openai = new OpenAI({ apiKey: openaiKey });
+
+  // Convert base64 data URI to buffer and uploadable File
+  const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+  const buffer = Buffer.from(base64Data, "base64");
+  const file = await toFile(buffer, "sketchup_view.png", { type: "image/png" });
+
+  const response = await openai.images.edit({
+    model: "gpt-image-1",
+    image: file,
+    prompt: prompt,
+  });
+
+  const firstItem = response.data[0];
+  if (firstItem?.b64_json) {
+    return `data:image/png;base64,${firstItem.b64_json}`;
+  }
+  if (firstItem?.url) {
+    return firstItem.url;
+  }
+  throw new Error("OpenAI returned an empty image output.");
+}
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -329,6 +360,26 @@ export async function POST(request: Request) {
       questionnaire?.spaceType === "exterior"
         ? buildExteriorPrompt(questionnaire)
         : buildEditPrompt(questionnaire ?? {});
+
+    const selectedModel = req.model || "";
+    const isOpenAI =
+      selectedModel.includes("openai") || selectedModel.includes("gpt");
+
+    if (isOpenAI) {
+      console.log(
+        `Generating render with OpenAI gpt-image-1 for ${normEmail}...`
+      );
+      try {
+        const url = await renderWithOpenAI(image, prompt);
+        await incrementImageCount(normEmail, "openai/gpt-image-1");
+        return NextResponse.json({ output: [url] }, { status: 200 });
+      } catch (err) {
+        console.error(
+          "OpenAI rendering error, attempting Replicate fallback...",
+          err
+        );
+      }
+    }
 
     // Model Routing Strategy:
     // Trial Users -> ALWAYS Nano Banana Pro (google/nano-banana-pro)
