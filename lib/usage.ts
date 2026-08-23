@@ -9,6 +9,7 @@ export interface UserRecord {
   imageCount: number;
   videoCount: number;
   isPaid?: boolean;
+  status?: "paid" | "trial" | "cancelled";
   paymentMode?: string;
   lastModelUsed?: string;
   activeSessionId?: string;
@@ -19,6 +20,7 @@ export interface UserRecord {
 
 // In-memory fallback store to ensure zero data loss
 const memoryPaidUsers = new Map<string, { isPaid: boolean; mode: string }>();
+const memoryUserStatuses = new Map<string, "paid" | "trial" | "cancelled">();
 const memoryActiveSessions = new Map<string, string>(); // email -> activeSessionId
 const memoryUserLogins = new Map<string, string>(); // email -> lastLoginAt
 const memoryLastModels = new Map<string, string>(); // email -> lastModelUsed
@@ -133,20 +135,38 @@ export async function setUserPaidStatus(
   paid: boolean,
   mode: string = "Manual Admin"
 ): Promise<boolean> {
+  const status = paid ? "paid" : "trial";
+  return setUserStatus(email, status, mode);
+}
+
+export async function setUserStatus(
+  email: string,
+  status: "paid" | "trial" | "cancelled",
+  mode?: string
+): Promise<boolean> {
   const norm = email.toLowerCase().trim();
-  memoryPaidUsers.set(norm, { isPaid: paid, mode: paid ? mode : "Free Trial" });
+  const isPaid = status === "paid";
+  const paymentMode =
+    mode ||
+    (status === "paid"
+      ? "Paid Subscription"
+      : status === "cancelled"
+        ? "Cancelled"
+        : "Free Trial");
+
+  memoryUserStatuses.set(norm, status);
+  memoryPaidUsers.set(norm, { isPaid, mode: paymentMode });
 
   try {
-    await getSupabaseAdmin()
-      .from("user_usage")
-      .upsert({
-        email: norm,
-        is_paid: paid,
-        payment_mode: paid ? mode : "Free Trial",
-        last_active_at: new Date().toISOString(),
-      });
+    await getSupabaseAdmin().from("user_usage").upsert({
+      email: norm,
+      is_paid: isPaid,
+      status: status,
+      payment_mode: paymentMode,
+      last_active_at: new Date().toISOString(),
+    });
   } catch (err) {
-    console.warn("Supabase paid status update skipped:", err);
+    console.warn("Supabase status update skipped:", err);
   }
 
   return true;
@@ -380,12 +400,17 @@ export async function getAllUsers(): Promise<
         const finalImg = Math.max(dbImg, existingMem?.imageCount ?? 0);
         const finalVid = Math.max(dbVid, existingMem?.videoCount ?? 0);
 
+        const memStatus = memoryUserStatuses.get(emailKey);
+        const userStatus: "paid" | "trial" | "cancelled" =
+          memStatus || (isPaid ? "paid" : "trial");
+
         map.set(emailKey, {
           email: row.email,
           count: finalCount,
           imageCount: finalImg,
           videoCount: finalVid,
           isPaid: !!isPaid,
+          status: userStatus,
           paymentMode: paymentMode,
           lastModelUsed:
             row.last_model_used ||

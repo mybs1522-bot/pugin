@@ -35,6 +35,7 @@ interface UserRecord {
   imageCount: number;
   videoCount: number;
   isPaid?: boolean;
+  status?: "paid" | "trial" | "cancelled";
   paymentMode?: string;
   lastModelUsed?: string;
   signedUpAt: string;
@@ -108,30 +109,45 @@ function StatCard({
   );
 }
 
+function getUserDisplayName(email: string): string {
+  if (!email) return "Architect User";
+  const handle = email.split("@")[0];
+  return handle
+    .split(/[._-]/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
 function StatusBadge({
+  status,
   isPaid,
   count,
   limit,
 }: {
+  status?: string;
   isPaid?: boolean;
   count: number;
   limit: number;
 }) {
-  if (isPaid) {
+  if (status === "cancelled") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/15 px-2.5 py-0.5 text-xs font-semibold text-emerald-400">
-        ✓ Paid Active
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/15 px-2.5 py-1 text-xs font-bold text-rose-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+        Cancelled
       </span>
     );
   }
-  if (count >= limit)
+  if (status === "paid" || isPaid) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/15 px-2.5 py-0.5 text-xs font-medium text-red-400">
-        Exhausted ({count}/{limit})
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-xs font-bold text-emerald-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        Paid
       </span>
     );
+  }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-400">
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-1 text-xs font-bold text-amber-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
       Trial ({count}/{limit})
     </span>
   );
@@ -369,6 +385,28 @@ function Dashboard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, paid: !currentPaid, action: "set_paid" }),
+      });
+      await fetchData();
+    } finally {
+      setActionLoading(null);
+    }
+  }
+
+  async function handleSetStatus(
+    email: string,
+    status: "paid" | "trial" | "cancelled"
+  ) {
+    setActionLoading(email);
+    try {
+      await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          action: "set_status",
+          status,
+          paid: status === "paid",
+        }),
       });
       await fetchData();
     } finally {
@@ -678,12 +716,11 @@ function Dashboard() {
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
                   <tr>
-                    <th className="px-5 py-3.5">User Email</th>
-                    <th className="px-5 py-3.5">Active AI Model</th>
-                    <th className="px-5 py-3.5">Payment Status</th>
-                    <th className="px-5 py-3.5">Payment Mode</th>
-                    <th className="px-5 py-3.5">Images / Videos</th>
-                    <th className="px-5 py-3.5">Last Login</th>
+                    <th className="px-5 py-3.5">Name</th>
+                    <th className="px-5 py-3.5">Email</th>
+                    <th className="px-5 py-3.5">Status</th>
+                    <th className="px-5 py-3.5">Image Renders</th>
+                    <th className="px-5 py-3.5">Video Renders</th>
                     <th className="px-5 py-3.5 text-right">Admin Actions</th>
                   </tr>
                 </thead>
@@ -691,74 +728,82 @@ function Dashboard() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={6}
                         className="px-5 py-8 text-center text-zinc-500"
                       >
-                        No user signups found.
+                        No registered plugin users found.
                       </td>
                     </tr>
                   ) : (
-                    filtered.map((u) => (
-                      <tr key={u.email} className="transition hover:bg-white/5">
-                        <td className="px-5 py-4 font-medium text-white">
-                          <div className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                    filtered.map((u) => {
+                      const currentStatus: "paid" | "trial" | "cancelled" =
+                        u.status || (u.isPaid ? "paid" : "trial");
+                      return (
+                        <tr
+                          key={u.email}
+                          className="transition hover:bg-white/5"
+                        >
+                          <td className="px-5 py-4 font-semibold text-white">
+                            <div className="flex items-center gap-2">
+                              <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                              {getUserDisplayName(u.email)}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 font-medium text-zinc-300">
                             {u.email}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4">
-                          <ModelBadge model={u.lastModelUsed} />
-                        </td>
-                        <td className="px-5 py-4">
-                          <StatusBadge
-                            isPaid={u.isPaid}
-                            count={u.count}
-                            limit={limit}
-                          />
-                        </td>
-                        <td className="px-5 py-4">
-                          <PaymentModeBadge
-                            mode={u.paymentMode}
-                            isPaid={u.isPaid}
-                          />
-                        </td>
-                        <td className="px-5 py-4 font-semibold text-purple-300">
-                          {u.imageCount || u.count || 0} imgs /{" "}
-                          {u.videoCount || 0} vids
-                        </td>
-                        <td className="px-5 py-4 text-zinc-400">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3 w-3 text-zinc-500" />
-                            {fmt(u.lastLoginAt)}
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() =>
-                                handleTogglePaid(u.email, !!u.isPaid)
-                              }
-                              disabled={actionLoading === u.email}
-                              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition ${
-                                u.isPaid
-                                  ? "bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                                  : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
-                              }`}
-                            >
-                              {u.isPaid ? "Revoke Paid" : "⚡ Activate Paid"}
-                            </button>
-                            <button
-                              onClick={() => handleResetUsage(u.email)}
-                              disabled={actionLoading === u.email}
-                              className="rounded-lg bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-400 transition hover:bg-zinc-700 hover:text-white"
-                              title="Reset trial render count to 0"
-                            >
-                              🔄 Reset
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+                          </td>
+                          <td className="px-5 py-4">
+                            <StatusBadge
+                              status={currentStatus}
+                              isPaid={u.isPaid}
+                              count={u.count}
+                              limit={limit}
+                            />
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-purple-500/30 bg-purple-500/15 px-3 py-1 font-bold text-purple-300">
+                              🖼️ {u.imageCount || u.count || 0} Images
+                            </span>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/15 px-3 py-1 font-bold text-blue-300">
+                              🎬 {u.videoCount || 0} Videos
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <select
+                                value={currentStatus}
+                                onChange={(e) =>
+                                  handleSetStatus(
+                                    u.email,
+                                    e.target.value as
+                                      | "paid"
+                                      | "trial"
+                                      | "cancelled"
+                                  )
+                                }
+                                disabled={actionLoading === u.email}
+                                className="rounded-lg border border-white/10 bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white outline-none focus:border-indigo-500"
+                              >
+                                <option value="trial">⏳ Trial</option>
+                                <option value="paid">⚡ Paid Active</option>
+                                <option value="cancelled">❌ Cancelled</option>
+                              </select>
+
+                              <button
+                                onClick={() => handleResetUsage(u.email)}
+                                disabled={actionLoading === u.email}
+                                className="rounded-lg bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-300 transition hover:bg-zinc-700 hover:text-white"
+                                title="Reset image and video renders count"
+                              >
+                                🔄 Reset
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

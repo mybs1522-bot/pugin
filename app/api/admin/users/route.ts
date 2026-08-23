@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import {
   getAllUsers,
   setUserPaidStatus,
+  setUserStatus,
   resetUserUsage,
   TRIAL_GENERATION_LIMIT,
 } from "@/lib/usage";
@@ -56,10 +57,16 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { email, action, paid } = await request.json();
+    const { email, action, paid, status } = await request.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
+    }
+
+    if (action === "set_status") {
+      const targetStatus = status || (paid ? "paid" : "trial");
+      await setUserStatus(email, targetStatus);
+      return NextResponse.json({ ok: true, status: targetStatus });
     }
 
     if (action === "toggle_paid") {
