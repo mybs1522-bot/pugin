@@ -343,8 +343,8 @@ function Dashboard() {
   const [newEmail, setNewEmail] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "leads" | "all" | "images" | "videos" | "support"
-  >("leads");
+    "all" | "images" | "videos" | "support" | "leads"
+  >("all");
 
   const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
   const [replyTextMap, setReplyTextMap] = useState<Record<string, string>>({});
@@ -630,25 +630,15 @@ function Dashboard() {
         <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-white/10 bg-zinc-900 p-1.5">
             <button
-              onClick={() => setActiveTab("leads")}
-              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
-                activeTab === "leads"
-                  ? "bg-emerald-600 text-white shadow-lg"
-                  : "text-zinc-400 hover:text-white"
-              }`}
-            >
-              <FileText className="h-3.5 w-3.5" />
-              📋 Service Leads
-            </button>
-            <button
               onClick={() => setActiveTab("all")}
-              className={`rounded-lg px-4 py-2 text-xs font-semibold transition ${
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
                 activeTab === "all"
                   ? "bg-white text-black shadow-lg"
                   : "text-zinc-400 hover:text-white"
               }`}
             >
-              👥 All Signups ({filtered.length})
+              <Users className="h-3.5 w-3.5" />
+              👥 Plugin Users ({filtered.length})
             </button>
             <button
               onClick={() => setActiveTab("images")}
@@ -684,6 +674,17 @@ function Dashboard() {
               💬 Support Chat{" "}
               {unreadAdminTotal > 0 && `(🔴 ${unreadAdminTotal} New)`}
             </button>
+            <button
+              onClick={() => setActiveTab("leads")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "leads"
+                  ? "bg-emerald-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <FileText className="h-3.5 w-3.5" />
+              📋 Service Leads
+            </button>
           </div>
 
           {activeTab !== "leads" && (
@@ -691,22 +692,23 @@ function Dashboard() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search email address…"
+              placeholder="Search user name or email…"
               className="w-full rounded-xl border border-white/10 bg-zinc-900 px-4 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-indigo-500 sm:w-64"
             />
           )}
         </div>
 
-        {/* TAB 0: SERVICE LEADS TABLE (10 PER PAGE, NOTES LOGGER, 4 STATUSES) */}
+        {/* TAB 0: SERVICE LEADS TABLE */}
         {activeTab === "leads" && <AdminServiceLeads />}
 
-        {/* TAB 1: ALL SIGNUPS OVERVIEW TABLE */}
+        {/* TAB 1: PLUGIN USERS REGISTRY TABLE */}
         {activeTab === "all" && (
           <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-white/10 bg-zinc-900/50 p-4">
               <h3 className="flex items-center gap-2 text-sm font-bold text-white">
                 <Users className="h-4 w-4 text-indigo-400" />
-                Comprehensive Member Registry & Active Model Tracker
+                Plugin Member Registry — Name, Email, Trial/Paid/Cancelled
+                Status & Render Usage
               </h3>
               <span className="text-xs text-zinc-400">
                 {filtered.length} registered accounts
