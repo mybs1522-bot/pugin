@@ -143,48 +143,68 @@ export async function POST(request: Request) {
     let videoUrl: string | null = null;
     let lastError = "";
 
-    // Strategy 1: stability-ai/stable-video-diffusion (latest working version)
+    // Strategy 1: Kling AI 1.6 Standard (720p @ 30 FPS, smooth architectural pan)
     try {
-      console.log(
-        "Trying stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438..."
-      );
-      const output = await replicate.run(
-        "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-        {
-          input: {
-            input_image: imageUrl,
-            video_length: "14_frames_with_svd",
-            sizing_strategy: "maintain_aspect_ratio",
-            frames_per_second: 6,
-            motion_bucket_id: 127,
-          },
-        }
-      );
+      console.log("Generating with Kling 1.6 Standard (30 FPS)...");
+      const output = await replicate.run("kwaivgi/kling-v1.6-standard", {
+        input: {
+          start_image: imageUrl,
+          prompt: prompt,
+          duration: 5,
+          cfg_scale: 0.5,
+          negative_prompt:
+            "distortion, blur, jitter, flickering, shaking, morphing, low quality, glitch",
+        },
+      });
       videoUrl = await resolveVideoUrl(output);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       lastError = msg;
-      console.warn(
-        "stable-video-diffusion failed, trying minimax/video-01-live...",
-        msg
-      );
+      console.warn("Kling 1.6 failed, trying Luma Ray 2...", msg);
     }
 
-    // Strategy 2: minimax/video-01-live
+    // Strategy 2: Luma Ray 2 (720p @ 24-30 FPS, smooth camera motion)
     if (!videoUrl) {
       try {
-        console.log("Trying minimax/video-01-live...");
-        const output = await replicate.run("minimax/video-01-live", {
+        console.log("Trying Luma Ray 2...");
+        const output = await replicate.run("luma/ray-2-720p", {
           input: {
+            start_image: imageUrl,
             prompt: prompt,
-            first_frame_image: imageUrl,
+            duration: 5,
+            concepts: ["push_in", "dolly_zoom"],
+            loop: true,
           },
         });
         videoUrl = await resolveVideoUrl(output);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         lastError = msg;
-        console.warn("minimax/video-01-live failed...", msg);
+        console.warn("Luma Ray 2 failed, trying Tuned SVD...", msg);
+      }
+    }
+
+    // Strategy 3: Tuned Stable Video Diffusion (25 frames @ 12 FPS, low motion blur)
+    if (!videoUrl) {
+      try {
+        console.log("Trying Tuned SVD...");
+        const output = await replicate.run(
+          "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+          {
+            input: {
+              input_image: imageUrl,
+              video_length: "25_frames_with_svd",
+              sizing_strategy: "maintain_aspect_ratio",
+              frames_per_second: 12,
+              motion_bucket_id: 45,
+            },
+          }
+        );
+        videoUrl = await resolveVideoUrl(output);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        lastError = msg;
+        console.warn("Tuned SVD failed...", msg);
       }
     }
 
