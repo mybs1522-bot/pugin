@@ -773,6 +773,7 @@ function Dashboard() {
                     <th className="px-5 py-3.5">Status</th>
                     <th className="px-5 py-3.5">Image Renders</th>
                     <th className="px-5 py-3.5">Video Renders</th>
+                    <th className="px-5 py-3.5">Date & Time</th>
                     <th className="px-5 py-3.5 text-right">Admin Actions</th>
                   </tr>
                 </thead>
@@ -780,7 +781,7 @@ function Dashboard() {
                   {filtered.length === 0 ? (
                     <tr>
                       <td
-                        colSpan={6}
+                        colSpan={7}
                         className="px-5 py-8 text-center text-zinc-500"
                       >
                         No registered plugin users found.
@@ -821,6 +822,14 @@ function Dashboard() {
                             <span className="inline-flex items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/15 px-3 py-1 font-bold text-blue-300">
                               🎬 {u.videoCount || 0} Videos
                             </span>
+                          </td>
+                          <td className="px-5 py-4 text-zinc-400">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-3.5 w-3.5 text-zinc-500" />
+                              {fmt(
+                                u.signedUpAt || u.lastActiveAt || u.lastLoginAt
+                              )}
+                            </div>
                           </td>
                           <td className="px-5 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
