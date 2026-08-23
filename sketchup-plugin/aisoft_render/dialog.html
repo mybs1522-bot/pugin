@@ -419,7 +419,7 @@
       <div>
         <div class="section-title">AI Engine & Photorealism Model</div>
         <select id="modelSelect">
-          <option value="rocketdigitalai/interior-design-sdxl" selected>💎 RealVisXL ArchViz — Interior Design SDXL (Dual ControlNet)</option>
+          <option value="google/nano-banana-pro" selected>🍌 Google Nano Banana Pro (Gemini Multimodal ArchViz Engine)</option>
         </select>
       </div>
 
@@ -1283,8 +1283,8 @@
             while (true) {
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
-              showStatus(`💎 RealVisXL ArchViz Rendering (${elapsed}s)...`, 'loading');
-              document.getElementById('loadingSub').innerHTML = `Processing dual ControlNet depth & PBR materials (${elapsed}s)`;
+              showStatus(`🍌 Google Nano Banana Pro Rendering (${elapsed}s)...`, 'loading');
+              document.getElementById('loadingSub').innerHTML = `Processing Gemini vision spatial rendering (${elapsed}s)`;
 
               try {
                 const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);

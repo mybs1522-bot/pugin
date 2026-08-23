@@ -16,9 +16,7 @@ const DEFAULT_REPLICATE_TOKEN = Buffer.from(
   "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
   "base64"
 ).toString("utf-8");
-const REALVIS_MODEL = "rocketdigitalai/interior-design-sdxl-lightning";
-const REALVIS_VERSION =
-  "5d8da4e5c98fea03dcfbe3ec89e40cf0f4a0074a8930fa02aa0ee2aaf98c3d11";
+const GOOGLE_NANO_MODEL = "google/nano-banana-pro";
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -337,22 +335,18 @@ export async function POST(request: Request) {
     const replicate = new Replicate({ auth: apiToken });
 
     const modelInput = {
-      image: image,
       prompt: prompt,
-      depth_strength: 0.85,
-      promax_strength: 0.8,
-      guidance_scale: 7.5,
-      num_inference_steps: 4,
-      negative_prompt:
-        "ugly, deformed, bad geometry, cartoon, 3d cgi, blurry, unrealistic, low quality, noise, draft",
+      image_input: [image],
+      aspect_ratio: "16:9",
+      output_format: "png",
     };
 
     console.log(
-      `Creating RealVisXL Dual-ControlNet prediction for ${normEmail}...`
+      `Creating Google Nano Banana Pro prediction for ${normEmail}...`
     );
 
     const prediction = await replicate.predictions.create({
-      version: REALVIS_VERSION,
+      model: GOOGLE_NANO_MODEL as `${string}/${string}`,
       input: modelInput,
     });
 
@@ -360,10 +354,10 @@ export async function POST(request: Request) {
       success: true,
       predictionId: prediction.id,
       status: prediction.status,
-      model: REALVIS_MODEL,
+      model: GOOGLE_NANO_MODEL,
     });
   } catch (err) {
-    console.error("RealVisXL API error:", err);
+    console.error("Google Nano Banana Pro API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
@@ -393,7 +387,7 @@ export async function GET(request: Request) {
       if (userEmail) {
         await incrementImageCount(
           userEmail.toLowerCase().trim(),
-          REALVIS_MODEL
+          GOOGLE_NANO_MODEL
         );
       }
       return NextResponse.json({
