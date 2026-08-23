@@ -424,102 +424,90 @@ export async function POST(request: Request) {
     const replicate = new Replicate({ auth: apiToken });
 
     // Model Routing Strategy:
-    // Trial Users -> ALWAYS Nano Banana Pro (google/nano-banana-pro)
-    // Paid Users  -> SHIFT to Nano Banana 2 (google/nano-banana-2)
     const primaryModel = paid
       ? "google/nano-banana-2"
       : "google/nano-banana-pro";
-    const secondaryModel = paid
-      ? "google/nano-banana-pro"
-      : "google/nano-banana-2";
 
-    const MODELS: Array<{ id: string; e003Retries: number }> = [
-      { id: primaryModel, e003Retries: 2 },
-      { id: secondaryModel, e003Retries: 2 },
-      {
-        id: "timothybrooks/instruct-pix2pix:30c1d0b916a6f8ef208843f382a90098df241aa721f4864c0557457a4e69d7b4",
-        e003Retries: 1,
-      },
-    ];
+    const modelInput = buildModelInput(
+      primaryModel,
+      prompt,
+      image,
+      req.aspect_ratio
+    );
 
-    const MAX_429_RETRIES = 3;
-    let output: unknown;
-    let lastError: string = "";
+    console.log(`Creating async prediction for ${primaryModel}...`);
+    const prediction = await replicate.predictions.create({
+      model: primaryModel as `${string}/${string}`,
+      input: modelInput,
+    });
 
-    let usedModel = primaryModel;
-
-    for (const { id: model, e003Retries } of MODELS) {
-      let modelSucceeded = false;
-      let e003Attempt = 0;
-      const modelInput = buildModelInput(
-        model,
-        prompt,
-        image,
-        req.aspect_ratio
-      );
-
-      for (let attempt = 0; attempt <= MAX_429_RETRIES; attempt++) {
-        try {
-          console.log(
-            `Trying ${model} (attempt ${attempt + 1}) for ${paid ? "paid" : "trial"} user…`
-          );
-          output = await replicate.run(model as `${string}/${string}`, {
-            input: modelInput,
-          });
-          modelSucceeded = true;
-          usedModel = model;
-          console.log(`✓ Used model: ${model}`);
-          break;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          lastError = msg;
-          const is429 =
-            msg.includes("429") ||
-            msg.toLowerCase().includes("throttled") ||
-            msg.toLowerCase().includes("rate limit");
-          const isUnavailable =
-            msg.includes("E003") ||
-            msg.toLowerCase().includes("unavailable") ||
-            msg.toLowerCase().includes("high demand") ||
-            msg.includes("503");
-
-          if (is429 && attempt < MAX_429_RETRIES) {
-            const delay = Math.pow(2, attempt + 1) * 1000;
-            console.warn(`Rate-limited on ${model}. Retrying in ${delay}ms…`);
-            await new Promise((res) => setTimeout(res, delay));
-            continue;
-          }
-
-          if (isUnavailable && e003Attempt < e003Retries) {
-            e003Attempt++;
-            const delay = e003Attempt * 3000;
-            await new Promise((res) => setTimeout(res, delay));
-            attempt--;
-            continue;
-          }
-
-          console.warn(`Model ${model} failed: ${msg}. Trying fallback…`);
-          break;
-        }
-      }
-      if (modelSucceeded) break;
-    }
-
-    if (!output) {
-      return NextResponse.json(
-        { error: lastError || "No output from AI models." },
-        { status: 400 }
-      );
-    }
-
-    const url = await resolveOutputUrl(output);
-
-    await incrementImageCount(normEmail, usedModel);
-    return NextResponse.json({ output: [url] }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      predictionId: prediction.id,
+      status: prediction.status,
+    });
   } catch (err) {
     console.error("Replicate API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
+  }
+}
+
+/* ─── GET: Poll prediction status for timeout-proof rendering ────────────── */
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const predictionId = searchParams.get("id");
+    const userEmail = searchParams.get("userEmail");
+
+    if (!predictionId) {
+      return NextResponse.json(
+        { error: "Prediction ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const apiToken = process.env.REPLICATE_API_TOKEN;
+    if (!apiToken) {
+      return NextResponse.json(
+        { error: "REPLICATE_API_TOKEN is missing" },
+        { status: 500 }
+      );
+    }
+
+    const replicate = new Replicate({ auth: apiToken });
+    const prediction = await replicate.predictions.get(predictionId);
+
+    if (prediction.status === "succeeded") {
+      const url = await resolveOutputUrl(prediction.output);
+      if (userEmail) {
+        await incrementImageCount(
+          userEmail.toLowerCase().trim(),
+          prediction.model || "google/nano-banana-pro"
+        );
+      }
+      return NextResponse.json({
+        status: "succeeded",
+        done: true,
+        output: [url],
+      });
+    }
+
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      return NextResponse.json({
+        status: prediction.status,
+        done: true,
+        error: prediction.error || "Rendering job failed.",
+      });
+    }
+
+    return NextResponse.json({
+      status: prediction.status,
+      done: false,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

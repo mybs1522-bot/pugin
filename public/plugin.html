@@ -1269,25 +1269,63 @@
           })
         });
 
-        const data = await parseResponseJson(response);
+        if (response.ok && (data.output || data.predictionId)) {
+          let imgUrl = null;
 
-        if (response.ok && data.output && data.output.length > 0) {
-          const imgUrl = data.output[0];
-          lastRenderUrl = imgUrl;
-          showStatus('✓ Render complete!', 'success');
-          document.getElementById('renderBtn').disabled = false;
-          
-          document.getElementById('aiLoading').style.display = 'none';
-          const aiImg = document.getElementById('aiImg');
-          aiImg.src = imgUrl;
-          
-          switchPreviewMode('image');
+          if (data.output && data.output.length > 0) {
+            imgUrl = data.output[0];
+          } else if (data.predictionId) {
+            const predictionId = data.predictionId;
+            let elapsed = 0;
 
-          const dlBtn = document.getElementById('downloadLink');
-          dlBtn.href = imgUrl;
-          dlBtn.style.display = 'inline-block';
+            while (true) {
+              await new Promise(r => setTimeout(r, 2000));
+              elapsed += 2;
+              showStatus(`✨ Rendering Photorealistic Viewport (${elapsed}s)...`, 'loading');
+              document.getElementById('loadingSub').innerHTML = `Processing lighting & PBR materials (${elapsed}s)`;
 
-          document.getElementById('videoBtn').style.display = 'inline-block';
+              try {
+                const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
+                const pollRes = await fetch(pollUrl);
+                const pollData = await parseResponseJson(pollRes);
+
+                if (pollData.done) {
+                  if (pollData.status === 'succeeded' && pollData.output && pollData.output.length > 0) {
+                    imgUrl = pollData.output[0];
+                    break;
+                  } else {
+                    throw new Error(pollData.error || 'Rendering job failed.');
+                  }
+                }
+              } catch (pollErr) {
+                if (pollErr.message && !pollErr.message.includes('Failed to fetch')) {
+                  throw pollErr;
+                }
+              }
+
+              if (elapsed > 90) {
+                throw new Error('Rendering timed out after 90 seconds.');
+              }
+            }
+          }
+
+          if (imgUrl) {
+            lastRenderUrl = imgUrl;
+            showStatus('✓ Render complete!', 'success');
+            document.getElementById('renderBtn').disabled = false;
+            
+            document.getElementById('aiLoading').style.display = 'none';
+            const aiImg = document.getElementById('aiImg');
+            aiImg.src = imgUrl;
+            
+            switchPreviewMode('image');
+
+            const dlBtn = document.getElementById('downloadLink');
+            dlBtn.href = imgUrl;
+            dlBtn.style.display = 'inline-block';
+
+            document.getElementById('videoBtn').style.display = 'inline-block';
+          }
         } else {
           const errMsg = data.error || 'Server error occurred during rendering.';
           showStatus('❌ ' + errMsg, 'error');
