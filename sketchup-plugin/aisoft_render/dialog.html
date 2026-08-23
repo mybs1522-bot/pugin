@@ -321,6 +321,46 @@
 </head>
 <body>
 
+  <!-- INTRO SPLASH SCREEN OVERLAY ON OPEN -->
+  <div id="pluginIntroOverlay" style="position:fixed; inset:0; background:#09090b; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease, visibility 0.6s ease;">
+    <div style="display:flex; flex-direction:column; align-items:center; width:300px; text-align:center;">
+      <!-- Logo Header -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+        <div style="width:36px; height:36px; border-radius:12px; background:#18181b; border:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.5);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 3a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm-5 5a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm2 7a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm6 0a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm2-7a2 2 0 1 1-2 2 2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <span style="font-size:17px; font-weight:800; color:#ffffff; letter-spacing:-0.02em;">Interior Designer AI</span>
+      </div>
+
+      <!-- Status Items Card Container -->
+      <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+        <!-- Step 1: Almost Ready -->
+        <div id="splashStep1" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); font-size:12px; color:#71717a; transition:all 0.3s;">
+          <span style="font-size:12px;">⚙️</span>
+          <span>Almost Ready</span>
+        </div>
+
+        <!-- Step 2: Preparing Workspace (Active Highlighted Item) -->
+        <div id="splashStep2" style="display:flex; flex-direction:column; gap:8px; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:12px; color:#ffffff; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.3s;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; animation:spin 2s linear infinite;">⚙️</span>
+            <span>Preparing Workspace</span>
+          </div>
+          <!-- Glowing Green Progress Bar -->
+          <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+            <div id="splashProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #22c55e, #10b981); border-radius:999px; transition:width 0.4s ease, background 0.4s ease; box-shadow:0 0 10px rgba(34,197,94,0.6);"></div>
+          </div>
+        </div>
+
+        <!-- Step 3: Loading Assets -->
+        <div id="splashStep3" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); font-size:12px; color:#71717a; transition:all 0.3s;">
+          <span id="splashCheckIcon" style="font-size:12px;">✔️</span>
+          <span id="splashStep3Text">Loading Assets</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- AUTH MODAL FOR ONE-TIME EMAIL & 4-DIGIT OTP PC VERIFICATION -->
   <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:380px; padding:28px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.8);">
@@ -581,6 +621,47 @@
       } else {
         window.open(liveUrl, '_blank');
       }
+    }
+
+    function runSplashIntroAnimation() {
+      const overlay = document.getElementById('pluginIntroOverlay');
+      const bar = document.getElementById('splashProgressBar');
+      const step1 = document.getElementById('splashStep1');
+      const step3 = document.getElementById('splashStep3');
+
+      if (!overlay) return;
+
+      setTimeout(() => {
+        if (bar) bar.style.width = '45%';
+        if (step1) {
+          step1.style.color = '#a1a1aa';
+          step1.style.borderColor = 'rgba(255,255,255,0.1)';
+        }
+      }, 150);
+
+      setTimeout(() => {
+        if (bar) bar.style.width = '100%';
+        if (step3) {
+          step3.style.color = '#22c55e';
+          step3.style.fontWeight = '600';
+          step3.style.background = 'rgba(34,197,94,0.08)';
+          step3.style.borderColor = 'rgba(34,197,94,0.2)';
+        }
+      }, 700);
+
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'hidden';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 600);
+      }, 1400);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runSplashIntroAnimation);
+    } else {
+      runSplashIntroAnimation();
     }
 
     const questionnaire = {
