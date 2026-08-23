@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
-import OpenAI, { toFile } from "openai";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
@@ -13,61 +12,11 @@ import {
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
 
-async function renderWithOpenAI(
-  image: string,
-  prompt: string,
-  modelName: string = "gpt-image-2"
-): Promise<string> {
-  const validKey = Buffer.from(
-    "c2stcHJvai0talZYRk5BaDNucG9uM0JuR0V4NjVGZVhjSUNIZzJvQ1hkdzVxQUE1ckRTU2doaE9nTmVJbHN0SzRaSUF2b1ZMYWZEaVRFcHJ4MlQzQmxia0ZKTzRuVWRKaF9KR1lUT2V5ZWhSOGRKMHFyZXVGekFMQW1EQTBqSHNYR00tQkFSUjJ4T0NpWTVBUnI2OERwWnpTS1h3YWVLbnB0Y0E=",
-    "base64"
-  ).toString("utf-8");
-  const openai = new OpenAI({ apiKey: validKey });
-
-  // Convert base64 data URI to buffer and uploadable File
-  const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
-  const buffer = Buffer.from(base64Data, "base64");
-  const file = await toFile(buffer, "sketchup_view.png", { type: "image/png" });
-
-  const targetModel = modelName.includes("1.5")
-    ? "gpt-image-1.5"
-    : modelName.includes("gpt-image-1") && !modelName.includes("1.5")
-      ? "gpt-image-1"
-      : "gpt-image-2";
-
-  const modelsToTry = [
-    targetModel,
-    "gpt-image-2",
-    "gpt-image-1.5",
-    "gpt-image-1",
-  ].filter((v, i, a) => a.indexOf(v) === i);
-
-  let lastErr = "";
-  for (const m of modelsToTry) {
-    try {
-      console.log(`Rendering with OpenAI model: ${m}...`);
-      const response = await openai.images.edit({
-        model: m,
-        image: file,
-        prompt: prompt,
-      });
-
-      const firstItem = response.data?.[0];
-      if (firstItem?.b64_json) {
-        return `data:image/png;base64,${firstItem.b64_json}`;
-      }
-      if (firstItem?.url) {
-        return firstItem.url;
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      lastErr = msg;
-      console.warn(`OpenAI model ${m} failed, trying next...`, msg);
-    }
-  }
-
-  throw new Error(lastErr || "OpenAI returned an empty image output.");
-}
+const DEFAULT_REPLICATE_TOKEN = Buffer.from(
+  "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
+  "base64"
+).toString("utf-8");
+const FLUX_DEPTH_MODEL = "black-forest-labs/flux-depth-pro";
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -382,28 +331,33 @@ export async function POST(request: Request) {
 
     const prompt = buildPhotorealisticPrompt(questionnaire);
 
-    const selectedModel = req.model || "openai/gpt-image-2";
+    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
+    const replicate = new Replicate({ auth: apiToken });
 
-    console.log(
-      `Generating render with OpenAI (model: ${selectedModel}) for ${normEmail}...`
-    );
-    try {
-      const url = await renderWithOpenAI(image, prompt, selectedModel);
-      await incrementImageCount(
-        normEmail,
-        selectedModel || "openai/gpt-image-2"
-      );
-      return NextResponse.json({ output: [url] }, { status: 200 });
-    } catch (err) {
-      console.error("OpenAI rendering error:", err);
-      const msg = err instanceof Error ? err.message : String(err);
-      return NextResponse.json(
-        { error: "AI Render Error: " + msg },
-        { status: 400 }
-      );
-    }
+    const modelInput = {
+      control_image: image,
+      prompt: prompt,
+      steps: 30,
+      guidance: 30,
+      output_format: "png",
+      prompt_upsampling: false,
+    };
+
+    console.log(`Creating FLUX.1 Depth Pro prediction for ${normEmail}...`);
+
+    const prediction = await replicate.predictions.create({
+      model: FLUX_DEPTH_MODEL as `${string}/${string}`,
+      input: modelInput,
+    });
+
+    return NextResponse.json({
+      success: true,
+      predictionId: prediction.id,
+      status: prediction.status,
+      model: FLUX_DEPTH_MODEL,
+    });
   } catch (err) {
-    console.error("Route error:", err);
+    console.error("FLUX Depth API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
@@ -424,14 +378,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const apiToken = process.env.REPLICATE_API_TOKEN;
-    if (!apiToken) {
-      return NextResponse.json(
-        { error: "REPLICATE_API_TOKEN is missing" },
-        { status: 500 }
-      );
-    }
-
+    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
     const replicate = new Replicate({ auth: apiToken });
     const prediction = await replicate.predictions.get(predictionId);
 
@@ -440,7 +387,7 @@ export async function GET(request: Request) {
       if (userEmail) {
         await incrementImageCount(
           userEmail.toLowerCase().trim(),
-          prediction.model || "google/nano-banana-pro"
+          FLUX_DEPTH_MODEL
         );
       }
       return NextResponse.json({

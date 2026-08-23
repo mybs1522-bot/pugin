@@ -419,9 +419,7 @@
       <div>
         <div class="section-title">AI Engine & Photorealism Model</div>
         <select id="modelSelect">
-          <option value="openai/gpt-image-2" selected>✨ OpenAI GPT-Image-2 (Ultra-Realistic Flagship)</option>
-          <option value="openai/gpt-image-1.5">💎 OpenAI GPT-Image-1.5 (High Detail)</option>
-          <option value="google/nano-banana-pro">⚡ Nano Banana Pro (Balanced Fast)</option>
+          <option value="black-forest-labs/flux-depth-pro" selected>💎 Black Forest Labs — FLUX.1 Depth [pro] (Architectural Flagship)</option>
         </select>
       </div>
 
@@ -1285,8 +1283,8 @@
             while (true) {
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
-              showStatus(`✨ Rendering Photorealistic Viewport (${elapsed}s)...`, 'loading');
-              document.getElementById('loadingSub').innerHTML = `Processing lighting & PBR materials (${elapsed}s)`;
+              showStatus(`💎 FLUX.1 Depth Pro Rendering (${elapsed}s)...`, 'loading');
+              document.getElementById('loadingSub').innerHTML = `Processing 3D metric depth & PBR materials (${elapsed}s)`;
 
               try {
                 const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
