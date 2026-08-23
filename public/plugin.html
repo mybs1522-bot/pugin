@@ -602,14 +602,16 @@
         try {
           return JSON.parse(text);
         } catch (e) {
-          // If server returned plain text or HTML error
+          if (response.status === 413 || text.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
+            return { error: 'Image file too large for server. Please zoom in or reduce viewport size.' };
+          }
           if (text.includes('<html') || text.includes('<!DOCTYPE')) {
             return { error: `Server error (${response.status || 500}: ${response.statusText || 'Request failed'})` };
           }
           return { error: text.substring(0, 150) };
         }
       } catch (err) {
-        return { error: 'Failed to read response from server' };
+        return { error: 'Failed to read response from server: ' + (err.message || String(err)) };
       }
     }
 

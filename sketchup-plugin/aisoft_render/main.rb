@@ -55,13 +55,14 @@ module AIsoftRender
       width = (raw_w * scale).round
       height = (raw_h * scale).round
 
-      temp_image_path = File.join(Dir.tmpdir, "sketchup_view_#{Time.now.to_i}.png")
+      temp_image_path = File.join(Dir.tmpdir, "sketchup_view_#{Time.now.to_i}.jpg")
 
       success = view.write_image(
         filename: temp_image_path,
         width: width,
         height: height,
         antialias: true,
+        compression: 0.9,
         transparent: false
       )
 
@@ -71,9 +72,9 @@ module AIsoftRender
         return
       end
 
-      # Encode to Base64
+      # Encode to Base64 (Lightweight JPG < 500KB)
       image_bytes = File.binread(temp_image_path)
-      base64_str = "data:image/png;base64," + Base64.strict_encode64(image_bytes)
+      base64_str = "data:image/jpeg;base64," + Base64.strict_encode64(image_bytes)
 
       # Cleanup temp file
       File.delete(temp_image_path) rescue nil
