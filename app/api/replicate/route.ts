@@ -16,7 +16,7 @@ const DEFAULT_REPLICATE_TOKEN = Buffer.from(
   "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
   "base64"
 ).toString("utf-8");
-const FLUX_DEPTH_MODEL = "black-forest-labs/flux-depth-pro";
+const FLUX_CANNY_MODEL = "black-forest-labs/flux-canny-pro";
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -337,16 +337,17 @@ export async function POST(request: Request) {
     const modelInput = {
       control_image: image,
       prompt: prompt,
-      steps: 30,
-      guidance: 30,
+      steps: 35,
+      guidance: 22,
       output_format: "png",
-      prompt_upsampling: false,
     };
 
-    console.log(`Creating FLUX.1 Depth Pro prediction for ${normEmail}...`);
+    console.log(
+      `Creating FLUX.1 Canny Pro (Edge-Locked) prediction for ${normEmail}...`
+    );
 
     const prediction = await replicate.predictions.create({
-      model: FLUX_DEPTH_MODEL as `${string}/${string}`,
+      model: FLUX_CANNY_MODEL as `${string}/${string}`,
       input: modelInput,
     });
 
@@ -354,10 +355,10 @@ export async function POST(request: Request) {
       success: true,
       predictionId: prediction.id,
       status: prediction.status,
-      model: FLUX_DEPTH_MODEL,
+      model: FLUX_CANNY_MODEL,
     });
   } catch (err) {
-    console.error("FLUX Depth API error:", err);
+    console.error("FLUX Canny API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
@@ -387,7 +388,7 @@ export async function GET(request: Request) {
       if (userEmail) {
         await incrementImageCount(
           userEmail.toLowerCase().trim(),
-          FLUX_DEPTH_MODEL
+          FLUX_CANNY_MODEL
         );
       }
       return NextResponse.json({
