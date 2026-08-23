@@ -319,7 +319,7 @@ export async function POST(request: Request) {
       if (currentImageCount >= TRIAL_IMAGE_LIMIT) {
         return NextResponse.json(
           {
-            error: `Free image trial limit reached (${TRIAL_IMAGE_LIMIT} image renders used). Contact admin to activate unlimited paid access for ${normEmail}.`,
+            error: "Trial Limits are over to render more",
             code: "payment_required",
           },
           { status: 403 }

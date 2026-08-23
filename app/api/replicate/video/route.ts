@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       if (currentVideoCount >= TRIAL_VIDEO_LIMIT) {
         return NextResponse.json(
           {
-            error: `Free video trial limit reached (${TRIAL_VIDEO_LIMIT} video walkthrough used). Contact admin to activate unlimited paid access for ${normEmail}.`,
+            error: "Trial Limits are over to render more",
             code: "payment_required",
           },
           { status: 403 }
