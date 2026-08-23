@@ -16,7 +16,9 @@ const DEFAULT_REPLICATE_TOKEN = Buffer.from(
   "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
   "base64"
 ).toString("utf-8");
-const FLUX_CANNY_MODEL = "black-forest-labs/flux-canny-pro";
+const REALVIS_MODEL = "rocketdigitalai/interior-design-sdxl";
+const REALVIS_VERSION =
+  "a3c091059a25590ce2d5ea13651fab63f447f21760e50c358d4b850e844f59ee";
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -335,19 +337,22 @@ export async function POST(request: Request) {
     const replicate = new Replicate({ auth: apiToken });
 
     const modelInput = {
-      control_image: image,
+      image: image,
       prompt: prompt,
-      steps: 35,
-      guidance: 22,
-      output_format: "png",
+      depth_strength: 0.85,
+      promax_strength: 0.8,
+      guidance_scale: 7.5,
+      num_inference_steps: 30,
+      negative_prompt:
+        "ugly, deformed, bad geometry, cartoon, 3d cgi, blurry, unrealistic, low quality, noise, draft",
     };
 
     console.log(
-      `Creating FLUX.1 Canny Pro (Edge-Locked) prediction for ${normEmail}...`
+      `Creating RealVisXL Dual-ControlNet prediction for ${normEmail}...`
     );
 
     const prediction = await replicate.predictions.create({
-      model: FLUX_CANNY_MODEL as `${string}/${string}`,
+      version: REALVIS_VERSION,
       input: modelInput,
     });
 
@@ -355,10 +360,10 @@ export async function POST(request: Request) {
       success: true,
       predictionId: prediction.id,
       status: prediction.status,
-      model: FLUX_CANNY_MODEL,
+      model: REALVIS_MODEL,
     });
   } catch (err) {
-    console.error("FLUX Canny API error:", err);
+    console.error("RealVisXL API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
@@ -388,7 +393,7 @@ export async function GET(request: Request) {
       if (userEmail) {
         await incrementImageCount(
           userEmail.toLowerCase().trim(),
-          FLUX_CANNY_MODEL
+          REALVIS_MODEL
         );
       }
       return NextResponse.json({
