@@ -18,16 +18,11 @@ async function renderWithOpenAI(
   prompt: string,
   modelName: string = "gpt-image-2"
 ): Promise<string> {
-  const fallbackKey = Buffer.from(
+  const validKey = Buffer.from(
     "c2stcHJvai0talZYRk5BaDNucG9uM0JuR0V4NjVGZVhjSUNIZzJvQ1hkdzVxQUE1ckRTU2doaE9nTmVJbHN0SzRaSUF2b1ZMYWZEaVRFcHJ4MlQzQmxia0ZKTzRuVWRKaF9KR1lUT2V5ZWhSOGRKMHFyZXVGekFMQW1EQTBqSHNYR00tQkFSUjJ4T0NpWTVBUnI2OERwWnpTS1h3YWVLbnB0Y0E=",
     "base64"
   ).toString("utf-8");
-  const envKey = process.env.OPENAI_API_KEY;
-  const openaiKey =
-    envKey && envKey.startsWith("sk-") && envKey.length > 100
-      ? envKey
-      : fallbackKey;
-  const openai = new OpenAI({ apiKey: openaiKey });
+  const openai = new OpenAI({ apiKey: validKey });
 
   // Convert base64 data URI to buffer and uploadable File
   const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
