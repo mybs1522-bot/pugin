@@ -16,9 +16,9 @@ const DEFAULT_REPLICATE_TOKEN = Buffer.from(
   "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
   "base64"
 ).toString("utf-8");
-const REALVIS_MODEL = "rocketdigitalai/interior-design-sdxl";
+const REALVIS_MODEL = "rocketdigitalai/interior-design-sdxl-lightning";
 const REALVIS_VERSION =
-  "a3c091059a25590ce2d5ea13651fab63f447f21760e50c358d4b850e844f59ee";
+  "5d8da4e5c98fea03dcfbe3ec89e40cf0f4a0074a8930fa02aa0ee2aaf98c3d11";
 
 /* ─── Prompt maps ──────────────────────────────────────────────────────── */
 const MOOD: Record<string, string> = {
@@ -342,7 +342,7 @@ export async function POST(request: Request) {
       depth_strength: 0.85,
       promax_strength: 0.8,
       guidance_scale: 7.5,
-      num_inference_steps: 30,
+      num_inference_steps: 4,
       negative_prompt:
         "ugly, deformed, bad geometry, cartoon, 3d cgi, blurry, unrealistic, low quality, noise, draft",
     };
