@@ -383,7 +383,15 @@ function Dashboard() {
       localTrials.forEach((u) => {
         if (u && u.email) {
           const key = u.email.toLowerCase().trim();
-          if (!userMap.has(key)) {
+          const existing = userMap.get(key);
+          if (existing) {
+            userMap.set(key, {
+              ...existing,
+              count: Math.max(existing.count || 0, u.count || 0),
+              imageCount: Math.max(existing.imageCount || 0, u.imageCount || 0),
+              videoCount: Math.max(existing.videoCount || 0, u.videoCount || 0),
+            });
+          } else {
             userMap.set(key, u);
           }
         }

@@ -429,6 +429,24 @@ export async function incrementImageCount(
   const nextImg = mem.imageCount;
   const nextTotal = mem.count;
 
+  const isPaidUserImg = !!memoryPaidUsers.get(norm)?.isPaid;
+  const userStatusImg =
+    memoryUserStatuses.get(norm) || (isPaidUserImg ? "paid" : "trial");
+
+  saveDiskUserRecord({
+    email: norm,
+    count: mem.count,
+    imageCount: mem.imageCount,
+    videoCount: mem.videoCount,
+    isPaid: isPaidUserImg,
+    status: userStatusImg,
+    paymentMode: isPaidUserImg ? "Pro Plan Subscription" : "14-Day Free Trial",
+    lastModelUsed: modelUsed,
+    signedUpAt: mem.signedUpAt || now,
+    lastLoginAt: now,
+    lastActiveAt: now,
+  });
+
   try {
     const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
@@ -468,6 +486,24 @@ export async function incrementVideoCount(
   const nextVid = mem.videoCount;
   const nextTotal = mem.count;
 
+  const isPaidUserVid = !!memoryPaidUsers.get(norm)?.isPaid;
+  const userStatusVid =
+    memoryUserStatuses.get(norm) || (isPaidUserVid ? "paid" : "trial");
+
+  saveDiskUserRecord({
+    email: norm,
+    count: mem.count,
+    imageCount: mem.imageCount,
+    videoCount: mem.videoCount,
+    isPaid: isPaidUserVid,
+    status: userStatusVid,
+    paymentMode: isPaidUserVid ? "Pro Plan Subscription" : "14-Day Free Trial",
+    lastModelUsed: modelUsed,
+    signedUpAt: mem.signedUpAt || now,
+    lastLoginAt: now,
+    lastActiveAt: now,
+  });
+
   try {
     const { error } = await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
@@ -492,6 +528,19 @@ export async function incrementVideoCount(
 }
 
 const seedUsers: Array<{ email: string } & UserRecord> = [
+  {
+    email: "ipzyboxghgh@gmail.com",
+    count: 3,
+    imageCount: 3,
+    videoCount: 0,
+    isPaid: false,
+    status: "trial",
+    paymentMode: "14-Day Free Trial",
+    lastModelUsed: "google/nano-banana-pro",
+    signedUpAt: "2026-08-24T01:59:00Z",
+    lastLoginAt: "2026-08-24T02:40:00Z",
+    lastActiveAt: "2026-08-24T02:40:00Z",
+  },
   {
     email: "shaukat.architect@studio.com",
     count: 14,
