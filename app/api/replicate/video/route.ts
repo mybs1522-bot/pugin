@@ -11,55 +11,97 @@ import {
 export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
-async function resolveVideoUrl(output: unknown): Promise<string> {
+function resolvePredictionOutput(output: unknown): string {
   if (!output) return "";
-  let item = Array.isArray(output) ? output[output.length - 1] : output;
-  if (!item) return "";
-
-  // 1. Direct string URL
-  if (typeof item === "string") return item;
-
-  // 2. Replicate FileOutput object (has url() method or url property)
-  if (typeof item === "object") {
-    if ("url" in item) {
-      if (typeof (item as any).url === "function") {
+  if (typeof output === "string") return output;
+  if (Array.isArray(output) && output.length > 0) {
+    const last = output[output.length - 1];
+    if (typeof last === "string") return last;
+    if (last && typeof last === "object" && "url" in last) {
+      if (typeof (last as any).url === "function") {
         try {
-          const u = (item as any).url();
-          if (u) return typeof u === "string" ? u : u.href || String(u);
+          const u = (last as any).url();
+          return u?.href || String(u);
         } catch {}
-      } else if (typeof (item as any).url === "string") {
-        return (item as any).url;
       }
-    }
-
-    if (typeof (item as any).toString === "function") {
-      const str = (item as any).toString();
-      if (str && (str.startsWith("http://") || str.startsWith("https://"))) {
-        return str;
-      }
-    }
-
-    // 3. Fallback: ReadableStream binary chunks
-    if ("getReader" in item) {
-      try {
-        const reader = (item as ReadableStream<Uint8Array>).getReader();
-        const chunks: Uint8Array[] = [];
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (value) chunks.push(value);
-        }
-        const buffer = Buffer.concat(chunks);
-        return `data:video/mp4;base64,${buffer.toString("base64")}`;
-      } catch (e) {
-        console.warn("Error reading stream chunks for video:", e);
-      }
+      return String((last as any).url);
     }
   }
-
-  return String(item);
+  if (typeof output === "object" && output !== null && "url" in output) {
+    if (typeof (output as any).url === "function") {
+      try {
+        const u = (output as any).url();
+        return u?.href || String(u);
+      } catch {}
+    }
+    return String((output as any).url);
+  }
+  return String(output);
 }
 
+// GET: Poll prediction status by ID (immune to timeouts, takes < 200ms)
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const predictionId = searchParams.get("id");
+    const userEmail = searchParams.get("userEmail");
+
+    if (!predictionId) {
+      return NextResponse.json(
+        { error: "Prediction ID is required." },
+        { status: 400 }
+      );
+    }
+
+    const apiToken = process.env.REPLICATE_API_TOKEN;
+    if (!apiToken) {
+      return NextResponse.json(
+        { error: "REPLICATE_API_TOKEN is missing on server." },
+        { status: 500 }
+      );
+    }
+
+    const replicate = new Replicate({ auth: apiToken });
+    const prediction = await replicate.predictions.get(predictionId);
+
+    if (prediction.status === "succeeded") {
+      const videoUrl = resolvePredictionOutput(prediction.output);
+      if (userEmail) {
+        try {
+          await incrementVideoCount(userEmail.toLowerCase().trim());
+        } catch (e) {
+          console.warn("Could not increment video count:", e);
+        }
+      }
+      return NextResponse.json({
+        status: "succeeded",
+        videoUrl,
+        done: true,
+      });
+    }
+
+    if (prediction.status === "failed" || prediction.status === "canceled") {
+      return NextResponse.json({
+        status: prediction.status,
+        error: prediction.error || "Video generation failed or was canceled.",
+        done: true,
+      });
+    }
+
+    // In progress: "starting" or "processing"
+    return NextResponse.json({
+      status: prediction.status,
+      done: false,
+    });
+  } catch (err) {
+    console.error("Error polling video prediction:", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to poll video status";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// POST: Start video prediction job (returns in < 2s with predictionId)
 export async function POST(request: Request) {
   try {
     const req = await request.json();
@@ -138,15 +180,15 @@ export async function POST(request: Request) {
       req.prompt ||
       "Smooth cinematic 3D architectural camera pan walkthrough of interior space, steady camera movement, photorealistic lighting, high resolution";
 
-    console.log("Generating 3D Walkthrough Video for image...");
+    console.log("Starting asynchronous 3D Walkthrough Video prediction...");
 
-    let videoUrl: string | null = null;
+    let prediction: any = null;
     let lastError = "";
 
-    // Strategy 1: Kling AI 1.6 Standard (720p @ 30 FPS, smooth architectural pan)
+    // Strategy 1: Kling AI 1.6 Standard (720p @ 30 FPS)
     try {
-      console.log("Generating with Kling 1.6 Standard (30 FPS)...");
-      const output = await replicate.run("kwaivgi/kling-v1.6-standard", {
+      prediction = await replicate.predictions.create({
+        model: "kwaivgi/kling-v1.6-standard",
         input: {
           start_image: imageUrl,
           prompt: prompt,
@@ -156,18 +198,20 @@ export async function POST(request: Request) {
             "distortion, blur, jitter, flickering, shaking, morphing, low quality, glitch",
         },
       });
-      videoUrl = await resolveVideoUrl(output);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       lastError = msg;
-      console.warn("Kling 1.6 failed, trying Luma Ray 2...", msg);
+      console.warn(
+        "Kling prediction creation failed, trying Luma Ray 2...",
+        msg
+      );
     }
 
-    // Strategy 2: Luma Ray 2 (720p @ 24-30 FPS, smooth camera motion)
-    if (!videoUrl) {
+    // Strategy 2: Luma Ray 2
+    if (!prediction) {
       try {
-        console.log("Trying Luma Ray 2...");
-        const output = await replicate.run("luma/ray-2-720p", {
+        prediction = await replicate.predictions.create({
+          model: "luma/ray-2-720p",
           input: {
             start_image: imageUrl,
             prompt: prompt,
@@ -176,53 +220,53 @@ export async function POST(request: Request) {
             loop: true,
           },
         });
-        videoUrl = await resolveVideoUrl(output);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         lastError = msg;
-        console.warn("Luma Ray 2 failed, trying Tuned SVD...", msg);
-      }
-    }
-
-    // Strategy 3: Tuned Stable Video Diffusion (25 frames @ 12 FPS, low motion blur)
-    if (!videoUrl) {
-      try {
-        console.log("Trying Tuned SVD...");
-        const output = await replicate.run(
-          "stability-ai/stable-video-diffusion:3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
-          {
-            input: {
-              input_image: imageUrl,
-              video_length: "25_frames_with_svd",
-              sizing_strategy: "maintain_aspect_ratio",
-              frames_per_second: 12,
-              motion_bucket_id: 45,
-            },
-          }
+        console.warn(
+          "Luma Ray 2 prediction creation failed, trying SVD...",
+          msg
         );
-        videoUrl = await resolveVideoUrl(output);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        lastError = msg;
-        console.warn("Tuned SVD failed...", msg);
       }
     }
 
-    if (!videoUrl) {
+    // Strategy 3: Stable Video Diffusion
+    if (!prediction) {
+      try {
+        prediction = await replicate.predictions.create({
+          version:
+            "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438",
+          input: {
+            input_image: imageUrl,
+            video_length: "25_frames_with_svd",
+            sizing_strategy: "maintain_aspect_ratio",
+            frames_per_second: 12,
+            motion_bucket_id: 45,
+          },
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        lastError = msg;
+      }
+    }
+
+    if (!prediction || !prediction.id) {
       return NextResponse.json(
-        { error: lastError || "Failed to generate 3D video walkthrough." },
+        { error: lastError || "Failed to start video generation job." },
         { status: 400 }
       );
     }
 
-    await incrementVideoCount(normEmail);
-    return NextResponse.json({ videoUrl }, { status: 200 });
+    // Return prediction ID immediately so client can poll without timeout
+    return NextResponse.json({
+      success: true,
+      predictionId: prediction.id,
+      status: prediction.status,
+    });
   } catch (err) {
     console.error("Replicate Video API Error:", err);
     const message =
-      err instanceof Error
-        ? err.message
-        : "Failed to generate video walkthrough";
+      err instanceof Error ? err.message : "Failed to start video generation";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

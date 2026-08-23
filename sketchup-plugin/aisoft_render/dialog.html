@@ -1317,9 +1317,9 @@
       document.getElementById('aiImg').style.display = 'none';
       document.getElementById('aiVideo').style.display = 'none';
       document.getElementById('loadingTitle').innerHTML = '<b>Creating 3D Video Walkthrough...</b>';
-      document.getElementById('loadingSub').innerHTML = 'Animating camera pan & motion path (15-30s)';
+      document.getElementById('loadingSub').innerHTML = 'Starting 30 FPS rendering engine...';
       document.getElementById('aiLoading').style.display = 'block';
-      showStatus('🎬 Animating 3D walkthrough video clip...', 'loading');
+      showStatus('🎬 Starting 3D video generation...', 'loading');
 
       try {
         const videoApiUrl = currentServerUrl + '/api/replicate/video';
@@ -1341,7 +1341,62 @@
 
         const data = await parseResponseJson(response);
 
-        if (response.ok && data.videoUrl) {
+        if (!response.ok || (!data.predictionId && !data.videoUrl)) {
+          showStatus('❌ ' + (data.error || 'Server error'), 'error');
+          videoBtn.disabled = false;
+          document.getElementById('aiLoading').style.display = 'none';
+          switchPreviewMode('image');
+
+          if (data.code === 'session_invalid') {
+            alert("⚠️ " + (data.error || "Logged in on another computer. You have been logged out."));
+            signOutUser();
+          } else if (data.code === 'payment_required') {
+            alert("Payment Required: " + data.error);
+          }
+          return;
+        }
+
+        // Case 1: Direct videoUrl returned
+        let finalVideoUrl = data.videoUrl;
+
+        // Case 2: Asynchronous prediction ID returned -> Poll without timeout!
+        if (!finalVideoUrl && data.predictionId) {
+          const predictionId = data.predictionId;
+          let elapsedSeconds = 0;
+
+          while (true) {
+            await new Promise(r => setTimeout(r, 2500));
+            elapsedSeconds += 2.5;
+
+            showStatus(`🎬 Rendering 3D walkthrough video clip (${Math.round(elapsedSeconds)}s)...`, 'loading');
+            document.getElementById('loadingSub').innerHTML = `Processing 3D raytracing & camera pan (${Math.round(elapsedSeconds)}s)`;
+
+            const pollUrl = currentServerUrl + '/api/replicate/video?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
+            try {
+              const pollRes = await fetch(pollUrl);
+              const pollData = await parseResponseJson(pollRes);
+
+              if (pollData.done) {
+                if (pollData.status === 'succeeded' && pollData.videoUrl) {
+                  finalVideoUrl = pollData.videoUrl;
+                  break;
+                } else {
+                  throw new Error(pollData.error || 'Video rendering failed');
+                }
+              }
+            } catch (pollErr) {
+              if (pollErr.message && !pollErr.message.includes('Failed to fetch')) {
+                throw pollErr;
+              }
+            }
+
+            if (elapsedSeconds > 120) {
+              throw new Error('Video generation timed out after 2 minutes.');
+            }
+          }
+        }
+
+        if (finalVideoUrl) {
           showStatus('✓ 3D Video Walkthrough Complete!', 'success');
           videoBtn.disabled = false;
 
@@ -1353,7 +1408,7 @@
           }
           videoEl.muted = true;
           videoEl.setAttribute('playsinline', '');
-          videoEl.src = data.videoUrl;
+          videoEl.src = finalVideoUrl;
           videoEl.load();
 
           document.getElementById('viewModeToggle').style.display = 'flex';
@@ -1367,21 +1422,11 @@
           }
 
           const dlVidBtn = document.getElementById('downloadVideoLink');
-          dlVidBtn.href = data.videoUrl;
+          dlVidBtn.href = finalVideoUrl;
           dlVidBtn.style.display = 'inline-block';
-        } else {
-          showStatus('❌ ' + (data.error || 'Server error'), 'error');
-          videoBtn.disabled = false;
-          document.getElementById('aiLoading').style.display = 'none';
-          switchPreviewMode('image');
-
-          if (data.code === 'session_invalid') {
-            alert("⚠️ " + (data.error || "Logged in on another computer. You have been logged out."));
-            signOutUser();
-          }
         }
       } catch (err) {
-        showStatus('❌ Connection Error creating video walkthrough.', 'error');
+        showStatus('❌ ' + (err.message || 'Connection Error creating video walkthrough.'), 'error');
         videoBtn.disabled = false;
         document.getElementById('aiLoading').style.display = 'none';
         switchPreviewMode('image');
