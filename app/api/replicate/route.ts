@@ -33,7 +33,7 @@ async function renderWithOpenAI(
     prompt: prompt,
   });
 
-  const firstItem = response.data[0];
+  const firstItem = response.data?.[0];
   if (firstItem?.b64_json) {
     return `data:image/png;base64,${firstItem.b64_json}`;
   }
