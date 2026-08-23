@@ -200,13 +200,12 @@ MagneticButton.displayName = "MagneticButton";
 
 const MarqueeItem = () => (
   <div className="flex items-center space-x-12 px-6">
-    <span>AI Interior Design</span> <span className="text-primary/60">✦</span>
-    <span>Photorealistic Renders</span>{" "}
+    <span>SketchUp AI Plugin</span> <span className="text-primary/60">✦</span>
+    <span>Photorealistic Images & 3D Videos</span>{" "}
     <span className="text-secondary/60">✦</span>
-    <span>20+ Design Styles</span> <span className="text-primary/60">✦</span>
-    <span>Results in 30 Seconds</span>{" "}
-    <span className="text-secondary/60">✦</span>
-    <span>Layout Preserved</span> <span className="text-primary/60">✦</span>
+    <span>No GPU Required</span> <span className="text-primary/60">✦</span>
+    <span>No High RAM Needed</span> <span className="text-secondary/60">✦</span>
+    <span>100% Geometry Lock</span> <span className="text-primary/60">✦</span>
   </div>
 );
 
@@ -338,7 +337,8 @@ export function CinematicFooter({
             <div className="footer-glass-pill mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs lg:px-5 lg:py-2 lg:text-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
               <span className="text-muted-foreground font-medium">
-                AI-powered · No GPU required · Runs locally
+                SketchUp Plugin · Render Images & Videos · No GPU or High RAM
+                Needed
               </span>
             </div>
 
@@ -346,11 +346,12 @@ export function CinematicFooter({
               ref={headingRef}
               className="footer-text-glow mb-4 text-center text-3xl font-black tracking-tight md:text-5xl lg:text-6xl xl:text-7xl"
             >
-              High-quality architecture renders in 30 seconds. <br />
-              No GPU required.
+              Render SketchUp Images & 3D Videos seamlessly. <br />
+              No GPU or High RAM required.
             </h2>
             <p className="text-muted-foreground mb-12 text-center text-sm md:text-base lg:text-lg">
-              Native desktop experience · offline setup · cloud AI generation
+              One-click SketchUp .rbz plugin · Seamless cloud rendering · Runs
+              on any laptop or desktop
             </p>
 
             {/* Live demo */}

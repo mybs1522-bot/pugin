@@ -60,59 +60,59 @@ const FundingAnnouncement = dynamic(
 const features = [
   {
     icon: Wand2,
-    title: "AI-Powered Redesign",
+    title: "SketchUp Viewport Lock",
     description:
-      "Upload any room photo and our model reimagines the space with a completely new style — in seconds.",
-  },
-  {
-    icon: Palette,
-    title: "20+ Design Themes",
-    description:
-      "From Minimalist and Scandinavian to Industrial and Art Deco — every major interior style is covered.",
+      "Renders directly from your active SketchUp viewport, preserving 100% of your geometry, walls, doors, and furniture.",
   },
   {
     icon: Camera,
-    title: "Photorealistic Output",
+    title: "Photorealistic Images & 3D Videos",
     description:
-      "DSLR-quality renders with sharp materials, accurate lighting, and no CGI haze.",
+      "Generate high-resolution 4K interior & exterior images plus smooth cinematic 3D video walkthroughs.",
+  },
+  {
+    icon: Zap,
+    title: "No GPU & No High RAM Needed",
+    description:
+      "Zero expensive graphics card or high RAM required. Cloud TPUs handle all heavy rendering seamlessly on any computer.",
   },
   {
     icon: Layers,
-    title: "Room-Aware Generation",
+    title: "100% Design Fidelity",
     description:
-      "Select your room type and the AI adapts to furniture scale, lighting, and layout.",
+      "Locks room layout, staircases, glass block partitions, and cabinetry with zero AI hallucinations.",
   },
   {
     icon: Download,
-    title: "Instant Download",
+    title: "One-Click RBZ Plugin Setup",
     description:
-      "Every render is auto-saved to your gallery and downloaded at full resolution.",
+      "Download the official .rbz plugin archive and install directly inside SketchUp in under 10 seconds.",
   },
   {
     icon: Shield,
-    title: "Private & Secure",
+    title: "Fast & Ephemeral",
     description:
-      "Photos are processed ephemerally and never stored or used for training.",
+      "Renders finish in seconds with automatic gallery saving and high-resolution direct downloads.",
   },
 ];
 
 const steps = [
   {
     number: "01",
-    title: "Upload your room",
-    body: "Drop a JPEG or PNG of any room — living room, bedroom, kitchen, or exterior.",
+    title: "Install SketchUp Plugin",
+    body: "Download the official aisoft_render.rbz file and install it inside SketchUp in 10 seconds.",
     icon: ImageIcon,
   },
   {
     number: "02",
-    title: "Configure the design",
-    body: "Pick from 20+ styles, set lighting mood, materials, and room type in 6 quick steps.",
+    title: "Capture Any Viewport",
+    body: "Click Render Viewport directly inside SketchUp without needing expensive GPUs or high RAM setups.",
     icon: Layers,
   },
   {
     number: "03",
-    title: "Generate & download",
-    body: "Hit Generate — your photorealistic render arrives and downloads automatically.",
+    title: "Images & 3D Videos",
+    body: "Get crisp 4K interior/exterior photos and smooth 3D video walkthroughs delivered seamlessly.",
     icon: Zap,
   },
 ];
@@ -129,7 +129,7 @@ export default function HomePage() {
                 <Palette className="h-3.5 w-3.5" />
               </div>
               <span className="text-sm font-semibold">
-                Interior Designer AI
+                SketchUp AI Renderer
               </span>
             </Link>
             <div className="text-muted-foreground hidden items-center gap-6 text-sm sm:flex">
@@ -149,7 +149,7 @@ export default function HomePage() {
                 href="#download"
                 className="hover:text-foreground transition-colors"
               >
-                Download
+                Download Plugin
               </Link>
             </div>
             <div className="flex items-center gap-2">
@@ -187,7 +187,8 @@ export default function HomePage() {
                 How it works
               </h2>
               <p className="text-muted-foreground mt-2 text-sm lg:mt-4 lg:text-base">
-                Three steps from photo to polished design.
+                Three steps from SketchUp viewport to photorealistic images & 3D
+                videos.
               </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-3 lg:gap-14">
@@ -231,8 +232,8 @@ export default function HomePage() {
 
       {/* ── Site footer ─────────────────────────────────────── */}
       <Footer
-        brandName="Interior Designer AI"
-        brandDescription="Transform any room photo into a photorealistic AI render in 30 seconds. No GPU required — runs entirely on your device."
+        brandName="SketchUp AI Renderer"
+        brandDescription="Seamlessly render photorealistic interior & exterior images and 3D video walkthroughs directly inside SketchUp. No expensive graphics card or high RAM required."
         socialLinks={[
           {
             icon: <Twitter className="h-6 w-6" />,

@@ -57,7 +57,7 @@ export function FundingAnnouncement() {
           {/* Badge */}
           <div className="border-primary/30 bg-primary/10 text-primary inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold">
             <Zap className="h-4 w-4" />
-            Series A — $10M Raised
+            SketchUp Plugin — Render Images & Videos without GPU or High RAM
           </div>
 
           {/* Headline */}
