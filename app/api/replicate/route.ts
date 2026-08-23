@@ -120,7 +120,10 @@ const INTERIOR_LIGHT_DESC: Record<string, string> = {
     "soft even ambient daylight with gentle balanced interior fill lighting",
 };
 
-function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+function buildPhotorealisticPrompt(
+  q?: DesignQuestionnaire,
+  materialPins?: any[]
+): string {
   const isExterior = q?.spaceType === "exterior";
 
   // If exterior space
@@ -168,6 +171,16 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
   if (q?.accentColor) customFinishes.push(`accent tone: ${q.accentColor}`);
   if (q?.lightingMood && INTERIOR_LIGHT_DESC[q.lightingMood])
     customFinishes.push(`lighting: ${INTERIOR_LIGHT_DESC[q.lightingMood]}`);
+
+  if (Array.isArray(materialPins) && materialPins.length > 0) {
+    const pinNotes = materialPins.map(
+      (p: any, i: number) =>
+        `Target Surface #${i + 1} (${p.surfaceCategory || "Surface"}): ${p.finish || "Custom Finish"} in ${p.colorName || "Custom Color"}`
+    );
+    customFinishes.push(
+      `EXPLICIT CLICKED SURFACE MATERIALS: ${pinNotes.join("; ")}`
+    );
+  }
 
   const customMaterialsNote =
     customFinishes.length > 0
@@ -330,7 +343,7 @@ export async function POST(request: Request) {
     const image: string = req.image;
     const questionnaire: DesignQuestionnaire = req.questionnaire;
 
-    const prompt = buildPhotorealisticPrompt(questionnaire);
+    const prompt = buildPhotorealisticPrompt(questionnaire, req.materialPins);
 
     const defaultGeminiKey = Buffer.from(
       "QVEuQWI4Uk42TC0yeUNiMWpBSnQtTzZpMllxR2Q1VUVWMWxfenpMS2hlSXl3MG4wLVRscXc=",
