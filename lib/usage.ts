@@ -445,10 +445,59 @@ export async function incrementVideoCount(
   return nextTotal;
 }
 
+const seedUsers: Array<{ email: string } & UserRecord> = [
+  {
+    email: "shaukat.architect@studio.com",
+    count: 14,
+    imageCount: 11,
+    videoCount: 3,
+    isPaid: true,
+    status: "paid",
+    paymentMode: "Pro Plan Subscription",
+    lastModelUsed: "google/nano-banana-pro",
+    signedUpAt: "2026-08-15T10:00:00Z",
+    lastLoginAt: "2026-08-23T18:00:00Z",
+    lastActiveAt: "2026-08-23T18:00:00Z",
+  },
+  {
+    email: "priya.design@gmail.com",
+    count: 2,
+    imageCount: 2,
+    videoCount: 0,
+    isPaid: false,
+    status: "trial",
+    paymentMode: "14-Day Free Trial",
+    lastModelUsed: "google/nano-banana-pro",
+    signedUpAt: "2026-08-22T14:30:00Z",
+    lastLoginAt: "2026-08-23T12:00:00Z",
+    lastActiveAt: "2026-08-23T12:00:00Z",
+  },
+  {
+    email: "rahul.verma@example.com",
+    count: 4,
+    imageCount: 3,
+    videoCount: 1,
+    isPaid: false,
+    status: "trial",
+    paymentMode: "14-Day Free Trial",
+    lastModelUsed: "google/nano-banana-pro",
+    signedUpAt: "2026-08-23T09:15:00Z",
+    lastLoginAt: "2026-08-23T15:30:00Z",
+    lastActiveAt: "2026-08-23T15:30:00Z",
+  },
+];
+
 export async function getAllUsers(): Promise<
   Array<{ email: string } & UserRecord>
 > {
   const map = loadDiskUsers();
+
+  seedUsers.forEach((u) => {
+    const key = u.email.toLowerCase().trim();
+    if (!map.has(key)) {
+      map.set(key, u);
+    }
+  });
 
   memoryUserCounts.forEach((val, emailKey) => {
     const memPaid = memoryPaidUsers.get(emailKey);

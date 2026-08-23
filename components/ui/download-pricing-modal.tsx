@@ -39,11 +39,35 @@ export function DownloadPricingModal({
 
     setLoading(true);
 
+    const normEmail = email.trim().toLowerCase();
+    const trialRecord = {
+      email: normEmail,
+      count: 0,
+      imageCount: 0,
+      videoCount: 0,
+      isPaid: false,
+      status: "trial",
+      paymentMode: "14-Day Free Trial",
+      lastModelUsed: "google/nano-banana-pro",
+      signedUpAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      lastActiveAt: new Date().toISOString(),
+    };
+
+    try {
+      const stored = localStorage.getItem("pugin_trials_list");
+      const list = stored ? JSON.parse(stored) : [];
+      if (!list.some((u: any) => u.email.toLowerCase() === normEmail)) {
+        list.unshift(trialRecord);
+        localStorage.setItem("pugin_trials_list", JSON.stringify(list));
+      }
+    } catch {}
+
     try {
       await fetch("/api/usage", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: normEmail }),
       });
     } catch (err) {
       console.warn("Trial registration API warning:", err);

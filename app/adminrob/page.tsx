@@ -352,14 +352,64 @@ function Dashboard() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      let serverUsers: UserRecord[] = [];
       const res = await fetch("/api/admin/users");
       const text = await res.text();
       if (res.ok && text && text.trim()) {
         try {
           const json = JSON.parse(text) as AdminData;
-          setData(json);
+          serverUsers = json.users || [];
         } catch {}
       }
+
+      // Merge with local trials registered in browser
+      let localTrials: UserRecord[] = [];
+      try {
+        const stored = localStorage.getItem("pugin_trials_list");
+        if (stored) {
+          localTrials = JSON.parse(stored);
+        }
+      } catch {}
+
+      const userMap = new Map<string, UserRecord>();
+      serverUsers.forEach((u) => {
+        if (u && u.email) {
+          userMap.set(u.email.toLowerCase().trim(), u);
+        }
+      });
+
+      localTrials.forEach((u) => {
+        if (u && u.email) {
+          const key = u.email.toLowerCase().trim();
+          if (!userMap.has(key)) {
+            userMap.set(key, u);
+          }
+        }
+      });
+
+      const mergedUsers = Array.from(userMap.values());
+      const totalRenders = mergedUsers.reduce(
+        (sum, u) => sum + (u.count || 0),
+        0
+      );
+      const paidUsers = mergedUsers.filter(
+        (u) => u.isPaid || u.status === "paid"
+      ).length;
+      const trialUsers = mergedUsers.filter(
+        (u) => !u.isPaid && u.status !== "paid"
+      ).length;
+
+      setData({
+        stats: {
+          totalUsers: mergedUsers.length,
+          totalRenders,
+          trialUsers,
+          exhaustedUsers: 0,
+          paidUsers,
+          trialLimit: 3,
+        },
+        users: mergedUsers,
+      });
 
       // Fetch support tickets
       const tRes = await fetch("/api/support");
