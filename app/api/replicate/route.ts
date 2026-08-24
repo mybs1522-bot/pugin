@@ -351,90 +351,80 @@ export async function POST(request: Request) {
     const mimeType = match ? match[1] : "image/png";
     const base64Data = match ? match[2] : image;
 
+    let finalPrompt = prompt;
+
     console.log(
-      `Generating render via Google AI Studio Gemini API for ${normEmail}...`
+      `Analyzing viewport with Google AI Studio Gemini API for ${normEmail}...`
     );
 
-    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
-
-    const res = await fetch(googleUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Data,
+    try {
+      const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
+      const res = await fetch(googleUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: "Describe this 3D viewport architecturally to enhance a photorealistic render prompt. Focus on lighting, materials, and geometry.",
                 },
-              },
-            ],
-          },
-        ],
-      }),
-    });
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data,
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      });
 
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      console.error("Google AI Studio error:", res.status, errData);
-      throw new Error(
-        errData.error?.message || `Google AI Studio HTTP ${res.status}`
+      if (res.ok) {
+        const data = await res.json();
+        const candidate = data.candidates?.[0];
+        const parts = candidate?.content?.parts || [];
+        const textOutput = parts
+          .map((p: { text?: string }) => p.text || "")
+          .join("\n");
+
+        if (textOutput) {
+          finalPrompt = `${prompt}\n\nSpatial Description: ${textOutput}`;
+        }
+      }
+    } catch (geminiErr) {
+      console.warn(
+        "Gemini vision analysis failed, using base prompt:",
+        geminiErr
       );
     }
 
-    const data = await res.json();
-    const candidate = data.candidates?.[0];
-    const parts = candidate?.content?.parts || [];
-
-    let imageUri: string | null = null;
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        const outMime = part.inlineData.mimeType || "image/png";
-        imageUri = `data:${outMime};base64,${part.inlineData.data}`;
-        break;
-      }
+    const userModels = await getUserModels(normEmail);
+    // Explicitly prevent "default" 404 error
+    let assignedModel =
+      req.model || userModels.imageModel || "google/nano-banana-pro";
+    if (assignedModel === "default") {
+      assignedModel = "google/nano-banana-pro";
     }
 
-    // If Gemini Vision returns enhanced prompt text, render high-speed photorealistic image
-    if (!imageUri && candidate?.content) {
-      const textOutput = parts
-        .map((p: { text?: string }) => p.text || "")
-        .join("\n");
-      const finalPrompt = textOutput
-        ? `${prompt}\n\nSpatial Description: ${textOutput}`
-        : prompt;
+    console.log(
+      `Generating render via model (${assignedModel}) for ${normEmail}...`
+    );
 
-      const apiToken =
-        process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
-      const replicate = new Replicate({ auth: apiToken });
-      const output = await replicate.run("black-forest-labs/flux-schnell", {
-        input: {
-          prompt: finalPrompt,
-          aspect_ratio: "16:9",
-          num_outputs: 1,
-          output_format: "jpg",
-        },
-      });
+    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
+    const replicate = new Replicate({ auth: apiToken });
 
-      const resolvedUrl = await resolveOutputUrl(output);
-      if (resolvedUrl) {
-        imageUri = resolvedUrl;
-      }
-    }
-
-    if (!imageUri) {
-      throw new Error("Google AI Studio Gemini API returned no image output.");
-    }
-
-    await incrementImageCount(normEmail, "google/gemini-3.6-flash");
+    // Create asynchronous prediction to eliminate Vercel invocation timeouts
+    const prediction = await replicate.predictions.create({
+      model: assignedModel,
+      input: buildModelInput(assignedModel, finalPrompt, image),
+    });
 
     return NextResponse.json({
       success: true,
-      output: [imageUri],
-      model: "google/gemini-3.6-flash",
+      predictionId: prediction.id,
+      model: assignedModel,
     });
   } catch (err) {
     console.error("Render API error:", err);
