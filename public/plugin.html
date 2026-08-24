@@ -948,6 +948,26 @@
         document.getElementById('authModal').style.display = 'none';
         updateHeaderUserBadge();
         checkSupportNotifications();
+        // Check trial status immediately on plugin load
+        checkTrialStatusOnLoad();
+      }
+    }
+
+    async function checkTrialStatusOnLoad() {
+      if (!userEmail) return;
+      try {
+        const serverUrl = getLiveServerUrl();
+        const trialCheckUrl = serverUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail);
+        const trialRes = await fetch(trialCheckUrl);
+        const trialData = await trialRes.json();
+        
+        console.log('[TRIAL ON-LOAD CHECK]', trialData);
+        
+        if (trialData && trialData.allowed === false) {
+          showTrialOverState();
+        }
+      } catch (err) {
+        console.warn('Trial status check on load failed:', err);
       }
     }
 
@@ -1055,6 +1075,8 @@
             document.getElementById('authModal').style.display = 'none';
             updateHeaderUserBadge();
             checkSupportNotifications();
+            // Check trial status immediately after login
+            checkTrialStatusOnLoad();
           }, 800);
         } else {
           showAuthStatus('❌ ' + (data.error || 'Invalid 4-digit code.'), 'error');
