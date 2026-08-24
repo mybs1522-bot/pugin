@@ -724,3 +724,84 @@ export async function getAllUsers(): Promise<
     status: u.status || (u.isPaid ? "paid" : "trial"),
   }));
 }
+
+/* ─── RENDER AUDIT & EXECUTION LOGS ───────────────────────────────────────── */
+export interface RenderLogEntry {
+  id: string;
+  timestamp: string;
+  email: string;
+  type: "image" | "video";
+  requestedModel: string;
+  executedModel: string;
+  provider: "Google AI Studio" | "Replicate";
+  status: "success" | "fallback_cascade" | "failed";
+  durationSeconds: number;
+  details?: string;
+  error?: string;
+  outputPreview?: string;
+}
+
+const memoryRenderLogs: RenderLogEntry[] = [];
+
+function getLogStorePath(): string {
+  try {
+    const tmpDir = "/tmp";
+    if (fs.existsSync(tmpDir)) {
+      return path.join(tmpDir, "pugin_render_logs.json");
+    }
+  } catch {}
+  return path.join(process.cwd(), ".render_logs.json");
+}
+
+export function recordRenderLog(
+  entry: Omit<RenderLogEntry, "id" | "timestamp">
+): RenderLogEntry {
+  const fullEntry: RenderLogEntry = {
+    id: "log_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
+    timestamp: new Date().toISOString(),
+    ...entry,
+  };
+
+  memoryRenderLogs.unshift(fullEntry);
+  if (memoryRenderLogs.length > 500) {
+    memoryRenderLogs.pop();
+  }
+
+  try {
+    const logPath = getLogStorePath();
+    let existingLogs: RenderLogEntry[] = [];
+    if (fs.existsSync(logPath)) {
+      const raw = fs.readFileSync(logPath, "utf-8");
+      if (raw && raw.trim()) {
+        existingLogs = JSON.parse(raw);
+      }
+    }
+    existingLogs.unshift(fullEntry);
+    if (existingLogs.length > 500) {
+      existingLogs = existingLogs.slice(0, 500);
+    }
+    fs.writeFileSync(logPath, JSON.stringify(existingLogs, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Failed to persist render log:", err);
+  }
+
+  return fullEntry;
+}
+
+export function getRenderLogs(limit: number = 100): RenderLogEntry[] {
+  try {
+    const logPath = getLogStorePath();
+    if (fs.existsSync(logPath)) {
+      const raw = fs.readFileSync(logPath, "utf-8");
+      if (raw && raw.trim()) {
+        const diskLogs = JSON.parse(raw);
+        if (Array.isArray(diskLogs) && diskLogs.length > 0) {
+          return diskLogs.slice(0, limit);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to load render logs from disk:", err);
+  }
+  return memoryRenderLogs.slice(0, limit);
+}

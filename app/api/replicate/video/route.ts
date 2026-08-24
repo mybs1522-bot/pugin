@@ -7,6 +7,7 @@ import {
   getUserModels,
   verifyDeviceSession,
   TRIAL_VIDEO_LIMIT,
+  recordRenderLog,
 } from "@/lib/usage";
 
 export const maxDuration = 60;
@@ -257,6 +258,17 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    recordRenderLog({
+      email: normEmail,
+      type: "video",
+      requestedModel: "kwaivgi/kling-v1.6-standard",
+      executedModel: prediction.model || "kling-v1.6-standard",
+      provider: "Replicate",
+      status: "success",
+      durationSeconds: 1.0,
+      details: `Initialized async video walkthrough job: ${prediction.id}`,
+    });
 
     // Return prediction ID immediately so client can poll without timeout
     return NextResponse.json({

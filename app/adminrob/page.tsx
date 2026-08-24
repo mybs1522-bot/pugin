@@ -45,6 +45,21 @@ interface UserRecord {
   lastActiveAt: string;
 }
 
+interface RenderLogEntry {
+  id: string;
+  timestamp: string;
+  email: string;
+  type: "image" | "video";
+  requestedModel: string;
+  executedModel: string;
+  provider: "Google AI Studio" | "Replicate";
+  status: "success" | "fallback_cascade" | "failed";
+  durationSeconds: number;
+  details?: string;
+  error?: string;
+  outputPreview?: string;
+}
+
 interface ChatMessage {
   id: string;
   sender: "user" | "admin";
@@ -222,6 +237,144 @@ function fmt(iso: string) {
   }
 }
 
+function RenderLogsTable({
+  logs,
+  search,
+}: {
+  logs: RenderLogEntry[];
+  search: string;
+}) {
+  const filtered = logs.filter(
+    (l) =>
+      l.email.toLowerCase().includes(search.toLowerCase()) ||
+      l.requestedModel.toLowerCase().includes(search.toLowerCase()) ||
+      l.executedModel.toLowerCase().includes(search.toLowerCase()) ||
+      (l.details && l.details.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+      <div className="flex items-center justify-between border-b border-white/10 bg-indigo-950/40 p-4">
+        <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+          <Activity className="h-4 w-4 text-indigo-400" />⚡ Live Render
+          Execution & Model Callback Logs
+        </h3>
+        <span className="text-xs font-semibold text-indigo-300">
+          {filtered.length} Recorded Render Events
+        </span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-white/10 bg-zinc-900/80 font-semibold tracking-wider text-zinc-400 uppercase">
+            <tr>
+              <th className="px-5 py-3.5">Date & Time</th>
+              <th className="px-5 py-3.5">User Email</th>
+              <th className="px-5 py-3.5">Type</th>
+              <th className="px-5 py-3.5">Assigned / Requested</th>
+              <th className="px-5 py-3.5">Actual Callback Engine</th>
+              <th className="px-5 py-3.5">Provider</th>
+              <th className="px-5 py-3.5">Status & Latency</th>
+              <th className="px-5 py-3.5">Execution Callback Details</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-white/5 text-zinc-300">
+            {filtered.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="px-5 py-8 text-center text-zinc-500">
+                  No render execution logs recorded yet. Trigger a render from
+                  the plugin to view live traces.
+                </td>
+              </tr>
+            ) : (
+              filtered.map((log) => (
+                <tr key={log.id} className="transition hover:bg-white/5">
+                  <td className="px-5 py-4 whitespace-nowrap text-zinc-400">
+                    <span className="font-mono text-zinc-200">
+                      {new Date(log.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })}
+                    </span>
+                    <div className="text-[10px] text-zinc-500">
+                      {new Date(log.timestamp).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="px-5 py-4 font-medium text-white">
+                    {log.email}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                        log.type === "video"
+                          ? "border border-blue-500/30 bg-blue-500/20 text-blue-300"
+                          : "border border-purple-500/30 bg-purple-500/20 text-purple-300"
+                      }`}
+                    >
+                      {log.type === "video" ? "🎬 Video" : "🖼️ Image"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="font-semibold text-zinc-300">
+                      {log.requestedModel}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">
+                    {log.status === "fallback_cascade" ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/30 bg-amber-500/20 px-2 py-0.5 text-[11px] font-bold text-amber-300">
+                          ⚡ {log.executedModel}
+                        </span>
+                        <span className="text-[10px] font-medium text-amber-400/80">
+                          (Cascade Fallback)
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-300">
+                        ✨ {log.executedModel}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-zinc-300">
+                      {log.provider}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 whitespace-nowrap">
+                    {log.status === "success" && (
+                      <span className="inline-flex items-center gap-1 font-bold text-emerald-400">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        Success ({log.durationSeconds}s)
+                      </span>
+                    )}
+                    {log.status === "fallback_cascade" && (
+                      <span className="inline-flex items-center gap-1 font-bold text-amber-400">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Cascaded ({log.durationSeconds}s)
+                      </span>
+                    )}
+                    {log.status === "failed" && (
+                      <span className="inline-flex items-center gap-1 font-bold text-rose-400">
+                        ❌ Failed ({log.durationSeconds}s)
+                      </span>
+                    )}
+                  </td>
+                  <td
+                    className="max-w-xs truncate px-5 py-4 text-[11px] text-zinc-400"
+                    title={log.details || log.error}
+                  >
+                    {log.details || log.error || "—"}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function LoginForm({ onSuccess }: { onSuccess: () => void }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -340,12 +493,13 @@ function LoginForm({ onSuccess }: { onSuccess: () => void }) {
 function Dashboard() {
   const [data, setData] = useState<AdminData | null>(null);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [logs, setLogs] = useState<RenderLogEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "all" | "images" | "videos" | "support" | "leads"
+    "all" | "logs" | "images" | "videos" | "support" | "leads"
   >("all");
 
   const [replyingTicketId, setReplyingTicketId] = useState<string | null>(null);
@@ -427,6 +581,15 @@ function Dashboard() {
         const tJson = await tRes.json();
         setTickets(tJson.tickets || []);
       }
+
+      // Fetch live render audit logs
+      try {
+        const lRes = await fetch("/api/admin/logs");
+        if (lRes.ok) {
+          const lJson = await lRes.json();
+          setLogs(lJson.logs || []);
+        }
+      } catch {}
     } finally {
       setLoading(false);
     }
@@ -724,6 +887,17 @@ function Dashboard() {
               👥 Plugin Users ({filtered.length})
             </button>
             <button
+              onClick={() => setActiveTab("logs")}
+              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
+                activeTab === "logs"
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Activity className="h-3.5 w-3.5" />⚡ Live Execution Logs (
+              {logs.length})
+            </button>
+            <button
               onClick={() => setActiveTab("images")}
               className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition ${
                 activeTab === "images"
@@ -963,6 +1137,11 @@ function Dashboard() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* TAB: LIVE EXECUTION & MODEL CALLBACK LOGS */}
+        {activeTab === "logs" && (
+          <RenderLogsTable logs={logs} search={search} />
         )}
 
         {/* TAB 2: IMAGE RENDERS TABLE */}

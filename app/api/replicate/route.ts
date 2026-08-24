@@ -10,6 +10,7 @@ import {
   getUserModels,
   verifyDeviceSession,
   TRIAL_IMAGE_LIMIT,
+  recordRenderLog,
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
 
@@ -359,6 +360,8 @@ export async function POST(request: Request) {
       `Generating render for ${normEmail} using assigned model: ${assignedModel}...`
     );
 
+    const startTime = Date.now();
+
     // Case 1: Google Gemini AI Studio Native Models (Nano Banana Pro / Gemini 3 Image)
     if (
       assignedModel.startsWith("google/") ||
@@ -446,11 +449,41 @@ export async function POST(request: Request) {
         }
       }
 
+      const durationSeconds =
+        Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
+
       if (!imageUri) {
+        recordRenderLog({
+          email: normEmail,
+          type: "image",
+          requestedModel: assignedModel,
+          executedModel: "failed",
+          provider: "Google AI Studio",
+          status: "failed",
+          durationSeconds,
+          error: lastError || "Google AI Studio returned no image output.",
+        });
+
         throw new Error(
           lastError || "Google AI Studio returned no image output."
         );
       }
+
+      const isCascade = usedModel !== candidateModels[0];
+
+      recordRenderLog({
+        email: normEmail,
+        type: "image",
+        requestedModel: assignedModel,
+        executedModel: usedModel,
+        provider: "Google AI Studio",
+        status: isCascade ? "fallback_cascade" : "success",
+        durationSeconds,
+        details: isCascade
+          ? `Primary model (${candidateModels[0]}) was overloaded (503); successfully cascaded to ${usedModel}`
+          : `Direct execution via Google AI Studio (${usedModel})`,
+        outputPreview: imageUri ? imageUri.substring(0, 100) : undefined,
+      });
 
       await incrementImageCount(normEmail, assignedModel);
 
@@ -475,6 +508,20 @@ export async function POST(request: Request) {
     const prediction = await replicate.predictions.create({
       model: replicateModel,
       input: buildModelInput(replicateModel, prompt, image),
+    });
+
+    const durationSeconds =
+      Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
+
+    recordRenderLog({
+      email: normEmail,
+      type: "image",
+      requestedModel: assignedModel,
+      executedModel: replicateModel,
+      provider: "Replicate",
+      status: "success",
+      durationSeconds,
+      details: `Initialized async Replicate prediction: ${prediction.id}`,
     });
 
     return NextResponse.json({
