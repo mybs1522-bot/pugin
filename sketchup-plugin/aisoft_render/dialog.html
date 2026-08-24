@@ -1935,7 +1935,9 @@
           if (imgUrl) {
             lastRenderUrl = imgUrl;
             // Record render increment in client localStorage
-            localStorage.setItem(localKey, (localCount + 1).toString());
+            const currentLocal = parseInt(localStorage.getItem(localKey) || '0', 10);
+            const serverCount = (typeof data.count === 'number') ? data.count : (currentLocal + 1);
+            localStorage.setItem(localKey, serverCount.toString());
             saveToPastRenders(imgUrl, 'image');
 
             showStatus('✓ Render complete!', 'success');

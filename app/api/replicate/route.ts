@@ -668,12 +668,13 @@ export async function POST(request: Request) {
         outputPreview: imageUri ? imageUri.substring(0, 100) : undefined,
       });
 
-      await incrementImageCount(normEmail, assignedModel);
+      const newTotal = await incrementImageCount(normEmail, assignedModel);
 
       return NextResponse.json({
         success: true,
         output: [imageUri],
         model: usedModel,
+        count: newTotal,
       });
     }
 
@@ -745,16 +746,18 @@ export async function GET(request: Request) {
 
     if (prediction.status === "succeeded") {
       const url = await resolveOutputUrl(prediction.output);
+      let newCount: number | undefined;
       if (userEmail) {
-        await incrementImageCount(
+        newCount = await incrementImageCount(
           userEmail.toLowerCase().trim(),
-          GOOGLE_NANO_MODEL
+          prediction.model || "black-forest-labs/flux-2-pro"
         );
       }
       return NextResponse.json({
         status: "succeeded",
         done: true,
         output: [url],
+        count: newCount,
       });
     }
 

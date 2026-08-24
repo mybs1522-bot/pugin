@@ -448,19 +448,34 @@ export async function getImageCount(email: string): Promise<number> {
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
-      .select("count")
+      .select("count, image_count")
       .eq("email", norm)
       .single();
 
-    const row = data as { count?: number } | null;
-    dbCount = row?.count ?? 0;
-
-    if (dbCount > mem.imageCount) {
-      mem.imageCount = dbCount;
-    }
+    const row = data as { count?: number; image_count?: number } | null;
+    dbCount = row?.image_count ?? row?.count ?? 0;
   } catch {}
 
-  return Math.max(seedCount, dbCount, mem.imageCount, diskCount);
+  let logCount = 0;
+  try {
+    const { data: logs } = await getSupabaseAdmin()
+      .from("support_tickets")
+      .select("id")
+      .eq("category", "system_render_log")
+      .eq("email", norm);
+    if (logs) logCount = logs.length;
+  } catch {}
+
+  const finalCount = Math.max(
+    seedCount,
+    dbCount,
+    logCount,
+    mem.imageCount,
+    diskCount
+  );
+  mem.imageCount = finalCount;
+  mem.count = Math.max(mem.count, finalCount);
+  return finalCount;
 }
 
 export async function getVideoCount(email: string): Promise<number> {
@@ -469,12 +484,12 @@ export async function getVideoCount(email: string): Promise<number> {
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
-      .select("count")
+      .select("count, video_count")
       .eq("email", norm)
       .single();
 
-    const row = data as { count?: number } | null;
-    const dbVid = row?.count ?? 0;
+    const row = data as { count?: number; video_count?: number } | null;
+    const dbVid = row?.video_count ?? 0;
     return Math.max(dbVid, mem.videoCount);
   } catch {
     return mem.videoCount;
@@ -485,26 +500,31 @@ export async function getGenerationCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const mem = ensureMemRecord(norm);
 
+  let dbCount = 0;
   try {
-    const { data, error } = await getSupabaseAdmin()
+    const { data } = await getSupabaseAdmin()
       .from("user_usage")
       .select("count")
       .eq("email", norm)
       .single();
 
-    if (error || !data) {
-      return mem.count;
-    }
-
     const row = data as { count?: number };
-    const dbCount = row.count ?? 0;
+    dbCount = row?.count ?? 0;
+  } catch {}
 
-    const finalCount = Math.max(dbCount, mem.count);
-    mem.count = finalCount;
-    return finalCount;
-  } catch {
-    return mem.count;
-  }
+  let logCount = 0;
+  try {
+    const { data: logs } = await getSupabaseAdmin()
+      .from("support_tickets")
+      .select("id")
+      .eq("category", "system_render_log")
+      .eq("email", norm);
+    if (logs) logCount = logs.length;
+  } catch {}
+
+  const finalCount = Math.max(dbCount, logCount, mem.count);
+  mem.count = finalCount;
+  return finalCount;
 }
 
 export async function incrementImageCount(
@@ -514,27 +534,60 @@ export async function incrementImageCount(
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
+  // 1. Fetch current true count from Supabase first
+  let dbCount = 0;
+  let dbImg = 0;
+  let dbVid = 0;
+  let isPaid = !!memoryPaidUsers.get(norm)?.isPaid;
+
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("count, image_count, video_count, is_paid")
+      .eq("email", norm)
+      .single();
+
+    if (data) {
+      dbCount = data.count || 0;
+      dbImg = data.image_count || data.count || 0;
+      dbVid = data.video_count || 0;
+      if (typeof data.is_paid === "boolean") isPaid = data.is_paid;
+    }
+  } catch {}
+
+  // 2. Also check ground truth live logs in Supabase
+  try {
+    const { data: logs } = await getSupabaseAdmin()
+      .from("support_tickets")
+      .select("id")
+      .eq("category", "system_render_log")
+      .eq("email", norm);
+    if (logs && logs.length > 0) {
+      dbCount = Math.max(dbCount, logs.length);
+      dbImg = Math.max(dbImg, logs.length - dbVid);
+    }
+  } catch {}
+
   const mem = ensureMemRecord(norm);
-  mem.imageCount += 1;
-  mem.count += 1;
+  const newTotal = Math.max(dbCount, mem.count) + 1;
+  const newImg = Math.max(dbImg, mem.imageCount) + 1;
+
+  mem.count = newTotal;
+  mem.imageCount = newImg;
   mem.lastActiveAt = now;
   memoryLastModels.set(norm, modelUsed);
 
-  const nextImg = mem.imageCount;
-  const nextTotal = mem.count;
-
-  const isPaidUserImg = !!memoryPaidUsers.get(norm)?.isPaid;
   const userStatusImg =
-    memoryUserStatuses.get(norm) || (isPaidUserImg ? "paid" : "trial");
+    memoryUserStatuses.get(norm) || (isPaid ? "paid" : "trial");
 
   saveDiskUserRecord({
     email: norm,
-    count: mem.count,
-    imageCount: mem.imageCount,
+    count: newTotal,
+    imageCount: newImg,
     videoCount: mem.videoCount,
-    isPaid: isPaidUserImg,
+    isPaid: isPaid,
     status: userStatusImg,
-    paymentMode: isPaidUserImg ? "Pro Plan Subscription" : "14-Day Free Trial",
+    paymentMode: isPaid ? "Pro Plan Subscription" : "14-Day Free Trial",
     lastModelUsed: modelUsed,
     signedUpAt: mem.signedUpAt || now,
     lastLoginAt: now,
@@ -544,14 +597,15 @@ export async function incrementImageCount(
   try {
     await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
-      count: nextTotal,
+      count: newTotal,
+      image_count: newImg,
       last_active_at: now,
     });
   } catch (err) {
     console.warn("Supabase image increment warning:", err);
   }
 
-  return nextTotal;
+  return newTotal;
 }
 
 export async function incrementVideoCount(
@@ -561,27 +615,46 @@ export async function incrementVideoCount(
   const norm = email.toLowerCase().trim();
   const now = new Date().toISOString();
 
+  let dbCount = 0;
+  let dbImg = 0;
+  let dbVid = 0;
+  let isPaid = !!memoryPaidUsers.get(norm)?.isPaid;
+
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("user_usage")
+      .select("count, image_count, video_count, is_paid")
+      .eq("email", norm)
+      .single();
+
+    if (data) {
+      dbCount = data.count || 0;
+      dbImg = data.image_count || data.count || 0;
+      dbVid = data.video_count || 0;
+      if (typeof data.is_paid === "boolean") isPaid = data.is_paid;
+    }
+  } catch {}
+
   const mem = ensureMemRecord(norm);
-  mem.videoCount += 1;
-  mem.count += 1;
+  const newTotal = Math.max(dbCount, mem.count) + 1;
+  const newVid = Math.max(dbVid, mem.videoCount) + 1;
+
+  mem.count = newTotal;
+  mem.videoCount = newVid;
   mem.lastActiveAt = now;
   memoryLastModels.set(norm, modelUsed);
 
-  const nextVid = mem.videoCount;
-  const nextTotal = mem.count;
-
-  const isPaidUserVid = !!memoryPaidUsers.get(norm)?.isPaid;
   const userStatusVid =
-    memoryUserStatuses.get(norm) || (isPaidUserVid ? "paid" : "trial");
+    memoryUserStatuses.get(norm) || (isPaid ? "paid" : "trial");
 
   saveDiskUserRecord({
     email: norm,
-    count: mem.count,
+    count: newTotal,
     imageCount: mem.imageCount,
-    videoCount: mem.videoCount,
-    isPaid: isPaidUserVid,
+    videoCount: newVid,
+    isPaid: isPaid,
     status: userStatusVid,
-    paymentMode: isPaidUserVid ? "Pro Plan Subscription" : "14-Day Free Trial",
+    paymentMode: isPaid ? "Pro Plan Subscription" : "14-Day Free Trial",
     lastModelUsed: modelUsed,
     signedUpAt: mem.signedUpAt || now,
     lastLoginAt: now,
@@ -591,14 +664,15 @@ export async function incrementVideoCount(
   try {
     await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
-      count: nextTotal,
+      count: newTotal,
+      video_count: newVid,
       last_active_at: now,
     });
   } catch (err) {
     console.warn("Supabase video increment warning:", err);
   }
 
-  return nextTotal;
+  return newTotal;
 }
 
 const seedUsers: Array<{ email: string } & UserRecord> = [
@@ -824,6 +898,77 @@ export async function getAllUsers(): Promise<
       );
     } catch (cfgErr) {
       console.warn("Supabase user_model_config fetch warning:", cfgErr);
+    }
+
+    // Compute ground truth render counts directly from recorded execution logs
+    try {
+      const { data: logs } = await getSupabaseAdmin()
+        .from("support_tickets")
+        .select("email, messages_json, message, status")
+        .eq("category", "system_render_log");
+
+      const logCounts = new Map<
+        string,
+        { total: number; img: number; vid: number }
+      >();
+
+      (logs || []).forEach(
+        (l: {
+          email: string;
+          messages_json?: string;
+          message?: string;
+          status?: string;
+        }) => {
+          const key = l.email.toLowerCase().trim();
+          let isVid = false;
+          let isSuccess = true;
+          try {
+            if (l.messages_json) {
+              const parsed = JSON.parse(l.messages_json);
+              if (parsed.type === "video") isVid = true;
+              if (parsed.status === "failed") isSuccess = false;
+            } else if (l.message && l.message.includes("VIDEO")) {
+              isVid = true;
+            }
+          } catch {}
+
+          if (isSuccess) {
+            const cur = logCounts.get(key) || { total: 0, img: 0, vid: 0 };
+            cur.total += 1;
+            if (isVid) cur.vid += 1;
+            else cur.img += 1;
+            logCounts.set(key, cur);
+          }
+        }
+      );
+
+      logCounts.forEach((counts, emailKey) => {
+        const existing = map.get(emailKey);
+        if (existing) {
+          existing.count = Math.max(existing.count || 0, counts.total);
+          existing.imageCount = Math.max(existing.imageCount || 0, counts.img);
+          existing.videoCount = Math.max(existing.videoCount || 0, counts.vid);
+        } else {
+          map.set(emailKey, {
+            email: emailKey,
+            count: counts.total,
+            imageCount: counts.img,
+            videoCount: counts.vid,
+            isPaid: false,
+            status: "trial",
+            paymentMode: "14-Day Free Trial",
+            lastModelUsed: "google/nano-banana-pro",
+            signedUpAt: new Date().toISOString(),
+            lastLoginAt: new Date().toISOString(),
+            lastActiveAt: new Date().toISOString(),
+          });
+        }
+      });
+    } catch (logErr) {
+      console.warn(
+        "Supabase system_render_log count aggregation warning:",
+        logErr
+      );
     }
   } catch (err) {
     console.warn("Supabase fetch warning in getAllUsers:", err);
