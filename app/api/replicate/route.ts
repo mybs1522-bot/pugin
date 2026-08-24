@@ -286,7 +286,35 @@ function buildNanoBananaPhotorealisticPrompt(q?: DesignQuestionnaire): string {
   );
 }
 
+const MASTER_PROMPT_FLUX_INTERIOR = `### 1:1 PIXEL-LOCKED ARCHITECTURAL RENDER PASS — ZERO CAMERA OR GEOMETRY CHANGE
+
+You are performing a strict 1:1 pixel-accurate photorealistic render pass on the provided SketchUp 3D viewport.
+
+### CRITICAL RULES — ZERO PIXEL, CAMERA, OR GEOMETRIC DISCREPANCY:
+1. ZERO CAMERA MOVEMENT: The camera position, viewing angle, height, pitch, tilt, focal length, zoom level, framing, and cropping MUST be 100% IDENTICAL to the input viewport down to the single pixel. Do NOT zoom out, do NOT pull back, do NOT reposition the camera, do NOT change the perspective or field of view.
+2. ZERO GEOMETRY OR OBJECT CHANGES: DO NOT move, resize, add, remove, or rearrange ANY architectural elements or objects. Every single wall, doorway, window, staircase, dining table, chair, light fixture, rug, plant, painting, and decorative item MUST remain in its exact spatial coordinate and 2D pixel position.
+3. SOLE TASK — PBR MATERIAL & LIGHTING UPGRADE: Replace ONLY flat computer-graphics colors, simplified shading, and CAD outlines with hyper-photorealistic real-world physical materials and realistic architectural lighting.
+
+### REALISM & MATERIALS
+Use physically believable materials with realistic roughness, reflections, micro-textures, subtle imperfections, edge variations, authentic wood grain on woodwork/doors, natural stone veining, clear architectural glass, realistic metal response, and natural fabric weaves. Materials must exhibit distinct optical properties rather than looking uniformly glossy or CGI smooth.
+
+### LIGHTING
+Create beautiful, physically realistic architectural lighting: soft natural daylight from existing openings, warm 2700K ambient illumination, subtle indirect bounced light, realistic contact shadows, natural light falloff, and gentle ambient occlusion in corners. Avoid glowing walls, excessive bloom, artificial god rays, or oversaturated orange lighting.
+
+### CAMERA & BOUNDARY LOCK
+Render from the EXACT SAME camera viewpoint, height, framing, and angle as the input image. Keep vertical architectural lines straight and true to the original SketchUp screenshot. The output geometry must align 100% on top of the input SketchUp viewport like an architectural render overlay.
+
+### AUTHENTICITY & COLOR
+Keep the EXACT original color palette and material tones from the SketchUp image. Do not introduce unwanted colors. Avoid plastic materials, glowing edges, warped furniture, distorted geometry, or artificial CGI effects. Aim for quiet, breathtaking realism.
+
+Ultra-photorealistic architectural interior photograph, physically based rendering, natural global illumination, authentic material response, subtle imperfections, 100% accurate geometry, published in Architectural Digest, high dynamic range without HDR appearance, realistic exposure, sophisticated and believable.`;
+
 function buildFluxPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+  // If user did not make any custom selection in the 6 steps, bypass and use the Master Prompt directly
+  if (!q || q.userCustomized !== true || q.primaryStyle === "auto") {
+    return MASTER_PROMPT_FLUX_INTERIOR;
+  }
+
   const isExterior = q?.spaceType === "exterior";
 
   // If exterior space
