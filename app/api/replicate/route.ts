@@ -401,9 +401,9 @@ export async function POST(request: Request) {
     }
 
     const userModels = await getUserModels(normEmail);
-    // Explicitly prevent "default" 404 error
+    // Prioritize admin-assigned model over client payload to ensure admin controls the backend!
     let assignedModel =
-      req.model || userModels.imageModel || "google/nano-banana-pro";
+      userModels.imageModel || req.model || "google/nano-banana-pro";
     if (assignedModel === "default") {
       assignedModel = "google/nano-banana-pro";
     }

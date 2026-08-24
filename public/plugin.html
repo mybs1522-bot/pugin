@@ -1534,8 +1534,8 @@
             while (true) {
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
-              showStatus(`🍌 Rendering Photorealistic AI Image (${elapsed}s)...`, 'loading');
-              document.getElementById('loadingSub').innerHTML = `Processing Gemini vision spatial rendering (${elapsed}s)`;
+              showStatus(`✨ Rendering Photorealistic AI Image (${elapsed}s)...`, 'loading');
+              document.getElementById('loadingSub').innerHTML = `Processing photorealistic spatial rendering (${elapsed}s)`;
 
               try {
                 const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
