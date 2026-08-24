@@ -27,7 +27,10 @@ function load(): RenderEntry[] {
 
 function save(entries: RenderEntry[]) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries.slice(0, MAX_ENTRIES)));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(entries.slice(0, MAX_ENTRIES))
+    );
   } catch {
     // storage quota exceeded — drop oldest
     try {
@@ -43,23 +46,26 @@ export function useRenderHistory() {
     setHistory(load());
   }, []);
 
-  const addEntry = useCallback((outputUrl: string, originalImage: string, q: DesignQuestionnaire) => {
-    const entry: RenderEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      createdAt: Date.now(),
-      outputUrl,
-      originalImage,
-      spaceType: q.spaceType,
-      style: q.primaryStyle,
-      roomType: q.roomType,
-    };
-    setHistory((prev) => {
-      const next = [entry, ...prev].slice(0, MAX_ENTRIES);
-      save(next);
-      return next;
-    });
-    return entry;
-  }, []);
+  const addEntry = useCallback(
+    (outputUrl: string, originalImage: string, q: DesignQuestionnaire) => {
+      const entry: RenderEntry = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        createdAt: Date.now(),
+        outputUrl,
+        originalImage,
+        spaceType: q.spaceType,
+        style: q.primaryStyle || "auto",
+        roomType: q.roomType,
+      };
+      setHistory((prev) => {
+        const next = [entry, ...prev].slice(0, MAX_ENTRIES);
+        save(next);
+        return next;
+      });
+      return entry;
+    },
+    []
+  );
 
   const removeEntry = useCallback((id: string) => {
     setHistory((prev) => {

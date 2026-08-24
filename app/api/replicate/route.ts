@@ -121,7 +121,162 @@ const INTERIOR_LIGHT_DESC: Record<string, string> = {
     "soft even ambient daylight with gentle balanced interior fill lighting",
 };
 
+const MASTER_PROMPT_INTERIOR = `### MASTER PROMPT — SKETCHUP → ULTRA-REALISTIC INTERIOR
+
+Transform the provided SketchUp interior into an **extremely photorealistic, premium architectural photograph**.
+
+**CRITICAL: Preserve the original design exactly.** Do not redesign, remodel, rearrange, or reinterpret the space. Maintain the exact architecture, room proportions, camera perspective, wall positions, ceiling geometry, cabinetry, furniture, openings, shelves, doors, windows, built-ins, material placement, colors, finishes, and overall composition from the source image.
+
+The goal is to make the SketchUp scene look like it was **actually photographed inside a beautifully designed real interior**, not like a 3D render.
+
+### REALISM
+
+Use physically believable materials with realistic:
+
+* roughness
+* reflections
+* micro-texture
+* subtle imperfections
+* edge variation
+* realistic wood grain
+* natural stone variation
+* believable glass
+* realistic metal response
+* fabric texture
+* ceramic and painted-surface response
+
+Materials should have **different optical properties** rather than looking uniformly glossy or perfectly smooth.
+
+Avoid exaggerated reflections, excessive gloss, plastic-looking surfaces, perfectly clean CGI materials, and artificial texture overlays.
+
+Add extremely subtle real-world imperfections: tiny tonal variations, slight material irregularities, natural surface variation, realistic seams and joints, and believable construction details. Keep these imperfections subtle and premium.
+
+### LIGHTING
+
+Create **beautiful, physically realistic architectural lighting**.
+
+Use a combination of:
+
+* soft natural daylight entering from existing openings
+* realistic ambient illumination
+* subtle indirect bounced light
+* physically accurate artificial lighting where existing fixtures are present
+* soft contact shadows
+* realistic light falloff
+* gentle occlusion in corners and joints
+
+The lighting should feel **calm, sophisticated, warm and naturally exposed**, similar to high-end interior photography.
+
+Do NOT over-light the room.
+
+Do NOT make every surface equally bright.
+
+Allow realistic areas of shadow and controlled highlights. Preserve depth and contrast.
+
+Light should naturally bounce between walls, floors, ceilings and furniture.
+
+Avoid the typical AI/CGI look of glowing walls, excessive bloom, dramatic god rays, overexposed windows, crushed blacks, or artificial orange lighting.
+
+### CAMERA
+
+Make the image look like it was captured by a professional architectural photographer using a **full-frame camera and high-quality architectural lens**.
+
+Use a natural perspective with approximately **24–35mm full-frame equivalent**, depending on the original composition.
+
+Keep vertical architectural lines straight and realistic.
+
+Use subtle photographic depth and lens characteristics, but keep the entire interior predominantly sharp.
+
+No extreme wide-angle distortion.
+
+No fisheye effect.
+
+No exaggerated perspective.
+
+Camera height should feel like a real person standing naturally inside the room, approximately **1.4–1.6m**, unless the original camera clearly indicates otherwise.
+
+### PHOTOGRAPHIC QUALITY
+
+Create the visual characteristics of a genuine high-end interior photograph:
+
+* physically believable exposure
+* realistic dynamic range
+* subtle natural contrast
+* soft highlight rolloff
+* realistic shadow detail
+* restrained color grading
+* natural white balance
+* subtle lens characteristics
+* extremely fine material detail
+* realistic ambient occlusion
+* physically accurate reflections
+* realistic glass transparency
+* natural light scattering
+
+The final image should resemble a photograph from a **premium architecture and interior-design magazine**, captured with professional photographic equipment.
+
+### COLOR
+
+Keep the original color palette and material colors from the SketchUp image.
+
+Do not randomly change finishes.
+
+Do not introduce unnecessary colors.
+
+Maintain sophisticated, neutral, realistic tones with accurate white balance.
+
+Avoid excessive saturation, teal/orange cinematic grading, HDR halos, or artificial color effects.
+
+### COMPOSITION
+
+Keep the original camera composition and geometry.
+
+Do not add unnecessary furniture, plants, artwork, decorative objects, lights, windows, doors, architectural elements or accessories unless they already exist or are required to make an existing element physically believable.
+
+Do not remove important design elements.
+
+The result should be the **same interior design, simply transformed from SketchUp into an exceptionally realistic photograph.**
+
+### AUTHENTICITY
+
+Most importantly, **do not make it look like an AI-generated image or a CGI render.**
+
+Avoid:
+
+* perfect CGI surfaces
+* excessive sharpness
+* plastic materials
+* fake reflections
+* unrealistic shadows
+* floating objects
+* warped furniture
+* distorted geometry
+* glowing edges
+* excessive ambient occlusion
+* overdone HDR
+* excessive bloom
+* fake depth of field
+* oversaturated colors
+* cinematic effects
+* artificial volumetric lighting
+* unrealistic cleanliness
+* duplicated textures
+* impossible reflections
+
+Aim for **quiet realism rather than visual effects**.
+
+The final result should make someone believe:
+
+**“This is a real photograph of a professionally designed interior.”**
+
+Ultra-photorealistic architectural photography, physically based rendering, natural global illumination, realistic material response, realistic indirect lighting, subtle imperfections, accurate geometry, premium interior photography, high dynamic range without HDR appearance, realistic exposure, authentic photographic texture, extremely detailed but natural, sophisticated and believable.`;
+
 function buildNanoBananaPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+  // If user did not make any custom selection in the 6 steps, use the Master Prompt directly
+  if (!q || q.userCustomized !== true || q.primaryStyle === "auto") {
+    return MASTER_PROMPT_INTERIOR;
+  }
+
   const isExterior = q?.spaceType === "exterior";
 
   // If exterior space

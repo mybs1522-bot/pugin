@@ -264,10 +264,10 @@ export function DesignQuestionnaireForm({
     });
 
   const toggleSpecial = (el: string) => {
-    const cur = value.specialElements;
+    const cur = value.specialElements || [];
     set(
       "specialElements",
-      cur.includes(el) ? cur.filter((x) => x !== el) : [...cur, el]
+      cur.includes(el) ? cur.filter((x: string) => x !== el) : [...cur, el]
     );
   };
 
@@ -1254,7 +1254,7 @@ export function DesignQuestionnaireForm({
               ].map((o) => (
                 <MultiCard
                   key={o.v}
-                  selected={value.specialElements.includes(o.v)}
+                  selected={(value.specialElements || []).includes(o.v)}
                   onClick={() => toggleSpecial(o.v)}
                   emoji={o.e}
                   label={o.label}

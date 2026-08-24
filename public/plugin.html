@@ -1844,9 +1844,11 @@
 
       try {
         const apiUrl = currentServerUrl + '/api/replicate';
-        const payloadQuestionnaire = userCustomized 
-          ? questionnaire 
-          : { ...questionnaire, primaryStyle: "auto" };
+        const payloadQuestionnaire = {
+          ...questionnaire,
+          userCustomized: !!userCustomized,
+          primaryStyle: userCustomized ? questionnaire.primaryStyle : "auto"
+        };
 
         const response = await fetch(apiUrl, {
           method: 'POST',

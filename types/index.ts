@@ -37,7 +37,7 @@ export interface DesignQuestionnaire {
   roomSize: "small" | "medium" | "large" | "open-plan";
   ceilingHeight: "low" | "standard" | "high" | "vaulted";
   naturalLight: "minimal" | "moderate" | "abundant";
-  primaryStyle: DesignTheme;
+  primaryStyle?: DesignTheme | "auto";
   mood: "cozy" | "airy" | "dramatic" | "serene" | "energetic" | "luxurious";
   era:
     | "contemporary"
@@ -88,7 +88,8 @@ export interface DesignQuestionnaire {
     | "dramatic-spotlit"
     | "soft-diffused";
   greenery: "none" | "minimal" | "moderate" | "lush-botanical";
-  specialElements: string[];
+  specialElements?: string[];
   accentColor?: string;
   customColors?: Record<string, string>;
+  userCustomized?: boolean;
 }
