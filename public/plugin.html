@@ -316,6 +316,43 @@
       outline: none;
     }
 
+    /* Past Renders 3D Card Strip */
+    .past-renders-card {
+      flex: 0 0 120px;
+      height: 86px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #18181b;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    }
+    .past-renders-card:hover {
+      transform: translateY(-3px) scale(1.04);
+      border-color: rgba(168, 85, 247, 0.7);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(168, 85, 247, 0.4);
+    }
+    .past-renders-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .past-renders-card .card-badge {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
   </style>
 </head>
@@ -636,6 +673,26 @@
           <button class="btn-video" id="videoBtn" style="display:none;" onclick="triggerVideoWalkthrough()">🎬 Generate 3D Video Walkthrough</button>
           <a id="downloadLink" class="download-btn" style="display:none;" href="#" target="_blank" download="aisoft-render.png">Download Image</a>
           <a id="downloadVideoLink" class="download-btn" style="display:none; background:#18181b; border:1px solid rgba(255,255,255,0.25); color:#ffffff;" href="#" target="_blank" download="walkthrough.mp4">Download MP4 Video</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM SECTION: Past Renders Gallery & History (Saved to LocalStorage) -->
+    <div class="past-renders-section" id="pastRendersSection" style="margin-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:14px;">🖼️</span>
+          <span style="font-size:12px; font-weight:700; color:#ffffff; letter-spacing:0.3px;">Past Renders Gallery</span>
+          <span id="pastRendersCount" style="background:rgba(255,255,255,0.1); color:#a1a1aa; font-size:10px; font-weight:700; padding:2px 6px; border-radius:10px;">0 renders</span>
+        </div>
+        <button onclick="clearPastRenders()" style="background:transparent; border:none; color:#71717a; font-size:11px; cursor:pointer; display:flex; align-items:center; gap:4px; transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#71717a'" title="Clear render history">
+          🗑️ Clear History
+        </button>
+      </div>
+
+      <div class="past-renders-carousel" id="pastRendersCarousel" style="display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; scrollbar-width:thin;">
+        <div id="pastRendersEmpty" style="padding:14px; width:100%; text-align:center; color:#71717a; font-size:11px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:10px;">
+          No past renders stored yet. Render your SketchUp screen to start your gallery!
         </div>
       </div>
     </div>
@@ -1598,6 +1655,7 @@
             lastRenderUrl = imgUrl;
             // Record render increment in client localStorage
             localStorage.setItem(localKey, (localCount + 1).toString());
+            saveToPastRenders(imgUrl, 'image');
 
             showStatus('✓ Render complete!', 'success');
             document.getElementById('renderBtn').disabled = false;
@@ -1796,6 +1854,9 @@
           const dlVidBtn = document.getElementById('downloadVideoLink');
           dlVidBtn.href = finalVideoUrl;
           dlVidBtn.style.display = 'inline-block';
+
+          // Save video to past renders history
+          saveToPastRenders(finalVideoUrl, 'video', lastRenderUrl);
         }
       } catch (err) {
         showStatus('❌ ' + (err.message || 'Connection Error creating video walkthrough.'), 'error');
@@ -1803,6 +1864,114 @@
         document.getElementById('aiLoading').style.display = 'none';
         switchPreviewMode('image');
       }
+    }
+
+    /* ─── PAST RENDERS GALLERY & LOCALSTORAGE MANAGER ─────────────────────── */
+    function getPastRenders() {
+      try {
+        const raw = localStorage.getItem('aisoft_past_renders_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveToPastRenders(url, type, poster) {
+      if (!url) return;
+      try {
+        const list = getPastRenders();
+        const filtered = list.filter(item => item.url !== url);
+        filtered.unshift({
+          id: Date.now(),
+          url: url,
+          type: type || 'image',
+          poster: poster || (type === 'image' ? url : ''),
+          timestamp: new Date().toISOString()
+        });
+        const capped = filtered.slice(0, 24);
+        localStorage.setItem('aisoft_past_renders_v1', JSON.stringify(capped));
+        renderPastRendersGallery();
+      } catch (e) {
+        console.warn('Failed to save to past renders:', e);
+      }
+    }
+
+    function clearPastRenders() {
+      if (confirm('Clear all past renders history from this device?')) {
+        localStorage.removeItem('aisoft_past_renders_v1');
+        renderPastRendersGallery();
+      }
+    }
+
+    function previewPastRender(url, type) {
+      if (!url) return;
+      if (type === 'video') {
+        const videoEl = document.getElementById('aiVideo');
+        videoEl.src = url;
+        videoEl.load();
+        document.getElementById('viewModeToggle').style.display = 'flex';
+        switchPreviewMode('video');
+        document.getElementById('downloadVideoLink').href = url;
+        document.getElementById('downloadVideoLink').style.display = 'inline-block';
+      } else {
+        const aiImg = document.getElementById('aiImg');
+        aiImg.src = url;
+        lastRenderUrl = url;
+        document.getElementById('viewModeToggle').style.display = 'flex';
+        switchPreviewMode('image');
+        document.getElementById('downloadLink').href = url;
+        document.getElementById('downloadLink').style.display = 'inline-block';
+        document.getElementById('videoBtn').style.display = 'inline-block';
+      }
+      showStatus('Loaded past render from gallery', 'success');
+    }
+
+    function renderPastRendersGallery() {
+      const container = document.getElementById('pastRendersCarousel');
+      const countEl = document.getElementById('pastRendersCount');
+      if (!container) return;
+
+      const list = getPastRenders();
+      if (countEl) {
+        countEl.innerText = `${list.length} ${list.length === 1 ? 'render' : 'renders'}`;
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div id="pastRendersEmpty" style="padding:14px; width:100%; text-align:center; color:#71717a; font-size:11px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:10px;">
+            No past renders stored yet. Render your SketchUp screen to start your gallery!
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      list.forEach((item, index) => {
+        const isVid = item.type === 'video';
+        const displayThumb = item.poster || item.url;
+        const timeStr = new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        html += `
+          <div class="past-renders-card" onclick="previewPastRender('${item.url}', '${item.type}')" title="Click to view render #${list.length - index}">
+            ${isVid ? `
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:2;">
+                <span style="font-size:18px;">▶️</span>
+              </div>
+            ` : ''}
+            <img src="${displayThumb}" alt="Past Render" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'120\\' height=\\'86\\' fill=\\'%2318181b\\'><rect width=\\'120\\' height=\\'86\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%2371717a\\' font-size=\\'10\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>Render</text></svg>'">
+            <span class="card-badge">${isVid ? '🎬 Video' : '🖼️ ' + timeStr}</span>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Initialize gallery on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPastRendersGallery);
+    } else {
+      renderPastRendersGallery();
     }
   </script>
 </body>
