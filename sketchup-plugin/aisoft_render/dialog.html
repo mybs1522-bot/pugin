@@ -406,85 +406,7 @@
     </div>
   </div>
 
-  <!-- INTERACTIVE MATERIAL & COLOR PICKER POPUP MODAL -->
-  <div id="materialModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center;">
-    <div style="background:#121215; border:1px solid rgba(255,255,255,0.18); border-radius:20px; width:440px; max-width:95vw; padding:24px; text-align:left; box-shadow:0 25px 50px rgba(0,0,0,0.9); position:relative;">
-      <button onclick="closeMaterialModal()" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
 
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-        <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #3b82f6, #8b5cf6); display:flex; align-items:center; justify-content:center; font-size:20px;">🎯</div>
-        <div>
-          <h3 style="font-size:16px; font-weight:800; color:#fff;" id="matModalTitle">Customize Surface Material & Color</h3>
-          <p style="font-size:11px; color:#a1a1aa;">Set material finish and color for this clicked surface area</p>
-        </div>
-      </div>
-
-      <!-- Surface Name / Tag -->
-      <div style="margin-bottom:12px;">
-        <label style="font-size:11px; color:#d4d4d8; font-weight:600; display:block; margin-bottom:4px;">Surface Category / Target Area</label>
-        <select id="matSurfaceCategory" style="padding:8px 12px; font-size:12px; border-radius:8px; background:#09090b; border:1px solid rgba(255,255,255,0.15); color:#fff; width:100%;">
-          <option value="Wall">🧱 Wall Surface</option>
-          <option value="Cabinetry">🪵 Cabinetry & Woodwork</option>
-          <option value="Countertop">🪨 Countertop / Island</option>
-          <option value="Flooring">🪵 Flooring</option>
-          <option value="Ceiling">🏠 Ceiling</option>
-          <option value="Door">🚪 Door / Frame</option>
-          <option value="Furniture">🛋️ Furniture / Upholstery</option>
-          <option value="Lighting Fixture">💡 Lighting Fixture</option>
-          <option value="Window / Glass">🪟 Window / Glass Panel</option>
-          <option value="Accent Feature">✨ Custom Accent Feature</option>
-        </select>
-      </div>
-
-      <!-- Material Finish Selection -->
-      <div style="margin-bottom:12px;">
-        <label style="font-size:11px; color:#d4d4d8; font-weight:600; display:block; margin-bottom:4px;">Material Finish</label>
-        <select id="matFinishSelect" style="padding:8px 12px; font-size:12px; border-radius:8px; background:#09090b; border:1px solid rgba(255,255,255,0.15); color:#fff; width:100%;">
-          <option value="Italian Venetian Plaster (Lime Wash)">🏛️ Italian Venetian Plaster (Lime Wash)</option>
-          <option value="Fluted Natural Oak Wood">🪵 Fluted Natural Oak Wood</option>
-          <option value="Rich Dark Walnut Wood">🪵 Rich Dark Walnut Wood</option>
-          <option value="Polished Calacatta Marble">🪨 Polished Calacatta Marble</option>
-          <option value="Micro-Cement Smooth Finish">🧱 Micro-Cement Plaster</option>
-          <option value="Brushed Gold Metal">🪙 Brushed Gold / Brass Metal</option>
-          <option value="Matte Black Anodized Metal">🖤 Matte Black Anodized Metal</option>
-          <option value="Fluted Glass Panel">🪟 Fluted Glass Panel</option>
-          <option value="Textured Bouclé Fabric">🛋️ Textured Bouclé Fabric</option>
-          <option value="High-Gloss Lacquer Paint">✨ High-Gloss Lacquer Paint</option>
-          <option value="Raw Exposed Concrete">🏗️ Raw Exposed Concrete</option>
-        </select>
-      </div>
-
-      <!-- Color Swatches & Custom Picker -->
-      <div style="margin-bottom:16px;">
-        <label style="font-size:11px; color:#d4d4d8; font-weight:600; display:block; margin-bottom:6px;">Color Tone</label>
-        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#FFFFFF', 'Crisp Pure White')" style="background:#ffffff; width:28px; height:28px; border-radius:6px; border:2px solid rgba(255,255,255,0.4); cursor:pointer;" title="White"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#F5F5DC', 'Warm Sandy Beige')" style="background:#f5f5dc; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Warm Beige"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#36454F', 'Deep Charcoal Gray')" style="background:#36454f; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Charcoal"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#C46210', 'Earthy Terracotta')" style="background:#c46210; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Terracotta"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#556B2F', 'Muted Olive Green')" style="background:#556b2f; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Olive Green"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#D4AF37', 'Warm Brushed Gold')" style="background:#d4af37; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Brushed Gold"></button>
-          <button type="button" class="mat-color-swatch" onclick="selectMatColor('#1E293B', 'Midnight Slate Navy')" style="background:#1e293b; width:28px; height:28px; border-radius:6px; border:1px solid rgba(255,255,255,0.2); cursor:pointer;" title="Navy Slate"></button>
-
-          <div style="display:flex; align-items:center; gap:6px; margin-left:auto;">
-            <span style="font-size:10px; color:#a1a1aa;">Custom Hex:</span>
-            <input type="color" id="matCustomColorHex" value="#8B5CF6" onchange="onCustomColorHexChange(event)" style="width:32px; height:32px; padding:0; border:none; background:none; cursor:pointer;" />
-          </div>
-        </div>
-        <input type="text" id="matSelectedColorName" value="Warm Sandy Beige (#F5F5DC)" style="padding:6px 10px; font-size:11px; border-radius:6px; background:#09090b; border:1px solid rgba(255,255,255,0.1); color:#38bdf8; width:100%; font-weight:600;" readonly />
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="display:flex; gap:10px;">
-        <button class="btn" onclick="saveMaterialPin()" style="flex:1; background:linear-gradient(135deg, #3b82f6, #6366f1); color:#fff; border:none; padding:10px; font-size:12px; font-weight:700; border-radius:8px; cursor:pointer;">
-          ✓ Save Surface Material
-        </button>
-        <button onclick="deleteCurrentMaterialPin()" id="btnDeleteMatPin" style="background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:10px 14px; font-size:12px; font-weight:600; border-radius:8px; cursor:pointer;">
-          🗑️ Delete
-        </button>
-      </div>
-    </div>
-  </div>
 
   <!-- SUPPORT CHAT MODAL -->
   <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
@@ -645,33 +567,16 @@
     <div class="preview-split">
       <!-- LEFT SIDE: Viewport Capture -->
       <div class="preview-card">
-        <div class="preview-title" style="justify-content:space-between; width:calc(100% - 28px);">
-          <div style="display:flex; align-items:center; gap:6px;">
-            1. SketchUp Viewport
-            <span id="dimBadge">Original</span>
-          </div>
-          <span id="pinHintBadge" style="display:none; font-size:10px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); padding:2px 8px; border-radius:999px;">
-            🎯 Click image to customize material
-          </span>
+        <div class="preview-title">
+          1. SketchUp Viewport
+          <span id="dimBadge">Original</span>
         </div>
-        <div class="img-box" id="viewportBox" style="position:relative; cursor:crosshair; overflow:hidden;" onclick="onViewportBoxClick(event)">
+        <div class="img-box" id="viewportBox">
           <div class="placeholder-state" id="viewportPlaceholder">
             <div style="font-size:32px; margin-bottom:8px;">📐</div>
             <p>Click <b>Render Current Viewport</b> to capture your SketchUp screen.</p>
           </div>
           <img id="viewportImg" src="" style="display:none; width:100%; height:auto;" alt="SketchUp Viewport Capture">
-          <div id="materialPinsOverlay" style="position:absolute; inset:0; pointer-events:none;"></div>
-        </div>
-
-        <!-- Custom Material Pins Bar -->
-        <div id="materialPickerBar" style="display:none; margin-top:8px; background:rgba(24,24,27,0.9); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:10px 12px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <span style="font-size:11px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:6px;">
-              🎯 Custom Surface Materials (<span id="pinsCountLabel">0</span>)
-            </span>
-            <button onclick="clearAllMaterialPins()" style="background:none; border:none; color:#a1a1aa; font-size:10px; cursor:pointer; text-decoration:underline;">Clear All Pins</button>
-          </div>
-          <div id="activeMaterialPinsChips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
         </div>
       </div>
 
@@ -697,6 +602,25 @@
             <div class="spinner"></div>
             <p id="loadingTitle"><b>Generating AI Render...</b></p>
             <p id="loadingSub" style="font-size:11px; margin-top:4px;">Processing PBR lighting & materials</p>
+          </div>
+
+          <!-- TRIAL LIMITS OVER RENDER AREA CARD -->
+          <div class="placeholder-state" id="aiTrialOver" style="display:none; text-align:center; padding:32px 20px;">
+            <div style="width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg, rgba(234,179,8,0.2), rgba(249,115,22,0.2)); border:1px solid rgba(234,179,8,0.4); display:inline-flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:14px; box-shadow:0 0 25px rgba(234,179,8,0.25);">
+              ⚡
+            </div>
+            <h3 style="font-size:16px; font-weight:800; color:#ffffff; margin-bottom:6px;">
+              Trial Limits are over to render more
+            </h3>
+            <p style="font-size:11px; color:#a1a1aa; max-width:320px; margin:0 auto 20px auto; line-height:1.5;">
+              You have completed your 3 free trial renders. Activate Pro Plan to unlock unlimited photorealistic AI renders & 3D video walkthroughs.
+            </p>
+            <button onclick="openProPlanCheckout()" style="background:linear-gradient(135deg, #eab308, #f97316); color:#000000; border:none; padding:12px 26px; font-size:13px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 8px 20px rgba(234,179,8,0.3); transition:transform 0.2s;">
+              ⚡ Activate Pro Plan
+            </button>
+            <p style="font-size:10px; color:#71717a; margin-top:10px;">
+              Instant account activation upon payment
+            </p>
           </div>
 
           <img id="aiImg" src="" style="display:none;" alt="AI Photorealistic Render">
@@ -1374,130 +1298,27 @@
       el.innerHTML = msg;
     }
 
-    let activeMaterialPins = [];
-    let currentEditingPinId = null;
+    function showTrialOverState() {
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      document.getElementById('aiLoading').style.display = 'none';
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
+      
+      const trialState = document.getElementById('aiTrialOver');
+      if (trialState) trialState.style.display = 'block';
 
-    function onViewportBoxClick(e) {
-      const vpImg = document.getElementById('viewportImg');
-      if (!vpImg || vpImg.style.display === 'none' || !vpImg.src) return;
-
-      const rect = vpImg.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      if (clickX < 0 || clickY < 0 || clickX > rect.width || clickY > rect.height) return;
-
-      const xPercent = (clickX / rect.width) * 100;
-      const yPercent = (clickY / rect.height) * 100;
-
-      const pinId = 'pin_' + Date.now();
-      const nextNum = activeMaterialPins.length + 1;
-
-      const newPin = {
-        id: pinId,
-        num: nextNum,
-        x: xPercent,
-        y: yPercent,
-        surfaceCategory: 'Wall',
-        finish: 'Italian Venetian Plaster (Lime Wash)',
-        colorName: 'Warm Sandy Beige (#F5F5DC)',
-        colorHex: '#F5F5DC'
-      };
-
-      activeMaterialPins.push(newPin);
-      renderMaterialPinsUI();
-      openMaterialModal(pinId);
-    }
-
-    function openMaterialModal(pinId) {
-      currentEditingPinId = pinId;
-      const pin = activeMaterialPins.find(p => p.id === pinId);
-      if (!pin) return;
-
-      document.getElementById('matModalTitle').innerText = `Customize Target Pin #${pin.num}`;
-      document.getElementById('matSurfaceCategory').value = pin.surfaceCategory || 'Wall';
-      document.getElementById('matFinishSelect').value = pin.finish || 'Italian Venetian Plaster (Lime Wash)';
-      document.getElementById('matCustomColorHex').value = pin.colorHex || '#F5F5DC';
-      document.getElementById('matSelectedColorName').value = pin.colorName || 'Warm Sandy Beige (#F5F5DC)';
-
-      document.getElementById('materialModal').style.display = 'flex';
-    }
-
-    function selectMatColor(hex, name) {
-      document.getElementById('matCustomColorHex').value = hex;
-      document.getElementById('matSelectedColorName').value = `${name} (${hex})`;
-    }
-
-    function onCustomColorHexChange(e) {
-      const hex = e.target.value;
-      document.getElementById('matSelectedColorName').value = `Custom Color (${hex.toUpperCase()})`;
-    }
-
-    function saveMaterialPin() {
-      if (!currentEditingPinId) return;
-      const pin = activeMaterialPins.find(p => p.id === currentEditingPinId);
-      if (pin) {
-        pin.surfaceCategory = document.getElementById('matSurfaceCategory').value;
-        pin.finish = document.getElementById('matFinishSelect').value;
-        pin.colorHex = document.getElementById('matCustomColorHex').value;
-        pin.colorName = document.getElementById('matSelectedColorName').value;
-      }
-      closeMaterialModal();
-      renderMaterialPinsUI();
-    }
-
-    function deleteCurrentMaterialPin() {
-      if (!currentEditingPinId) return;
-      activeMaterialPins = activeMaterialPins.filter(p => p.id !== currentEditingPinId);
-      closeMaterialModal();
-      renderMaterialPinsUI();
-    }
-
-    function deletePinById(pinId) {
-      activeMaterialPins = activeMaterialPins.filter(p => p.id !== pinId);
-      renderMaterialPinsUI();
-    }
-
-    function clearAllMaterialPins() {
-      activeMaterialPins = [];
-      renderMaterialPinsUI();
-    }
-
-    function closeMaterialModal() {
-      document.getElementById('materialModal').style.display = 'none';
-      currentEditingPinId = null;
-    }
-
-    function renderMaterialPinsUI() {
-      const overlay = document.getElementById('materialPinsOverlay');
-      const chipsContainer = document.getElementById('activeMaterialPinsChips');
-      const countLabel = document.getElementById('pinsCountLabel');
-
-      if (countLabel) countLabel.innerText = activeMaterialPins.length;
-
-      if (overlay) {
-        overlay.innerHTML = activeMaterialPins.map(p => `
-          <div onclick="event.stopPropagation(); openMaterialModal('${p.id}')" style="position:absolute; left:${p.x}%; top:${p.y}%; transform:translate(-50%, -50%); pointer-events:auto; cursor:pointer;" title="Pin #${p.num}: ${p.surfaceCategory} - ${p.finish}">
-            <div style="width:26px; height:26px; border-radius:999px; background:linear-gradient(135deg, #ef4444, #ec4899); border:2px solid #ffffff; color:#ffffff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(239,68,68,0.8);">
-              ${p.num}
-            </div>
-          </div>
-        `).join('');
+      const renderBtn = document.getElementById('renderBtn');
+      if (renderBtn) {
+        renderBtn.disabled = false;
+        renderBtn.innerHTML = '⚡ Trial Limits Over - Activate Pro Plan';
+        renderBtn.style.background = 'linear-gradient(135deg, #eab308, #f97316)';
+        renderBtn.style.color = '#000000';
+        renderBtn.style.fontWeight = '800';
+        renderBtn.onclick = openProPlanCheckout;
       }
 
-      if (chipsContainer) {
-        if (activeMaterialPins.length === 0) {
-          chipsContainer.innerHTML = '<span style="font-size:11px; color:#71717a;">No custom material pins added yet. Click any surface on the viewport image above to customize!</span>';
-        } else {
-          chipsContainer.innerHTML = activeMaterialPins.map(p => `
-            <div onclick="openMaterialModal('${p.id}')" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); padding:4px 10px; border-radius:999px; font-size:11px; color:#ffffff; cursor:pointer;">
-              <span style="width:8px; height:8px; border-radius:999px; background:${p.colorHex || '#38bdf8'};"></span>
-              <b>#${p.num} ${p.surfaceCategory}:</b> ${p.finish}
-              <span onclick="event.stopPropagation(); deletePinById('${p.id}')" style="margin-left:4px; color:#a1a1aa; font-weight:700; cursor:pointer;">✕</span>
-            </div>
-          `).join('');
-        }
-      }
+      showStatus('⚡ Trial Limits are over to render more. Activate Pro Plan to continue.', 'error');
+      showTrialOverModal();
     }
 
     let capturedViewportImageData = null;
@@ -1530,18 +1351,12 @@
       vpImg.src = result.image;
       vpImg.style.display = 'block';
       document.getElementById('viewportPlaceholder').style.display = 'none';
-      
-      const hint = document.getElementById('pinHintBadge');
-      if (hint) hint.style.display = 'inline-flex';
-      const bar = document.getElementById('materialPickerBar');
-      if (bar) bar.style.display = 'block';
 
       if (result.width && result.height) {
         document.getElementById('dimBadge').innerText = result.width + 'x' + result.height;
       }
 
-      showStatus('🎯 Viewport captured! Click any surface on the image above to customize materials & colors, then click Render.', 'success');
-      renderMaterialPinsUI();
+      showStatus('📐 Viewport captured! Click Render Photorealistic AI Image below.', 'success');
     }
 
     function triggerRender() {
@@ -1562,9 +1377,10 @@
 
       const renderBtn = document.getElementById('renderBtn');
       renderBtn.disabled = true;
-      showStatus('📸 Optimizing viewport & custom materials...', 'loading');
+      showStatus('📸 Processing viewport & materials...', 'loading');
 
       document.getElementById('aiPlaceholder').style.display = 'none';
+      document.getElementById('aiTrialOver').style.display = 'none';
       document.getElementById('aiImg').style.display = 'none';
       document.getElementById('aiVideo').style.display = 'none';
       document.getElementById('loadingTitle').innerHTML = '<b>Generating AI Render...</b>';
@@ -1596,7 +1412,6 @@
           body: JSON.stringify({
             image: optimizedImage,
             questionnaire: payloadQuestionnaire,
-            materialPins: activeMaterialPins,
             model: document.getElementById('modelSelect').value,
             userEmail: userEmail,
             sessionId: userSessionId
@@ -1664,16 +1479,19 @@
           }
         } else {
           const errMsg = data.error || 'Server error occurred during rendering.';
-          showStatus('❌ ' + errMsg, 'error');
-          document.getElementById('renderBtn').disabled = false;
-          document.getElementById('aiLoading').style.display = 'none';
-          document.getElementById('aiPlaceholder').style.display = 'block';
+          
+          if (data.code === 'payment_required' || response.status === 403) {
+            showTrialOverState();
+          } else {
+            showStatus('❌ ' + errMsg, 'error');
+            document.getElementById('renderBtn').disabled = false;
+            document.getElementById('aiLoading').style.display = 'none';
+            document.getElementById('aiPlaceholder').style.display = 'block';
 
-          if (data.code === 'session_invalid') {
-            alert("⚠️ " + errMsg);
-            signOutUser();
-          } else if (data.code === 'payment_required') {
-            showTrialOverModal();
+            if (data.code === 'session_invalid') {
+              alert("⚠️ " + errMsg);
+              signOutUser();
+            }
           }
         }
       } catch (err) {
