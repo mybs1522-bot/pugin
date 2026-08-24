@@ -489,7 +489,7 @@
   </div>
 
   <header>
-    <h2>AIsoft Render AI</h2>
+    <h2>AIsoft Render</h2>
     <div style="display:flex; align-items:center; gap:10px;">
       <div id="userAccountBadge"></div>
       <button onclick="toggleSupportModal(true)" id="btnSupportHeader" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
@@ -1449,7 +1449,7 @@
       const renderBtn = document.getElementById('renderBtn');
       if (renderBtn) {
         renderBtn.disabled = false;
-        renderBtn.innerHTML = '✨ Render Photorealistic AI Image';
+        renderBtn.innerHTML = '✨ Render Photorealistic Image';
         renderBtn.style.background = 'linear-gradient(135deg, #4f46e5, #9333ea)';
         renderBtn.style.color = '#ffffff';
         renderBtn.style.fontWeight = '700';
@@ -1465,41 +1465,73 @@
     }
 
     let capturedViewportImageData = null;
+    let viewportCaptureResolve = null;
+
+    function captureLiveViewport() {
+      return new Promise((resolve) => {
+        viewportCaptureResolve = resolve;
+        if (window.sketchup) {
+          sketchup.capture_viewport();
+        } else {
+          // Web preview fallback
+          setTimeout(() => {
+            onViewportCaptured({
+              success: true,
+              image: '/master_prompt_render.png',
+              width: 1920,
+              height: 1080
+            });
+          }, 100);
+        }
+
+        // Safety timeout to avoid hanging if SketchUp is slow
+        setTimeout(() => {
+          if (viewportCaptureResolve) {
+            console.warn("Viewport capture timed out, using latest image.");
+            viewportCaptureResolve(capturedViewportImageData);
+            viewportCaptureResolve = null;
+          }
+        }, 4000);
+      });
+    }
 
     function requestViewportCapture() {
-      showStatus('📸 Capturing SketchUp viewport...', 'loading');
-      if (window.sketchup) {
-        sketchup.capture_viewport();
-      } else {
-        // Web preview fallback
-        onViewportCaptured({
-          success: true,
-          image: '/master_prompt_render.png',
-          width: 1920,
-          height: 1080
-        });
-      }
+      showStatus('📸 Capturing latest SketchUp view...', 'loading');
+      captureLiveViewport();
     }
 
     function onViewportCaptured(result) {
       if (!result || !result.success) {
         const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
         showStatus('❌ Screen Capture Failed: ' + err, 'error');
+        if (viewportCaptureResolve) {
+          viewportCaptureResolve(null);
+          viewportCaptureResolve = null;
+        }
         return;
       }
 
       capturedViewportImageData = result.image;
 
       const vpImg = document.getElementById('viewportImg');
-      vpImg.src = result.image;
-      vpImg.style.display = 'block';
-      document.getElementById('viewportPlaceholder').style.display = 'none';
+      if (vpImg) {
+        vpImg.src = result.image;
+        vpImg.style.display = 'block';
+      }
+      const placeholder = document.getElementById('viewportPlaceholder');
+      if (placeholder) placeholder.style.display = 'none';
 
       if (result.width && result.height) {
-        document.getElementById('dimBadge').innerText = result.width + 'x' + result.height;
+        const dimBadge = document.getElementById('dimBadge');
+        if (dimBadge) dimBadge.innerText = result.width + 'x' + result.height;
       }
 
-      showStatus('📐 Viewport captured! Click Render Photorealistic AI Image below.', 'success');
+      showStatus('📐 Viewport updated! Ready to render.', 'success');
+
+      if (viewportCaptureResolve) {
+        viewportCaptureResolve(result.image);
+        viewportCaptureResolve = null;
+      }
     }
 
     function triggerRender() {
@@ -1512,14 +1544,21 @@
         return;
       }
 
-      if (!capturedViewportImageData) {
-        requestViewportCapture();
-        showStatus('📸 Viewport capturing... Please click Render again in a moment.', 'loading');
+      const renderBtn = document.getElementById('renderBtn');
+      renderBtn.disabled = true;
+
+      // 1. ALWAYS CAPTURE FRESH LIVE VIEWPORT AT THE MOMENT OF CLICKING RENDER
+      showStatus('📸 Capturing active SketchUp viewport...', 'loading');
+      const liveImage = await captureLiveViewport();
+
+      if (!liveImage && !capturedViewportImageData) {
+        showStatus('❌ Could not capture current SketchUp viewport. Please try again.', 'error');
+        renderBtn.disabled = false;
         return;
       }
 
-      const renderBtn = document.getElementById('renderBtn');
-      renderBtn.disabled = true;
+      const imageToRender = liveImage || capturedViewportImageData;
+
       showStatus('🔍 Checking render eligibility...', 'loading');
 
       const localKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
@@ -1559,7 +1598,7 @@
 
       questionnaire.accentColor = document.getElementById('accentColor').value;
 
-      const optimizedImage = await optimizeImagePayload(capturedViewportImageData);
+      const optimizedImage = await optimizeImagePayload(imageToRender);
 
       let progressVal = 0;
       const progressTimer = setInterval(() => {

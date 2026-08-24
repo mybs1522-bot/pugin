@@ -13,7 +13,7 @@ module AIsoftRender
       end
 
       options = {
-        :dialog_title => "AIsoft Render AI",
+        :dialog_title => "AIsoft Render",
         :preferences_key => "com.aisoft.render",
         :scrollable => true,
         :resizable => true,
@@ -44,9 +44,20 @@ module AIsoftRender
     end
 
     def capture_and_send_to_js
-      view = Sketchup.active_model.active_view
+      model = Sketchup.active_model
+      view = model ? model.active_view : nil
       
-      # Use exact active viewport width and height scaled to max 1536px to preserve aspect ratio while preventing oversized payloads
+      unless view
+        err_json = { "success" => false, "error" => "No active SketchUp model view available." }.to_json
+        @dialog.execute_script("onViewportCaptured(#{err_json})")
+        return
+      end
+
+      # Force SketchUp graphics pipeline to flush and redraw the latest camera view
+      view.invalidate rescue nil
+      view.refresh rescue nil
+
+      # Use exact active viewport width and height scaled to max 1536px to preserve aspect ratio
       raw_w = view.vpwidth > 0 ? view.vpwidth : 1280
       raw_h = view.vpheight > 0 ? view.vpheight : 720
 
@@ -55,14 +66,14 @@ module AIsoftRender
       width = (raw_w * scale).round
       height = (raw_h * scale).round
 
-      temp_image_path = File.join(Dir.tmpdir, "sketchup_view_#{Time.now.to_i}.jpg")
+      temp_image_path = File.join(Dir.tmpdir, "sketchup_view_#{Time.now.to_f.to_s.gsub('.', '_')}.jpg")
 
       success = view.write_image(
         filename: temp_image_path,
         width: width,
         height: height,
         antialias: true,
-        compression: 0.9,
+        compression: 0.92,
         transparent: false
       )
 
@@ -96,16 +107,16 @@ module AIsoftRender
   # Create Toolbar and Menu Entry in SketchUp
   unless file_loaded?(__FILE__)
     menu = UI.menu('Plugins')
-    menu.add_item('AIsoft Render AI') {
+    menu.add_item('AIsoft Render') {
       AIsoftRender.show_dialog
     }
 
     tb = UI::Toolbar.new("AIsoft Render")
-    cmd = UI::Command.new("AIsoft Render AI") {
+    cmd = UI::Command.new("AIsoft Render") {
       AIsoftRender.show_dialog
     }
-    cmd.tooltip = "Render active SketchUp viewport with AIsoft AI"
-    cmd.status_bar_text = "Generate photorealistic rendering using AIsoft AI"
+    cmd.tooltip = "Render active SketchUp viewport with AIsoft"
+    cmd.status_bar_text = "Generate photorealistic rendering from SketchUp"
     tb.add_item(cmd)
     tb.show if tb.respond_to?(:show)
 
