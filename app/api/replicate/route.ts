@@ -140,21 +140,17 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
         : "natural daylight with soft architectural shadows";
 
     return (
-      "Transform the provided SketchUp exterior into an extremely photorealistic, premium architectural photograph. " +
-      "CRITICAL: Preserve the original building design exactly. Do not redesign, remodel, or reinterpret the building massing. " +
-      "Maintain the exact architectural geometry, facade proportions, roof planes, window and door placements, overhangs, balconies, materials, ground landscape layout, camera perspective, and composition from the source image. " +
-      "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections: " +
-      `${facadeMat}, ${groundMat}, authentic timber accents, and architectural glass with realistic subtle outdoor reflections and transparency. ` +
-      "LIGHTING: " +
-      skyLighting +
-      ", physically accurate global illumination, soft realistic contact shadows, and natural atmospheric depth. " +
-      "CAMERA: Captured by a professional architectural photographer using a full-frame camera and 24–35mm architectural tilt-shift lens. Keep vertical architectural lines straight and realistic. " +
-      "PHOTOGRAPHIC QUALITY: Genuine high-end architectural photograph, physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, published in Architectural Record magazine. " +
-      "AUTHENTICITY: Do not make it look like an AI-generated image or CGI render. Avoid plastic materials, glowing edges, fake bloom, or cinematic effects. Aim for quiet, breathtaking realism."
+      "Extremely photorealistic, award-winning architectural exterior photograph of the provided SketchUp scene. " +
+      "CRITICAL: Preserve the original building design, massing, geometry, facade proportions, roof planes, window and door placements, and camera perspective exactly. " +
+      "REALISM: Physically accurate materials with realistic roughness, micro-textures, and natural imperfections: " +
+      `${facadeMat}, ${groundMat}, authentic timber accents, and clean architectural glass with subtle reflections and transparency. ` +
+      `LIGHTING: ${skyLighting}, physically accurate global illumination, soft contact shadows, and realistic atmospheric depth. ` +
+      "CAMERA & QUALITY: Shot on full-frame camera with 24mm architectural tilt-shift lens. Straight verticals, crisp details, natural dynamic range, soft highlight rolloff, published in Architectural Digest. " +
+      "AUTHENTICITY: High-end architectural photography. No CGI artifacts, glowing edges, plastic textures, or fake bloom."
     );
   }
 
-  // If user customized specific finishes
+  // If interior space
   const customFinishes: string[] = [];
   if (q?.wallFinish && WALL[q.wallFinish])
     customFinishes.push(`walls: ${WALL[q.wallFinish]}`);
@@ -163,35 +159,26 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
   if (q?.woodTone && WOOD[q.woodTone])
     customFinishes.push(`cabinetry & woodwork: ${WOOD[q.woodTone]}`);
   if (q?.metalAccent && METAL[q.metalAccent])
-    customFinishes.push(`metal hardware: ${METAL[q.metalAccent]}`);
+    customFinishes.push(`hardware: ${METAL[q.metalAccent]}`);
   if (q?.colorPalette && PALETTE[q.colorPalette])
-    customFinishes.push(`color scheme: ${PALETTE[q.colorPalette]}`);
-  if (q?.accentColor) customFinishes.push(`accent tone: ${q.accentColor}`);
+    customFinishes.push(`palette: ${PALETTE[q.colorPalette]}`);
+  if (q?.accentColor) customFinishes.push(`accent: ${q.accentColor}`);
   if (q?.lightingMood && INTERIOR_LIGHT_DESC[q.lightingMood])
     customFinishes.push(`lighting: ${INTERIOR_LIGHT_DESC[q.lightingMood]}`);
 
   const customMaterialsNote =
     customFinishes.length > 0
-      ? ` Apply these specific finishes: ${customFinishes.join(", ")}.`
-      : " Keep the exact original color palette and material colors from the SketchUp image without randomly changing finishes.";
+      ? ` Finishes: ${customFinishes.join(", ")}.`
+      : " Preserve the exact color palette and material colors from the SketchUp model.";
 
   return (
-    "Transform the provided SketchUp interior into an extremely photorealistic, premium architectural photograph. " +
-    "CRITICAL: Preserve the original design exactly. Do not redesign, remodel, rearrange, or reinterpret the space. " +
-    "Maintain the exact architecture, room proportions, camera perspective, wall positions, ceiling geometry, cabinetry, furniture, openings, shelves, doors, windows, built-ins, material placement, colors, finishes, and overall composition from the source image. " +
-    "The goal is to make the SketchUp scene look like it was actually photographed inside a beautifully designed real interior, not like a 3D render. " +
-    "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections, edge variation, realistic wood grain, natural stone variation, believable glass, realistic metal response, fabric texture, ceramic and painted-surface response. " +
-    "Materials should have different optical properties rather than looking uniformly glossy or perfectly smooth. Avoid exaggerated reflections, excessive gloss, plastic-looking surfaces, perfectly clean CGI materials, and artificial texture overlays. " +
-    "Add extremely subtle real-world imperfections: tiny tonal variations, slight material irregularities, natural surface variation, realistic seams and joints, and believable construction details." +
+    "Extremely photorealistic, award-winning interior design photograph of the provided SketchUp scene. " +
+    "CRITICAL: Preserve the original room architecture, proportions, camera perspective, wall positions, ceiling, cabinetry, furniture, openings, doors, and windows exactly. " +
+    "REALISM: Physically believable materials with micro-textures, realistic wood grain, natural stone veining, fabric weave, realistic metal response, and subtle real-world imperfections." +
     customMaterialsNote +
-    " " +
-    "LIGHTING: Create beautiful, physically realistic architectural lighting with soft natural daylight entering from existing openings, realistic ambient illumination, subtle indirect bounced light, physically accurate artificial lighting where existing fixtures are present, soft contact shadows, realistic light falloff, gentle occlusion in corners and joints. " +
-    "The lighting should feel calm, sophisticated, warm and naturally exposed (2700K). Do NOT over-light the room. Do NOT make every surface equally bright. Allow realistic areas of shadow and controlled highlights. Preserve depth and contrast. Light should naturally bounce between walls, floors, ceilings and furniture. " +
-    "Avoid glowing walls, excessive bloom, dramatic god rays, overexposed windows, crushed blacks, or artificial orange lighting. " +
-    "CAMERA: Captured by a professional architectural photographer using a full-frame camera and high-quality 24–35mm architectural lens. Keep vertical architectural lines straight and realistic. Use subtle photographic depth and lens characteristics, but keep the entire interior predominantly sharp. No distortion. Camera height should feel like a real person standing naturally inside the room (1.4–1.6m). " +
-    "PHOTOGRAPHIC QUALITY: Genuine high-end interior photograph: physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, realistic shadow detail, restrained color grading, natural white balance, subtle lens characteristics, extremely fine material detail, realistic ambient occlusion, physically accurate reflections. Resemble a photograph from a premium architecture and interior-design magazine. " +
-    "COMPOSITION: Keep the original camera composition and geometry. Do not add or remove furniture, plants, artwork, decorative objects, lights, windows, doors, or architectural elements. " +
-    "AUTHENTICITY: Most importantly, do not make it look like an AI-generated image or a CGI render. Avoid perfect CGI surfaces, excessive sharpness, plastic materials, fake reflections, unrealistic shadows, floating objects, warped furniture, distorted geometry, glowing edges, excessive bloom, oversaturated colors, or artificial volumetric lighting. Aim for quiet realism rather than visual effects."
+    " LIGHTING: Physically accurate warm architectural illumination (2700K), soft natural daylight from openings, subtle indirect bounced light, realistic contact shadows, and ambient occlusion in corners. " +
+    "CAMERA & QUALITY: Shot by a professional architectural photographer on full-frame camera with high-end 24–35mm lens. Perfectly straight verticals, sharp details, balanced exposure, natural dynamic range, featured in Elle Decor. " +
+    "AUTHENTICITY: Genuine high-end interior photography. No CGI look, plastic surfaces, fake bloom, or artificial saturation."
   );
 }
 
@@ -201,9 +188,12 @@ function buildModelInput(
   image: string,
   aspect_ratio?: string
 ) {
+  // Replicate character length safety clamp (<= 3800 chars)
+  const safePrompt = prompt.length > 3800 ? prompt.slice(0, 3800) : prompt;
+
   if (modelId.includes("seedream") || modelId.includes("bytedance")) {
     return {
-      prompt,
+      prompt: safePrompt,
       image_input: [image],
       aspect_ratio: aspect_ratio || "match_input_image",
       size: "2K",
@@ -212,7 +202,7 @@ function buildModelInput(
   if (modelId.includes("pix2pix")) {
     return {
       image: image,
-      prompt: prompt,
+      prompt: safePrompt,
       image_guidance_scale: 1.5,
       text_guidance_scale: 7.5,
       num_inference_steps: 30,
@@ -221,13 +211,13 @@ function buildModelInput(
   if (modelId.includes("sdxl") || modelId.includes("stability")) {
     return {
       image: image,
-      prompt: prompt,
+      prompt: safePrompt,
       prompt_strength: 0.5,
       num_inference_steps: 30,
     };
   }
   return {
-    prompt,
+    prompt: safePrompt,
     image_input: [image],
     aspect_ratio: aspect_ratio || "match_input_image",
     output_format: "png",
