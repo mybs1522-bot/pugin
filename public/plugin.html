@@ -1617,7 +1617,7 @@
     renderFurnitureGrids();
     checkAuthOnLoad();
 
-    async function optimizeImagePayload(dataUrl, maxW = 1024, maxH = 1024, quality = 0.85) {
+    async function optimizeImagePayload(dataUrl, maxW = 1536, maxH = 1536, quality = 0.95) {
       if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return dataUrl;
       return new Promise((resolve) => {
         const img = new Image();

@@ -188,10 +188,10 @@ function ModelBadge({ model }: { model?: string }) {
       </span>
     );
   }
-  if (model.includes("seedream") || model.includes("bytedance")) {
+  if (model.includes("flux-2") || model.includes("flux-2-pro")) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-cyan-500/20 bg-cyan-500/15 px-2 py-0.5 text-xs font-semibold text-cyan-300">
-        🌊 SeaDream 4.5
+      <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-500/20 bg-fuchsia-500/15 px-2 py-0.5 text-xs font-semibold text-fuchsia-300">
+        ✨ FLUX 2 Pro
       </span>
     );
   }
@@ -1062,8 +1062,8 @@ function Dashboard() {
                               <option value="google/nano-banana-2">
                                 ⚡ Google Nano Banana 2
                               </option>
-                              <option value="bytedance/seedream-4.5">
-                                🌊 ByteDance SeaDream 4.5 (Replicate)
+                              <option value="black-forest-labs/flux-2-pro">
+                                ✨ FLUX 2 Pro (Replicate)
                               </option>
                               <option value="flux-depth-pro">
                                 🎨 FLUX Depth Pro (Replicate)

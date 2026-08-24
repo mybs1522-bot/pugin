@@ -140,13 +140,14 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
         : "natural daylight with soft architectural shadows";
 
     return (
-      "Extremely photorealistic, award-winning architectural exterior photograph of the provided SketchUp scene. " +
-      "CRITICAL: Preserve the original building design, massing, geometry, facade proportions, roof planes, window and door placements, and camera perspective exactly. " +
-      "REALISM: Physically accurate materials with realistic roughness, micro-textures, and natural imperfections: " +
+      "STRICT 1:1 PIXEL & GEOMETRIC ACCURACY ARCHITECTURAL RENDER: " +
+      "You are given an exact 3D SketchUp building model viewport. DO NOT CHANGE, REDESIGN, MOVE, OR REINTERPRET ANY GEOMETRY, MASSING, OR COMPOSITION. " +
+      "Preserve 100% of the building structure, wall alignments, roof planes, window and door placements, overhangs, balconies, and camera perspective exactly as drawn in the input viewport. " +
+      "YOUR SOLE TASK IS PBR PHOTOREALISTIC MATERIAL & LIGHTING UPGRADE: Replace flat computer graphics shading with physically accurate real-world materials: " +
       `${facadeMat}, ${groundMat}, authentic timber accents, and clean architectural glass with subtle reflections and transparency. ` +
-      `LIGHTING: ${skyLighting}, physically accurate global illumination, soft contact shadows, and realistic atmospheric depth. ` +
+      `LIGHTING: ${skyLighting}, physically accurate global illumination, soft contact shadows, and natural atmospheric depth. ` +
       "CAMERA & QUALITY: Shot on full-frame camera with 24mm architectural tilt-shift lens. Straight verticals, crisp details, natural dynamic range, soft highlight rolloff, published in Architectural Digest. " +
-      "AUTHENTICITY: High-end architectural photography. No CGI artifacts, glowing edges, plastic textures, or fake bloom."
+      "AUTHENTICITY: True high-end architectural photograph. The output geometry MUST match the input SketchUp viewport 100% identically with zero hallucinations."
     );
   }
 
@@ -168,17 +169,18 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
 
   const customMaterialsNote =
     customFinishes.length > 0
-      ? ` Finishes: ${customFinishes.join(", ")}.`
+      ? ` Apply these exact finishes: ${customFinishes.join(", ")}.`
       : " Preserve the exact color palette and material colors from the SketchUp model.";
 
   return (
-    "Extremely photorealistic, award-winning interior design photograph of the provided SketchUp scene. " +
-    "CRITICAL: Preserve the original room architecture, proportions, camera perspective, wall positions, ceiling, cabinetry, furniture, openings, doors, and windows exactly. " +
-    "REALISM: Physically believable materials with micro-textures, realistic wood grain, natural stone veining, fabric weave, realistic metal response, and subtle real-world imperfections." +
+    "STRICT 1:1 PIXEL & GEOMETRIC ACCURACY INTERIOR RENDER: " +
+    "You are given an exact 3D SketchUp interior viewport image. DO NOT CHANGE, REDESIGN, REARRANGE, OR MOVE ANY GEOMETRY OR OBJECTS. " +
+    "Maintain 100% of the exact room architecture, proportions, camera viewpoint, perspective, wall positions, ceiling geometry, cabinetry lines, furniture shapes and placements, openings, doors, and windows exactly as drawn in the input viewport. " +
+    "YOUR SOLE TASK IS PBR PHOTOREALISTIC MATERIAL & LIGHTING UPGRADE: Replace flat computer graphics shading with physically believable materials: micro-textures, realistic wood grain, natural stone veining, fabric weave, realistic metal response, and subtle real-world imperfections." +
     customMaterialsNote +
-    " LIGHTING: Physically accurate warm architectural illumination (2700K), soft natural daylight from openings, subtle indirect bounced light, realistic contact shadows, and ambient occlusion in corners. " +
+    " LIGHTING: Physically accurate warm architectural illumination (2700K), soft natural daylight from existing openings, subtle indirect bounced light, realistic contact shadows, and ambient occlusion in corners. " +
     "CAMERA & QUALITY: Shot by a professional architectural photographer on full-frame camera with high-end 24–35mm lens. Perfectly straight verticals, sharp details, balanced exposure, natural dynamic range, featured in Elle Decor. " +
-    "AUTHENTICITY: Genuine high-end interior photography. No CGI look, plastic surfaces, fake bloom, or artificial saturation."
+    "AUTHENTICITY: Genuine high-end interior photography. The final render MUST match the input SketchUp viewport layout and geometry 100% identically with zero hallucinations."
   );
 }
 
@@ -191,12 +193,22 @@ function buildModelInput(
   // Replicate character length safety clamp (<= 3800 chars)
   const safePrompt = prompt.length > 3800 ? prompt.slice(0, 3800) : prompt;
 
-  if (modelId.includes("seedream") || modelId.includes("bytedance")) {
+  if (
+    modelId.includes("flux-2") ||
+    modelId === "black-forest-labs/flux-2-pro"
+  ) {
     return {
       prompt: safePrompt,
-      image_input: [image],
+      input_images: [image],
       aspect_ratio: aspect_ratio || "match_input_image",
-      size: "2K",
+      output_format: "png",
+    };
+  }
+  if (modelId.includes("flux-depth")) {
+    return {
+      prompt: safePrompt,
+      control_image: image,
+      output_format: "png",
     };
   }
   if (modelId.includes("pix2pix")) {
@@ -218,6 +230,7 @@ function buildModelInput(
   }
   return {
     prompt: safePrompt,
+    input_images: [image],
     image_input: [image],
     aspect_ratio: aspect_ratio || "match_input_image",
     output_format: "png",
@@ -492,13 +505,13 @@ export async function POST(request: Request) {
       });
     }
 
-    // Case 2: Replicate Models (ByteDance SeaDream 4.5, FLUX Depth Pro, SDXL ControlNet, etc.)
+    // Case 2: Replicate Models (FLUX 2 Pro, FLUX Depth Pro, SDXL ControlNet, etc.)
     let replicateModel = assignedModel;
     if (
-      assignedModel === "seedream-4.5" ||
-      assignedModel === "bytedance/seedream-4.5"
+      assignedModel === "flux-2-pro" ||
+      assignedModel === "black-forest-labs/flux-2-pro"
     ) {
-      replicateModel = "bytedance/seedream-4.5";
+      replicateModel = "black-forest-labs/flux-2-pro";
     } else if (assignedModel === "flux-depth-pro") {
       replicateModel = "black-forest-labs/flux-depth-pro";
     } else if (assignedModel === "sdxl-controlnet") {
