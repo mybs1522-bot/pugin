@@ -166,6 +166,9 @@ export async function isUserPaid(email: string): Promise<boolean> {
   const mem = memoryPaidUsers.get(norm);
   if (mem && mem.isPaid) return true;
 
+  const seed = seedUsers.find((u) => u.email.toLowerCase().trim() === norm);
+  if (seed && seed.isPaid) return true;
+
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
@@ -175,7 +178,7 @@ export async function isUserPaid(email: string): Promise<boolean> {
 
     return !!(data as { is_paid?: boolean })?.is_paid;
   } catch {
-    return false;
+    return !!seed?.isPaid;
   }
 }
 
@@ -350,6 +353,10 @@ export async function getImageCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const mem = ensureMemRecord(norm);
 
+  // Check seedUsers baseline
+  const seed = seedUsers.find((u) => u.email.toLowerCase().trim() === norm);
+  const seedCount = seed ? seed.imageCount || seed.count || 0 : 0;
+
   // Also check disk storage (survives memory wipes on cold starts)
   let diskCount = 0;
   try {
@@ -357,7 +364,6 @@ export async function getImageCount(email: string): Promise<number> {
     const diskUser = diskMap.get(norm);
     if (diskUser) {
       diskCount = diskUser.imageCount || diskUser.count || 0;
-      // Hydrate memory from disk if memory is behind
       if (diskCount > mem.imageCount) {
         mem.imageCount = diskCount;
         mem.count = Math.max(mem.count, diskUser.count || 0);
@@ -376,14 +382,12 @@ export async function getImageCount(email: string): Promise<number> {
     const row = data as { image_count?: number; count?: number } | null;
     dbCount = row?.image_count ?? row?.count ?? 0;
 
-    // Hydrate memory from DB if DB is ahead
     if (dbCount > mem.imageCount) {
       mem.imageCount = dbCount;
     }
   } catch {}
 
-  // Return the highest count from all three sources (fail-closed)
-  return Math.max(dbCount, mem.imageCount, diskCount);
+  return Math.max(seedCount, dbCount, mem.imageCount, diskCount);
 }
 
 export async function getVideoCount(email: string): Promise<number> {

@@ -955,9 +955,13 @@
 
     async function checkTrialStatusOnLoad() {
       if (!userEmail) return;
+      
+      const localKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+
       try {
         const serverUrl = getLiveServerUrl();
-        const trialCheckUrl = serverUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail);
+        const trialCheckUrl = serverUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail) + '&clientCount=' + localCount;
         const trialRes = await fetch(trialCheckUrl);
         const trialData = await trialRes.json();
         
@@ -1401,11 +1405,14 @@
       renderBtn.disabled = true;
       showStatus('🔍 Checking render eligibility...', 'loading');
 
+      const localKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+
       // === PRE-FLIGHT TRIAL CHECK ===
       // Check trial status BEFORE showing loading spinner or doing any work
       currentServerUrl = getLiveServerUrl();
       try {
-        const trialCheckUrl = currentServerUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail);
+        const trialCheckUrl = currentServerUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail) + '&clientCount=' + localCount;
         const trialRes = await fetch(trialCheckUrl);
         const trialData = await trialRes.json();
         
@@ -1416,7 +1423,6 @@
         }
       } catch (preCheckErr) {
         console.warn('Pre-flight trial check failed, proceeding to render:', preCheckErr);
-        // Fail-open on pre-check error — the main render API will still enforce limits
       }
 
       showStatus('📸 Processing viewport & materials...', 'loading');
@@ -1503,6 +1509,9 @@
 
           if (imgUrl) {
             lastRenderUrl = imgUrl;
+            // Record render increment in client localStorage
+            localStorage.setItem(localKey, (localCount + 1).toString());
+
             showStatus('✓ Render complete!', 'success');
             document.getElementById('renderBtn').disabled = false;
             
@@ -1522,6 +1531,8 @@
           const errMsg = data.error || 'Server error occurred during rendering.';
           
           if (data.code === 'payment_required' || response.status === 403) {
+            // Update local count to at least 3 when server returns 403
+            localStorage.setItem(localKey, '3');
             showTrialOverState();
           } else {
             showStatus('❌ ' + errMsg, 'error');

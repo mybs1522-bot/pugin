@@ -3,17 +3,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 let _supabase: SupabaseClient | null = null;
 let _supabaseAdmin: SupabaseClient | null = null;
 
-const NEW_SUPABASE_URL = "https://mckdzujpkttuvsufhpwb.supabase.co";
-const NEW_SUPABASE_ANON =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja2R6dWpwa3R0dXZzdWZocHdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU0MzUyOTYsImV4cCI6MjEwMTAxMTI5Nn0.eSr6mang6IPL3BxfdpyEe5HLVnLesOPcUVZBs_Ma91U";
-const NEW_SUPABASE_SERVICE_ROLE =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ja2R6dWpwa3R0dXZzdWZocHdiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTQzNTI5NiwiZXhwIjoyMTAxMDExMjk2fQ.sEDQJWHnqjWNU502tLyTVV5uw6bvvOlO-KO1qDsf4ls";
+const ACTIVE_SUPABASE_URL = "https://vgejrwpluijlhfvlmrhs.supabase.co";
+const ACTIVE_SUPABASE_ANON =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZWpyd3BsdWlqbGhmdmxtcmhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwNjM3ODAsImV4cCI6MjA5NTYzOTc4MH0.SahuDH18dlGLMSMNn9L7Z-hF_ZDfZt6BRlyqMx1W_-Q";
 
 /** Browser / public client — safe to use in client components */
 export function getSupabase(): SupabaseClient {
   if (!_supabase) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || NEW_SUPABASE_URL;
-    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || NEW_SUPABASE_ANON;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ACTIVE_SUPABASE_URL;
+    const anon =
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ACTIVE_SUPABASE_ANON;
     _supabase = createClient(url, anon);
   }
   return _supabase;
@@ -22,12 +21,11 @@ export function getSupabase(): SupabaseClient {
 /** Server-side admin client — safe and uses service role key */
 export function getSupabaseAdmin(): SupabaseClient {
   if (!_supabaseAdmin) {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || NEW_SUPABASE_URL;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || ACTIVE_SUPABASE_URL;
     const key =
       process.env.SUPABASE_SERVICE_ROLE_KEY ??
-      NEW_SUPABASE_SERVICE_ROLE ??
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-      NEW_SUPABASE_ANON;
+      ACTIVE_SUPABASE_ANON;
     _supabaseAdmin = createClient(url, key, {
       auth: { persistSession: false },
     });
