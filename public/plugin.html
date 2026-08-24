@@ -353,6 +353,81 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
+    /* Anti-Metal Button Style */
+    @keyframes bd-dot-wave {
+      0%, 70%, 100% { opacity: 0.25; transform: scale(0.85); }
+      35% { opacity: 1; transform: scale(1); }
+    }
+    .bd-dot {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: bd-dot-wave 1.4s ease-in-out infinite;
+    }
+    .anti-metal-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      height: 44px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #1c1c1f 0%, #0d0d0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 14px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      padding-right: 20px;
+      transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
+      outline: none;
+    }
+    .anti-metal-btn:hover {
+      border-color: rgba(214, 245, 74, 0.45);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(214, 245, 74, 0.2);
+    }
+    .anti-metal-btn:active {
+      transform: scale(0.98);
+    }
+    .anti-metal-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .anti-metal-label {
+      position: relative;
+      z-index: 20;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      transition: color 0.25s ease;
+      white-space: nowrap;
+    }
+    .anti-metal-btn:hover .anti-metal-label {
+      color: #0a0a0a;
+    }
+    .anti-metal-pill {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      width: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      overflow: hidden;
+      border-radius: 8px;
+      padding-left: 10px;
+      background: linear-gradient(180deg, #d6f54a 0%, #c5ea2c 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 4px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: width 0.3s cubic-bezier(0.65, 0, 0.35, 1);
+      z-index: 10;
+    }
+    .anti-metal-btn:hover .anti-metal-pill {
+      width: calc(100% - 8px);
+    }
+
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
   </style>
 </head>
@@ -589,11 +664,55 @@
         <div class="cards-grid" id="lightingGrid"></div>
       </div>
 
-      <div style="display:flex; gap:8px; margin-top:12px;">
-        <button class="btn" id="renderBtn" onclick="triggerAIRender()" style="flex:1; background:linear-gradient(135deg, #4f46e5, #9333ea); margin-top:0;">
-          Create Render
+      <div style="display:flex; gap:8px; margin-top:12px; align-items:center;">
+        <button class="anti-metal-btn" id="renderBtn" onclick="triggerAIRender()">
+          <span class="anti-metal-pill" aria-hidden="true">
+            <svg width="14" height="16" viewBox="0 0 14 16" class="shrink-0" style="flex-shrink:0;">
+              <g fill="#0f0f0f">
+                <circle cx="2" cy="2" r="1" class="bd-dot" style="animation-delay:0s"/>
+                <circle cx="5" cy="5" r="1" class="bd-dot" style="animation-delay:0.05s"/>
+                <circle cx="8" cy="8" r="1" class="bd-dot" style="animation-delay:0.1s"/>
+                <circle cx="5" cy="11" r="1" class="bd-dot" style="animation-delay:0.15s"/>
+                <circle cx="2" cy="14" r="1" class="bd-dot" style="animation-delay:0.2s"/>
+                <circle cx="6" cy="2" r="1" class="bd-dot" style="animation-delay:0.05s"/>
+                <circle cx="9" cy="5" r="1" class="bd-dot" style="animation-delay:0.1s"/>
+                <circle cx="12" cy="8" r="1" class="bd-dot" style="animation-delay:0.15s"/>
+                <circle cx="9" cy="11" r="1" class="bd-dot" style="animation-delay:0.2s"/>
+                <circle cx="6" cy="14" r="1" class="bd-dot" style="animation-delay:0.25s"/>
+              </g>
+            </svg>
+            <svg width="14" height="16" viewBox="0 0 14 16" class="shrink-0" style="flex-shrink:0;">
+              <g fill="#0f0f0f">
+                <circle cx="2" cy="2" r="1" class="bd-dot" style="animation-delay:0.12s"/>
+                <circle cx="5" cy="5" r="1" class="bd-dot" style="animation-delay:0.17s"/>
+                <circle cx="8" cy="8" r="1" class="bd-dot" style="animation-delay:0.22s"/>
+                <circle cx="5" cy="11" r="1" class="bd-dot" style="animation-delay:0.27s"/>
+                <circle cx="2" cy="14" r="1" class="bd-dot" style="animation-delay:0.32s"/>
+                <circle cx="6" cy="2" r="1" class="bd-dot" style="animation-delay:0.17s"/>
+                <circle cx="9" cy="5" r="1" class="bd-dot" style="animation-delay:0.22s"/>
+                <circle cx="12" cy="8" r="1" class="bd-dot" style="animation-delay:0.27s"/>
+                <circle cx="9" cy="11" r="1" class="bd-dot" style="animation-delay:0.32s"/>
+                <circle cx="6" cy="14" r="1" class="bd-dot" style="animation-delay:0.37s"/>
+              </g>
+            </svg>
+            <svg width="14" height="16" viewBox="0 0 14 16" class="shrink-0" style="flex-shrink:0;">
+              <g fill="#0f0f0f">
+                <circle cx="2" cy="2" r="1" class="bd-dot" style="animation-delay:0.24s"/>
+                <circle cx="5" cy="5" r="1" class="bd-dot" style="animation-delay:0.29s"/>
+                <circle cx="8" cy="8" r="1" class="bd-dot" style="animation-delay:0.34s"/>
+                <circle cx="5" cy="11" r="1" class="bd-dot" style="animation-delay:0.39s"/>
+                <circle cx="2" cy="14" r="1" class="bd-dot" style="animation-delay:0.44s"/>
+                <circle cx="6" cy="2" r="1" class="bd-dot" style="animation-delay:0.29s"/>
+                <circle cx="9" cy="5" r="1" class="bd-dot" style="animation-delay:0.34s"/>
+                <circle cx="12" cy="8" r="1" class="bd-dot" style="animation-delay:0.39s"/>
+                <circle cx="9" cy="11" r="1" class="bd-dot" style="animation-delay:0.44s"/>
+                <circle cx="6" cy="14" r="1" class="bd-dot" style="animation-delay:0.49s"/>
+              </g>
+            </svg>
+          </span>
+          <span class="anti-metal-label" id="renderBtnLabel">Create Render</span>
         </button>
-        <button class="btn" id="recaptureBtn" onclick="requestViewportCapture()" style="width:auto; padding:0 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#a1a1aa; font-size:11px; margin-top:0;" title="Re-capture SketchUp screen">
+        <button class="btn" id="recaptureBtn" onclick="requestViewportCapture()" style="width:auto; padding:0 14px; height:44px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#a1a1aa; font-size:11px; margin-top:0; border-radius:12px;" title="Re-capture SketchUp screen">
           Refresh
         </button>
       </div>
@@ -1428,13 +1547,12 @@
       const trialState = document.getElementById('aiTrialOver');
       if (trialState) trialState.style.display = 'block';
 
+      const label = document.getElementById('renderBtnLabel');
+      if (label) label.innerText = 'Activate Pro Plan';
+
       const renderBtn = document.getElementById('renderBtn');
       if (renderBtn) {
         renderBtn.disabled = false;
-        renderBtn.innerHTML = '⚡ Trial Limits Over - Activate Pro Plan';
-        renderBtn.style.background = 'linear-gradient(135deg, #eab308, #f97316)';
-        renderBtn.style.color = '#000000';
-        renderBtn.style.fontWeight = '800';
         renderBtn.onclick = openProPlanCheckout;
       }
 
@@ -1446,13 +1564,12 @@
       const trialState = document.getElementById('aiTrialOver');
       if (trialState) trialState.style.display = 'none';
 
+      const label = document.getElementById('renderBtnLabel');
+      if (label) label.innerText = 'Create Render';
+
       const renderBtn = document.getElementById('renderBtn');
       if (renderBtn) {
         renderBtn.disabled = false;
-        renderBtn.innerHTML = 'Create Render';
-        renderBtn.style.background = 'linear-gradient(135deg, #4f46e5, #9333ea)';
-        renderBtn.style.color = '#ffffff';
-        renderBtn.style.fontWeight = '700';
         renderBtn.onclick = triggerAIRender;
       }
 
