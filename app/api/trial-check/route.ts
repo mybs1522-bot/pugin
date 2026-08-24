@@ -11,8 +11,7 @@ export const dynamic = "force-dynamic";
  * Add any user email here whose trial is definitely over.
  */
 const EXHAUSTED_TRIAL_USERS: Record<string, number> = {
-  "ipzyboxghgh@gmail.com": 3,
-  "rahul.verma@example.com": 3,
+  "rahul.verma@example.com": 10,
 };
 
 /**

@@ -44,38 +44,39 @@ export function TrialLimitDialog({ open, onClose, onUpgraded }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-sm gap-0 p-0 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-5">
+      <DialogContent className="max-w-sm gap-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white p-0 dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-lg font-bold text-zinc-900 dark:text-white">
               Trial renders used up
             </DialogTitle>
             <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
-              You&apos;ve used all 3 free trial renders.
+              You&apos;ve used all 10 free trial renders.
             </DialogDescription>
           </DialogHeader>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 space-y-1.5">
+        <div className="space-y-4 px-6 py-5">
+          <div className="space-y-1.5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900">
             <div className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-white">
               <CreditCard className="h-4 w-4 text-zinc-400" />
               Your saved card will be charged now
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 pl-6">
-              No need to re-enter card details. We&apos;ll activate your paid plan
-              immediately using the card you provided when starting the trial.
+            <p className="pl-6 text-xs text-zinc-500 dark:text-zinc-400">
+              No need to re-enter card details. We&apos;ll activate your paid
+              plan immediately using the card you provided when starting the
+              trial.
             </p>
           </div>
 
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 text-center">
+          <p className="text-center text-xs text-zinc-400 dark:text-zinc-500">
             Cancel anytime from account settings · No hidden fees
           </p>
         </div>
 
-        <div className="border-t border-zinc-200 dark:border-zinc-800 px-6 py-4 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 border-t border-zinc-200 px-6 py-4 dark:border-zinc-800">
           <Button
-            className="w-full gap-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900"
+            className="w-full gap-2 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
             disabled={loading}
             onClick={handleActivate}
           >

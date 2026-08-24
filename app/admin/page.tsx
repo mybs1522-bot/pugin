@@ -316,7 +316,7 @@ export default function AdminPage() {
                     color: "bg-amber-500",
                   },
                   {
-                    label: "Exhausted (≥ 3 renders)",
+                    label: "Exhausted (≥ 10 renders)",
                     count: stats.exhaustedUsers,
                     color: "bg-red-500",
                   },

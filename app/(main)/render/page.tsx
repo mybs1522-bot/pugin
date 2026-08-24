@@ -38,7 +38,7 @@ function SubscribedToast() {
   useEffect(() => {
     if (searchParams.get("subscribed") === "1") {
       toast.success(
-        "Welcome! Your 3-day free trial has started. You have 3 renders included."
+        "Welcome! Your 3-day free trial has started. You have 10 renders included."
       );
     }
   }, [searchParams]);

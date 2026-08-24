@@ -2,9 +2,9 @@ import { getSupabaseAdmin } from "@/lib/supabase";
 import fs from "fs";
 import path from "path";
 
-export const TRIAL_IMAGE_LIMIT = 3;
+export const TRIAL_IMAGE_LIMIT = 10;
 export const TRIAL_VIDEO_LIMIT = 1;
-export const TRIAL_GENERATION_LIMIT = 3;
+export const TRIAL_GENERATION_LIMIT = 10;
 
 export interface UserRecord {
   count: number;
