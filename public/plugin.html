@@ -1504,6 +1504,15 @@
 
       const optimizedImage = await optimizeImagePayload(capturedViewportImageData);
 
+      let progressVal = 0;
+      const progressTimer = setInterval(() => {
+        if (progressVal < 92) {
+          progressVal += 2;
+          document.getElementById('loadingPercentage').innerText = progressVal + '%';
+          document.getElementById('renderProgressBar').style.width = progressVal + '%';
+        }
+      }, 500);
+
       try {
         const apiUrl = currentServerUrl + '/api/replicate';
         const payloadQuestionnaire = userCustomized 
@@ -1527,12 +1536,16 @@
           })
         });
 
+        clearInterval(progressTimer);
+
         const data = await parseResponseJson(response);
 
         if (response.ok && (data.output || data.predictionId)) {
           let imgUrl = null;
 
           if (data.output && data.output.length > 0) {
+            document.getElementById('loadingPercentage').innerText = '100%';
+            document.getElementById('renderProgressBar').style.width = '100%';
             imgUrl = data.output[0];
           } else if (data.predictionId) {
             const predictionId = data.predictionId;

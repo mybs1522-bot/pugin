@@ -351,80 +351,63 @@ export async function POST(request: Request) {
     const mimeType = match ? match[1] : "image/png";
     const base64Data = match ? match[2] : image;
 
-    let finalPrompt = prompt;
-
     console.log(
-      `Analyzing viewport with Google AI Studio Gemini API for ${normEmail}...`
+      `Generating render via Google AI Studio Nano Banana Pro for ${normEmail}...`
     );
 
-    try {
-      const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
-      const res = await fetch(googleUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: "Describe this 3D viewport architecturally to enhance a photorealistic render prompt. Focus on lighting, materials, and geometry.",
-                },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Data,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      });
+    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${geminiKey}`;
 
-      if (res.ok) {
-        const data = await res.json();
-        const candidate = data.candidates?.[0];
-        const parts = candidate?.content?.parts || [];
-        const textOutput = parts
-          .map((p: { text?: string }) => p.text || "")
-          .join("\n");
+    const res = await fetch(googleUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt },
+              {
+                inline_data: {
+                  mime_type: mimeType,
+                  data: base64Data,
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    });
 
-        if (textOutput) {
-          finalPrompt = `${prompt}\n\nSpatial Description: ${textOutput}`;
-        }
-      }
-    } catch (geminiErr) {
-      console.warn(
-        "Gemini vision analysis failed, using base prompt:",
-        geminiErr
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      console.error("Google AI Studio error:", res.status, errData);
+      throw new Error(
+        errData.error?.message || `Google AI Studio HTTP ${res.status}`
       );
     }
 
-    const userModels = await getUserModels(normEmail);
-    // Prioritize admin-assigned model over client payload to ensure admin controls the backend!
-    let assignedModel =
-      userModels.imageModel || req.model || "google/nano-banana-pro";
-    if (assignedModel === "default") {
-      assignedModel = "google/nano-banana-pro";
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+
+    let imageUri: string | null = null;
+    for (const part of parts) {
+      if (part.inlineData && part.inlineData.data) {
+        const outMime = part.inlineData.mimeType || "image/jpeg";
+        imageUri = `data:${outMime};base64,${part.inlineData.data}`;
+        break;
+      }
     }
 
-    console.log(
-      `Generating render via model (${assignedModel}) for ${normEmail}...`
-    );
+    if (!imageUri) {
+      throw new Error("Nano Banana Pro returned no image output.");
+    }
 
-    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
-    const replicate = new Replicate({ auth: apiToken });
-
-    // Create asynchronous prediction to eliminate Vercel invocation timeouts
-    const prediction = await replicate.predictions.create({
-      model: assignedModel,
-      input: buildModelInput(assignedModel, finalPrompt, image),
-    });
+    await incrementImageCount(normEmail, "google/nano-banana-pro");
 
     return NextResponse.json({
       success: true,
-      predictionId: prediction.id,
-      model: assignedModel,
+      output: [imageUri],
+      model: "google/nano-banana-pro",
     });
   } catch (err) {
     console.error("Render API error:", err);
