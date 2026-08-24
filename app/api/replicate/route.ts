@@ -121,7 +121,81 @@ const INTERIOR_LIGHT_DESC: Record<string, string> = {
     "soft even ambient daylight with gentle balanced interior fill lighting",
 };
 
-function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+function buildNanoBananaPhotorealisticPrompt(q?: DesignQuestionnaire): string {
+  const isExterior = q?.spaceType === "exterior";
+
+  // If exterior space
+  if (isExterior) {
+    const facadeMat =
+      q?.wallFinish && EXT_FACADE[q.wallFinish]
+        ? EXT_FACADE[q.wallFinish]
+        : "authentic architectural facade cladding";
+    const groundMat =
+      q?.floorMaterial && EXT_GROUND[q.floorMaterial]
+        ? EXT_GROUND[q.floorMaterial]
+        : "realistic stone paving and landscaping";
+    const skyLighting =
+      q?.naturalLight && LIGHT_TO_SKY[q.naturalLight]
+        ? LIGHT_TO_SKY[q.naturalLight]
+        : "natural daylight with soft architectural shadows";
+
+    return (
+      "Transform the provided SketchUp exterior into an extremely photorealistic, premium architectural photograph. " +
+      "CRITICAL: Preserve the original building design and camera angle exactly. Do not redesign, remodel, or reinterpret the building massing. " +
+      "Maintain the exact architectural geometry, facade proportions, roof planes, window and door placements, overhangs, balconies, materials, ground landscape layout, exact camera perspective, angle, and composition from the source image. " +
+      "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections: " +
+      `${facadeMat}, ${groundMat}, authentic timber accents, and architectural glass with realistic subtle outdoor reflections and transparency. ` +
+      "LIGHTING: " +
+      skyLighting +
+      ", physically accurate global illumination, soft realistic contact shadows, and natural atmospheric depth. " +
+      "CAMERA: Render from the EXACT same camera viewpoint, height, field of view, and perspective as the provided input image. Do NOT change, rotate, elevate, or move the camera angle. Keep vertical architectural lines straight and realistic. " +
+      "PHOTOGRAPHIC QUALITY: Genuine high-end architectural photograph, physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, published in Architectural Record magazine. " +
+      "AUTHENTICITY: Do not make it look like an AI-generated image or CGI render. Avoid plastic materials, glowing edges, fake bloom, or cinematic effects. Aim for quiet, breathtaking realism."
+    );
+  }
+
+  // If user customized specific finishes
+  const customFinishes: string[] = [];
+  if (q?.wallFinish && WALL[q.wallFinish])
+    customFinishes.push(`walls: ${WALL[q.wallFinish]}`);
+  if (q?.floorMaterial && FLOOR[q.floorMaterial])
+    customFinishes.push(`flooring: ${FLOOR[q.floorMaterial]}`);
+  if (q?.woodTone && WOOD[q.woodTone])
+    customFinishes.push(`cabinetry & woodwork: ${WOOD[q.woodTone]}`);
+  if (q?.metalAccent && METAL[q.metalAccent])
+    customFinishes.push(`metal hardware: ${METAL[q.metalAccent]}`);
+  if (q?.colorPalette && PALETTE[q.colorPalette])
+    customFinishes.push(`color scheme: ${PALETTE[q.colorPalette]}`);
+  if (q?.accentColor) customFinishes.push(`accent tone: ${q.accentColor}`);
+  if (q?.lightingMood && INTERIOR_LIGHT_DESC[q.lightingMood])
+    customFinishes.push(`lighting: ${INTERIOR_LIGHT_DESC[q.lightingMood]}`);
+
+  const customMaterialsNote =
+    customFinishes.length > 0
+      ? ` Apply these specific finishes: ${customFinishes.join(", ")}.`
+      : " Keep the exact original color palette and material colors from the SketchUp image without randomly changing finishes.";
+
+  return (
+    "Transform the provided SketchUp interior into an extremely photorealistic, premium architectural photograph. " +
+    "CRITICAL: Preserve the original design and camera angle exactly. Do not redesign, remodel, rearrange, or reinterpret the space. " +
+    "Maintain the exact architecture, room proportions, camera perspective, angle, wall positions, ceiling geometry, cabinetry, furniture, openings, shelves, doors, windows, built-ins, material placement, colors, finishes, and overall composition from the source image. " +
+    "The goal is to make the SketchUp scene look like it was actually photographed inside a beautifully designed real interior, not like a 3D render. " +
+    "REALISM: Use physically believable materials with realistic roughness, reflections, micro-texture, subtle imperfections, edge variation, realistic wood grain, natural stone variation, believable glass, realistic metal response, fabric texture, ceramic and painted-surface response. " +
+    "Materials should have different optical properties rather than looking uniformly glossy or perfectly smooth. Avoid exaggerated reflections, excessive gloss, plastic-looking surfaces, perfectly clean CGI materials, and artificial texture overlays. " +
+    "Add extremely subtle real-world imperfections: tiny tonal variations, slight material irregularities, natural surface variation, realistic seams and joints, and believable construction details." +
+    customMaterialsNote +
+    " " +
+    "LIGHTING: Create beautiful, physically realistic architectural lighting with soft natural daylight entering from existing openings, realistic ambient illumination, subtle indirect bounced light, physically accurate artificial lighting where existing fixtures are present, soft contact shadows, realistic light falloff, gentle occlusion in corners and joints. " +
+    "The lighting should feel calm, sophisticated, warm and naturally exposed (2700K). Do NOT over-light the room. Do NOT make every surface equally bright. Allow realistic areas of shadow and controlled highlights. Preserve depth and contrast. Light should naturally bounce between walls, floors, ceilings and furniture. " +
+    "Avoid glowing walls, excessive bloom, dramatic god rays, overexposed windows, crushed blacks, or artificial orange lighting. " +
+    "CAMERA: Render from the EXACT same camera viewpoint, height, field of view, and angle as the provided input image. Do NOT change, rotate, elevate, shift, or move the camera angle. Use subtle photographic depth and lens characteristics, but keep the entire interior predominantly sharp. No distortion. " +
+    "PHOTOGRAPHIC QUALITY: Genuine high-end interior photograph: physically believable exposure, realistic dynamic range, subtle natural contrast, soft highlight rolloff, realistic shadow detail, restrained color grading, natural white balance, subtle lens characteristics, extremely fine material detail, realistic ambient occlusion, physically accurate reflections. Resemble a photograph from a premium architecture and interior-design magazine. " +
+    "COMPOSITION: Keep the original camera composition and geometry. Do not add or remove furniture, plants, artwork, decorative objects, lights, windows, doors, or architectural elements. " +
+    "AUTHENTICITY: Most importantly, do not make it look like an AI-generated image or a CGI render. Avoid perfect CGI surfaces, excessive sharpness, plastic materials, fake reflections, unrealistic shadows, floating objects, warped furniture, distorted geometry, glowing edges, excessive bloom, oversaturated colors, or artificial volumetric lighting. Aim for quiet realism rather than visual effects."
+  );
+}
+
+function buildFluxPhotorealisticPrompt(q?: DesignQuestionnaire): string {
   const isExterior = q?.spaceType === "exterior";
 
   // If exterior space
@@ -146,7 +220,7 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
       "YOUR SOLE TASK IS PBR PHOTOREALISTIC MATERIAL & LIGHTING UPGRADE: Replace flat computer graphics shading with physically accurate real-world materials: " +
       `${facadeMat}, ${groundMat}, authentic timber accents, and clean architectural glass with subtle reflections and transparency. ` +
       `LIGHTING: ${skyLighting}, physically accurate global illumination, soft contact shadows, and natural atmospheric depth. ` +
-      "CAMERA & QUALITY: Shot on full-frame camera with 24mm architectural tilt-shift lens. Straight verticals, crisp details, natural dynamic range, soft highlight rolloff, published in Architectural Digest. " +
+      "CAMERA & QUALITY: Render from the exact same camera angle. Straight verticals, crisp details, natural dynamic range, soft highlight rolloff, published in Architectural Digest. " +
       "AUTHENTICITY: True high-end architectural photograph. The output geometry MUST match the input SketchUp viewport 100% identically with zero hallucinations."
     );
   }
@@ -179,7 +253,7 @@ function buildPhotorealisticPrompt(q?: DesignQuestionnaire): string {
     "YOUR SOLE TASK IS PBR PHOTOREALISTIC MATERIAL & LIGHTING UPGRADE: Replace flat computer graphics shading with physically believable materials: micro-textures, realistic wood grain, natural stone veining, fabric weave, realistic metal response, and subtle real-world imperfections." +
     customMaterialsNote +
     " LIGHTING: Physically accurate warm architectural illumination (2700K), soft natural daylight from existing openings, subtle indirect bounced light, realistic contact shadows, and ambient occlusion in corners. " +
-    "CAMERA & QUALITY: Shot by a professional architectural photographer on full-frame camera with high-end 24–35mm lens. Perfectly straight verticals, sharp details, balanced exposure, natural dynamic range, featured in Elle Decor. " +
+    "CAMERA & QUALITY: Render from the exact same camera angle. Perfectly straight verticals, sharp details, balanced exposure, natural dynamic range, featured in Elle Decor. " +
     "AUTHENTICITY: Genuine high-end interior photography. The final render MUST match the input SketchUp viewport layout and geometry 100% identically with zero hallucinations."
   );
 }
@@ -350,7 +424,18 @@ export async function POST(request: Request) {
     const image: string = req.image;
     const questionnaire: DesignQuestionnaire = req.questionnaire;
 
-    const prompt = buildPhotorealisticPrompt(questionnaire);
+    const userModels = await getUserModels(normEmail);
+    const assignedModel =
+      userModels.imageModel || req.model || "google/nano-banana-pro";
+
+    const isGoogle =
+      assignedModel.startsWith("google/") ||
+      assignedModel.includes("nano-banana") ||
+      assignedModel.includes("gemini");
+
+    const prompt = isGoogle
+      ? buildNanoBananaPhotorealisticPrompt(questionnaire)
+      : buildFluxPhotorealisticPrompt(questionnaire);
 
     const defaultGeminiKey = Buffer.from(
       "QVEuQWI4Uk42TC0yeUNiMWpBSnQtTzZpMllxR2Q1VUVWMWxfenpMS2hlSXl3MG4wLVRscXc=",
@@ -362,10 +447,6 @@ export async function POST(request: Request) {
     const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
     const mimeType = match ? match[1] : "image/png";
     const base64Data = match ? match[2] : image;
-
-    const userModels = await getUserModels(normEmail);
-    const assignedModel =
-      userModels.imageModel || req.model || "google/nano-banana-pro";
 
     console.log(
       `Generating render for ${normEmail} using assigned model: ${assignedModel}...`
