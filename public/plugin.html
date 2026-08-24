@@ -1377,6 +1377,26 @@
 
       const renderBtn = document.getElementById('renderBtn');
       renderBtn.disabled = true;
+      showStatus('🔍 Checking render eligibility...', 'loading');
+
+      // === PRE-FLIGHT TRIAL CHECK ===
+      // Check trial status BEFORE showing loading spinner or doing any work
+      currentServerUrl = getLiveServerUrl();
+      try {
+        const trialCheckUrl = currentServerUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail);
+        const trialRes = await fetch(trialCheckUrl);
+        const trialData = await trialRes.json();
+        
+        if (trialData && trialData.allowed === false) {
+          console.log('[TRIAL PRE-CHECK] Blocked:', trialData);
+          showTrialOverState();
+          return;
+        }
+      } catch (preCheckErr) {
+        console.warn('Pre-flight trial check failed, proceeding to render:', preCheckErr);
+        // Fail-open on pre-check error — the main render API will still enforce limits
+      }
+
       showStatus('📸 Processing viewport & materials...', 'loading');
 
       document.getElementById('aiPlaceholder').style.display = 'none';
@@ -1390,7 +1410,6 @@
       document.getElementById('downloadVideoLink').style.display = 'none';
       document.getElementById('videoBtn').style.display = 'none';
 
-      currentServerUrl = getLiveServerUrl();
       questionnaire.accentColor = document.getElementById('accentColor').value;
 
       const optimizedImage = await optimizeImagePayload(capturedViewportImageData);

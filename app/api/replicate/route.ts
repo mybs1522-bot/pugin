@@ -313,14 +313,22 @@ export async function POST(request: Request) {
 
     const paid = await isUserPaid(normEmail);
 
-    // 3 Image Trial Limit Check for Unpaid Users
+    // 3 Image Trial Limit Check for Unpaid Users — FAIL-CLOSED
     if (!paid) {
       const currentImageCount = await getImageCount(normEmail);
+      console.log(
+        `[TRIAL CHECK] ${normEmail}: imageCount=${currentImageCount}, limit=${TRIAL_IMAGE_LIMIT}, paid=${paid}`
+      );
       if (currentImageCount >= TRIAL_IMAGE_LIMIT) {
+        console.log(
+          `[TRIAL BLOCKED] ${normEmail}: ${currentImageCount}/${TRIAL_IMAGE_LIMIT} renders used. Blocking render.`
+        );
         return NextResponse.json(
           {
             error: "Trial Limits are over to render more",
             code: "payment_required",
+            currentCount: currentImageCount,
+            limit: TRIAL_IMAGE_LIMIT,
           },
           { status: 403 }
         );

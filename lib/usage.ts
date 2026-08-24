@@ -349,6 +349,23 @@ export async function resetUserUsage(email: string): Promise<boolean> {
 export async function getImageCount(email: string): Promise<number> {
   const norm = email.toLowerCase().trim();
   const mem = ensureMemRecord(norm);
+
+  // Also check disk storage (survives memory wipes on cold starts)
+  let diskCount = 0;
+  try {
+    const diskMap = loadDiskUsers();
+    const diskUser = diskMap.get(norm);
+    if (diskUser) {
+      diskCount = diskUser.imageCount || diskUser.count || 0;
+      // Hydrate memory from disk if memory is behind
+      if (diskCount > mem.imageCount) {
+        mem.imageCount = diskCount;
+        mem.count = Math.max(mem.count, diskUser.count || 0);
+      }
+    }
+  } catch {}
+
+  let dbCount = 0;
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
@@ -357,11 +374,16 @@ export async function getImageCount(email: string): Promise<number> {
       .single();
 
     const row = data as { image_count?: number; count?: number } | null;
-    const dbImg = row?.image_count ?? row?.count ?? 0;
-    return Math.max(dbImg, mem.imageCount);
-  } catch {
-    return mem.imageCount;
-  }
+    dbCount = row?.image_count ?? row?.count ?? 0;
+
+    // Hydrate memory from DB if DB is ahead
+    if (dbCount > mem.imageCount) {
+      mem.imageCount = dbCount;
+    }
+  } catch {}
+
+  // Return the highest count from all three sources (fail-closed)
+  return Math.max(dbCount, mem.imageCount, diskCount);
 }
 
 export async function getVideoCount(email: string): Promise<number> {
