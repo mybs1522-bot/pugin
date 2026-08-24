@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>AIsoft Render AI</title>
+  <title>V6 Render</title>
   <style>
     :root {
       --bg-color: #09090b;
@@ -644,7 +644,7 @@
   </div>
 
   <header>
-    <h2>AIsoft Render</h2>
+    <h2>V6 Render</h2>
     <div style="display:flex; align-items:center; gap:10px;">
       <div id="userAccountBadge"></div>
       <button onclick="toggleSupportModal(true)" id="btnSupportHeader" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#ffffff; padding:3px 10px; border-radius:9999px; font-size:10px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
@@ -921,7 +921,7 @@
 
         <div class="action-row">
           <button class="btn-video" id="videoBtn" style="display:none;" onclick="triggerVideoWalkthrough()">🎬 Generate 3D Video Walkthrough</button>
-          <a id="downloadLink" class="download-btn" style="display:none;" href="#" target="_blank" download="aisoft-render.png">Download Image</a>
+          <a id="downloadLink" class="download-btn" style="display:none;" href="#" target="_blank" download="v6-render.png">Download Image</a>
           <a id="downloadVideoLink" class="download-btn" style="display:none; background:#18181b; border:1px solid rgba(255,255,255,0.25); color:#ffffff;" href="#" target="_blank" download="walkthrough.mp4">Download MP4 Video</a>
         </div>
       </div>
@@ -1250,8 +1250,8 @@
     setInterval(checkSupportNotifications, 10000);
 
     /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
-    let userEmail = localStorage.getItem('aisoft_user_email') || null;
-    let userSessionId = localStorage.getItem('aisoft_session_id') || null;
+    let userEmail = localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || null;
+    let userSessionId = localStorage.getItem('v6_session_id') || localStorage.getItem('aisoft_session_id') || null;
 
     function checkAuthOnLoad() {
       if (!userEmail || !userSessionId) {
@@ -1268,8 +1268,9 @@
     async function checkTrialStatusOnLoad() {
       if (!userEmail) return;
       
-      const localKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
-      const localCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+      const localKey = 'v6_render_count_' + userEmail.toLowerCase().trim();
+      const fallbackKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || localStorage.getItem(fallbackKey) || '0', 10);
 
       try {
         const serverUrl = getLiveServerUrl();
@@ -1285,7 +1286,7 @@
           resetTrialOverState();
         }
       } catch (err) {
-        console.warn('Trial status check on load failed:', err);
+        console.warn('Trial check network error:', err);
       }
     }
 
@@ -1296,18 +1297,33 @@
       }
     }
 
-    function showAuthStatus(msg, type) {
-      const el = document.getElementById('authStatus');
-      el.style.display = 'block';
-      el.className = 'status-' + type;
-      el.innerHTML = msg;
-    }
-
     function resetAuthForm() {
-      document.getElementById('authStep1').style.display = 'block';
-      document.getElementById('authStep2').style.display = 'none';
+      document.getElementById('authStepEmail').style.display = 'block';
+      document.getElementById('authStepOtp').style.display = 'none';
+      document.getElementById('authEmail').value = '';
+      document.getElementById('authOtpCode').value = '';
       document.getElementById('authStatus').style.display = 'none';
       document.getElementById('btnSendOtp').disabled = false;
+      document.getElementById('btnVerifyOtp').disabled = false;
+    }
+
+    function showAuthStatus(msg, type) {
+      const el = document.getElementById('authStatus');
+      el.innerText = msg;
+      el.style.display = 'block';
+      if (type === 'error') {
+        el.style.background = 'rgba(239, 68, 68, 0.15)';
+        el.style.color = '#f87171';
+        el.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      } else if (type === 'success') {
+        el.style.background = 'rgba(16, 185, 129, 0.15)';
+        el.style.color = '#34d399';
+        el.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      } else {
+        el.style.background = 'rgba(255, 255, 255, 0.08)';
+        el.style.color = '#e4e4e7';
+        el.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+      }
     }
 
     async function sendOtpCode() {
@@ -1318,7 +1334,7 @@
       }
 
       document.getElementById('btnSendOtp').disabled = true;
-      showAuthStatus('Sending 4-digit code to ' + emailInput + '...', 'loading');
+      showAuthStatus('Sending 4-digit code to your email...', 'loading');
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
@@ -1332,20 +1348,17 @@
         });
 
         const data = await parseResponseJson(response);
-        if ((response.ok || data.ok) && data.token) {
-          window.pendingOtpToken = data.token;
+        if (response.ok && data.ok) {
           window.pendingEmail = emailInput;
-          document.getElementById('authStep1').style.display = 'none';
-          document.getElementById('authStep2').style.display = 'block';
-
-          if (data.devCode) {
-            document.getElementById('authOtpCode').value = data.devCode;
-            showAuthStatus('✓ Code generated: <b>' + data.devCode + '</b> (Auto-filled below)', 'success');
-          } else {
-            showAuthStatus('✓ 4-digit code sent via ' + (data.service || 'email') + '!', 'success');
-          }
+          window.pendingOtpToken = data.token;
+          
+          document.getElementById('authStepEmail').style.display = 'none';
+          document.getElementById('authStepOtp').style.display = 'block';
+          document.getElementById('authSentToEmail').innerText = emailInput;
+          showAuthStatus('✓ 4-digit code sent! Please check your inbox.', 'success');
+          document.getElementById('authOtpCode').focus();
         } else {
-          showAuthStatus('❌ ' + (data.error || 'Failed to send verification code.'), 'error');
+          showAuthStatus('❌ ' + (data.error || 'Failed to send code.'), 'error');
           document.getElementById('btnSendOtp').disabled = false;
         }
       } catch (err) {
@@ -1384,9 +1397,16 @@
         if (response.ok && data.ok) {
           userEmail = data.email;
           userSessionId = data.sessionId;
+          localStorage.setItem('v6_user_email', data.email);
           localStorage.setItem('aisoft_user_email', data.email);
-          if (data.sessionId) localStorage.setItem('aisoft_session_id', data.sessionId);
-          if (data.authToken) localStorage.setItem('aisoft_auth_token', data.authToken);
+          if (data.sessionId) {
+            localStorage.setItem('v6_session_id', data.sessionId);
+            localStorage.setItem('aisoft_session_id', data.sessionId);
+          }
+          if (data.authToken) {
+            localStorage.setItem('v6_auth_token', data.authToken);
+            localStorage.setItem('aisoft_auth_token', data.authToken);
+          }
 
           showAuthStatus('✓ PC Verified & Activated!', 'success');
           setTimeout(() => {
@@ -1407,6 +1427,9 @@
     }
 
     function signOutUser() {
+      localStorage.removeItem('v6_user_email');
+      localStorage.removeItem('v6_session_id');
+      localStorage.removeItem('v6_auth_token');
       localStorage.removeItem('aisoft_user_email');
       localStorage.removeItem('aisoft_session_id');
       localStorage.removeItem('aisoft_auth_token');
@@ -1879,8 +1902,9 @@
 
       showStatus('🔍 Checking render eligibility...', 'loading');
 
-      const localKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
-      const localCount = parseInt(localStorage.getItem(localKey) || '0', 10);
+      const localKey = 'v6_render_count_' + userEmail.toLowerCase().trim();
+      const fallbackKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || localStorage.getItem(fallbackKey) || '0', 10);
 
       // === PRE-FLIGHT TRIAL CHECK ===
       // Check trial status BEFORE showing loading spinner or doing any work
@@ -2228,7 +2252,7 @@
     }
 
     /* ─── PAST RENDERS GALLERY & PERSISTENT STORAGE MANAGER ─────────────────────── */
-    const DB_NAME = 'aisoft_renders_db';
+    const DB_NAME = 'v6_renders_db';
     const STORE_NAME = 'renders';
 
     function openRendersDB() {
@@ -2306,7 +2330,7 @@
 
     function getPastRenders() {
       try {
-        const raw = localStorage.getItem('aisoft_past_renders_v1');
+        const raw = localStorage.getItem('v6_past_renders_v1') || localStorage.getItem('aisoft_past_renders_v1');
         return raw ? JSON.parse(raw) : [];
       } catch (e) {
         return [];
@@ -2347,11 +2371,11 @@
 
         const capped = filtered.slice(0, 30);
         try {
-          localStorage.setItem('aisoft_past_renders_v1', JSON.stringify(capped));
+          localStorage.setItem('v6_past_renders_v1', JSON.stringify(capped));
         } catch (storageErr) {
           // If storage quota reached, prune to 10 entries and retry
           const pruned = capped.slice(0, 10);
-          localStorage.setItem('aisoft_past_renders_v1', JSON.stringify(pruned));
+          localStorage.setItem('v6_past_renders_v1', JSON.stringify(pruned));
         }
 
         renderPastRendersGallery();
@@ -2362,9 +2386,13 @@
 
     function clearPastRenders() {
       if (confirm('Clear all past renders history from this device?')) {
+        localStorage.removeItem('v6_past_renders_v1');
         localStorage.removeItem('aisoft_past_renders_v1');
         try {
-          if (window.indexedDB) indexedDB.deleteDatabase(DB_NAME);
+          if (window.indexedDB) {
+            indexedDB.deleteDatabase(DB_NAME);
+            indexedDB.deleteDatabase('aisoft_renders_db');
+          }
         } catch {}
         renderPastRendersGallery();
       }

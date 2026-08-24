@@ -100,7 +100,7 @@ const steps = [
   {
     number: "01",
     title: "Install SketchUp Plugin",
-    body: "Download the official aisoft_render.rbz file and install it inside SketchUp in 10 seconds.",
+    body: "Download the official v6_render.rbz file and install it inside SketchUp in 10 seconds.",
     icon: ImageIcon,
   },
   {

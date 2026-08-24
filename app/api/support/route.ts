@@ -78,13 +78,13 @@ export async function POST(request: Request) {
         try {
           const resend = new Resend(resendKey);
           await resend.emails.send({
-            from: "AIsoft Support <onboarding@resend.dev>",
+            from: "V6 Support <onboarding@resend.dev>",
             to: ticket.email,
-            subject: `💬 New Support Reply: AIsoft Render Studio [${ticket.category}]`,
+            subject: `💬 New Support Reply: V6 Render Studio [${ticket.category}]`,
             html: `
               <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background-color:#09090b; color:#ffffff; padding:32px; border-radius:16px; max-width:550px; margin:0 auto; border:1px solid rgba(255,255,255,0.1);">
                 <div style="text-align:center; margin-bottom:24px;">
-                  <h1 style="font-size:22px; font-weight:800; color:#ffffff; margin:0; letter-spacing:-0.5px;">✦ AIsoft Render Support Chat</h1>
+                  <h1 style="font-size:22px; font-weight:800; color:#ffffff; margin:0; letter-spacing:-0.5px;">✦ V6 Render Support Chat</h1>
                   <p style="font-size:12px; color:#a1a1aa; margin-top:4px;">You have a new reply from Admin</p>
                 </div>
 

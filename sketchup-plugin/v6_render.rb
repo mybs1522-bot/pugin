@@ -1,14 +1,14 @@
-# AIsoft Render SketchUp Extension Loader
+# V6 Render SketchUp Extension Loader
 require 'sketchup.rb'
 require 'extensions.rb'
 
-module AIsoftRender
+module V6Render
   unless file_loaded?(__FILE__)
-    ex = SketchupExtension.new('AIsoft Render AI', 'aisoft_render/main.rb')
+    ex = SketchupExtension.new('V6 Render', 'v6_render/main.rb')
     ex.description = 'AI-powered photorealistic rendering directly from your SketchUp viewport.'
     ex.version     = '1.0.0'
-    ex.copyright   = 'AIsoft 2026'
-    ex.creator     = 'AIsoft Team'
+    ex.copyright   = 'V6 Render 2026'
+    ex.creator     = 'V6 Render'
     Sketchup.register_extension(ex, true)
     file_loaded?(__FILE__)
   end

@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       <div style="font-family:-apple-system,BlinkMacSystemFont,'Geist','Segoe UI',Roboto,sans-serif;max-width:500px;margin:0 auto;padding:40px 28px;background:#09090b;color:#ffffff;border-radius:20px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 20px 40px rgba(0,0,0,0.8);">
         <div style="text-align:center;margin-bottom:32px">
           <div style="font-size:36px;margin-bottom:12px;">✦</div>
-          <h1 style="margin:0;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.5px">AIsoft Render AI</h1>
+          <h1 style="margin:0;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.5px">V6 Render</h1>
           <p style="color:#a1a1aa;font-size:13px;margin-top:6px">SketchUp Plugin PC Verification</p>
         </div>
         <p style="color:#e4e4e7;margin-bottom:16px;font-size:14px;line-height:1.5">Here is your 4-digit verification code to activate your SketchUp PC access:</p>
@@ -65,8 +65,7 @@ export async function POST(req: NextRequest) {
       try {
         const resend = new Resend(resendApiKey);
         const fromAddress =
-          process.env.RESEND_FROM_EMAIL ||
-          "AIsoft Render <onboarding@resend.dev>";
+          process.env.RESEND_FROM_EMAIL || "V6 Render <onboarding@resend.dev>";
 
         const resendResult = await resend.emails.send({
           from: fromAddress,
@@ -102,7 +101,7 @@ export async function POST(req: NextRequest) {
         });
 
         await transporter.sendMail({
-          from: `"AIsoft Render AI" <${gmailUser}>`,
+          from: `"V6 Render" <${gmailUser}>`,
           to: normalised,
           subject: `${code} — Your 4-Digit Verification Code`,
           html: emailHtml,

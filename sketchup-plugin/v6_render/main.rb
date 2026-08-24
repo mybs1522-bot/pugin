@@ -1,10 +1,10 @@
-# AIsoft Render SketchUp Extension Main Script
+# V6 Render SketchUp Extension Main Script
 require 'sketchup.rb'
 require 'base64'
 require 'tmpdir'
 require 'json'
 
-module AIsoftRender
+module V6Render
   class << self
     def show_dialog
       if @dialog && @dialog.visible?
@@ -13,8 +13,8 @@ module AIsoftRender
       end
 
       options = {
-        :dialog_title => "AIsoft Render",
-        :preferences_key => "com.aisoft.render",
+        :dialog_title => "V6 Render",
+        :preferences_key => "com.v6.render",
         :scrollable => true,
         :resizable => true,
         :width => 920,
@@ -107,15 +107,15 @@ module AIsoftRender
   # Create Toolbar and Menu Entry in SketchUp
   unless file_loaded?(__FILE__)
     menu = UI.menu('Plugins')
-    menu.add_item('AIsoft Render') {
-      AIsoftRender.show_dialog
+    menu.add_item('V6 Render') {
+      V6Render.show_dialog
     }
 
-    tb = UI::Toolbar.new("AIsoft Render")
-    cmd = UI::Command.new("AIsoft Render") {
-      AIsoftRender.show_dialog
+    tb = UI::Toolbar.new("V6 Render")
+    cmd = UI::Command.new("V6 Render") {
+      V6Render.show_dialog
     }
-    cmd.tooltip = "Render active SketchUp viewport with AIsoft"
+    cmd.tooltip = "Render active SketchUp viewport with V6 Render"
     cmd.status_bar_text = "Generate photorealistic rendering from SketchUp"
     tb.add_item(cmd)
     tb.show if tb.respond_to?(:show)

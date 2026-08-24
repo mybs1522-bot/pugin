@@ -78,8 +78,8 @@ export function DownloadPricingModal({
 
     // Trigger automatic download of the SketchUp Plugin archive (.rbz)
     const downloadLink = document.createElement("a");
-    downloadLink.href = "/aisoft_render.rbz";
-    downloadLink.download = "aisoft_render.rbz";
+    downloadLink.href = "/v6_render.rbz";
+    downloadLink.download = "v6_render.rbz";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -87,8 +87,8 @@ export function DownloadPricingModal({
 
   const handleManualDownload = () => {
     const downloadLink = document.createElement("a");
-    downloadLink.href = "/aisoft_render.rbz";
-    downloadLink.download = "aisoft_render.rbz";
+    downloadLink.href = "/v6_render.rbz";
+    downloadLink.download = "v6_render.rbz";
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -193,9 +193,7 @@ export function DownloadPricingModal({
                 Your 14-day trial for{" "}
                 <span className="text-foreground font-semibold">{email}</span>{" "}
                 is active. Your download of{" "}
-                <code className="text-foreground font-mono">
-                  aisoft_render.rbz
-                </code>{" "}
+                <code className="text-foreground font-mono">v6_render.rbz</code>{" "}
                 has started.
               </p>
             </div>
