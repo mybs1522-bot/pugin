@@ -1543,12 +1543,16 @@
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
               
-              let progress = Math.min(95, Math.round((elapsed / 22) * 100));
+              let progress = Math.min(95, Math.round((elapsed / 45) * 100));
               document.getElementById('loadingPercentage').innerText = progress + '%';
               document.getElementById('renderProgressBar').style.width = progress + '%';
               
               showStatus(`✨ Rendering Photorealistic Image...`, 'loading');
-              document.getElementById('loadingSub').innerHTML = `Refining details and lighting...`;
+              if (elapsed > 30) {
+                document.getElementById('loadingSub').innerHTML = `Waking up rendering engine (first boot can take 3-4 mins)...`;
+              } else {
+                document.getElementById('loadingSub').innerHTML = `Refining details and lighting...`;
+              }
 
               try {
                 const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
@@ -1571,8 +1575,8 @@
                 }
               }
 
-              if (elapsed > 180) {
-                throw new Error('Rendering timed out after 180 seconds.');
+              if (elapsed > 400) {
+                throw new Error('Rendering timed out after 400 seconds. Please try again.');
               }
             }
           }
