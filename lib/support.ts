@@ -200,6 +200,7 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
     const { data } = await getSupabaseAdmin()
       .from("support_tickets")
       .select("*")
+      .neq("category", "system_render_log")
       .order("updated_at", { ascending: false });
 
     if (data && data.length > 0) {

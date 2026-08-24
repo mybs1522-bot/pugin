@@ -453,7 +453,7 @@ export async function POST(request: Request) {
         Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
 
       if (!imageUri) {
-        recordRenderLog({
+        await recordRenderLog({
           email: normEmail,
           type: "image",
           requestedModel: assignedModel,
@@ -471,7 +471,7 @@ export async function POST(request: Request) {
 
       const isCascade = usedModel !== candidateModels[0];
 
-      recordRenderLog({
+      await recordRenderLog({
         email: normEmail,
         type: "image",
         requestedModel: assignedModel,
@@ -513,7 +513,7 @@ export async function POST(request: Request) {
     const durationSeconds =
       Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
 
-    recordRenderLog({
+    await recordRenderLog({
       email: normEmail,
       type: "image",
       requestedModel: assignedModel,

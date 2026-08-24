@@ -259,7 +259,7 @@ export async function POST(request: Request) {
       );
     }
 
-    recordRenderLog({
+    await recordRenderLog({
       email: normEmail,
       type: "video",
       requestedModel: "kwaivgi/kling-v1.6-standard",

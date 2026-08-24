@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   const limitParam = searchParams.get("limit");
   const limit = limitParam ? parseInt(limitParam, 10) : 100;
 
-  const logs = getRenderLogs(limit);
+  const logs = await getRenderLogs(limit);
 
   return NextResponse.json({
     logs,

@@ -753,9 +753,9 @@ function getLogStorePath(): string {
   return path.join(process.cwd(), ".render_logs.json");
 }
 
-export function recordRenderLog(
+export async function recordRenderLog(
   entry: Omit<RenderLogEntry, "id" | "timestamp">
-): RenderLogEntry {
+): Promise<RenderLogEntry> {
   const fullEntry: RenderLogEntry = {
     id: "log_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7),
     timestamp: new Date().toISOString(),
@@ -767,6 +767,24 @@ export function recordRenderLog(
     memoryRenderLogs.pop();
   }
 
+  // 1. Permanently persist to Supabase Database
+  try {
+    const supabase = getSupabaseAdmin();
+    await supabase.from("support_tickets").insert({
+      id: fullEntry.id,
+      email: fullEntry.email,
+      category: "system_render_log",
+      status: "resolved",
+      message: `${fullEntry.type.toUpperCase()} render via ${fullEntry.executedModel} (${fullEntry.status})`,
+      messages_json: JSON.stringify(fullEntry),
+      created_at: fullEntry.timestamp,
+      updated_at: fullEntry.timestamp,
+    });
+  } catch (err) {
+    console.warn("Failed to write render log to Supabase:", err);
+  }
+
+  // 2. Persist to disk as secondary local cache
   try {
     const logPath = getLogStorePath();
     let existingLogs: RenderLogEntry[] = [];
@@ -782,26 +800,74 @@ export function recordRenderLog(
     }
     fs.writeFileSync(logPath, JSON.stringify(existingLogs, null, 2), "utf-8");
   } catch (err) {
-    console.warn("Failed to persist render log:", err);
+    console.warn("Failed to persist render log to disk:", err);
   }
 
   return fullEntry;
 }
 
-export function getRenderLogs(limit: number = 100): RenderLogEntry[] {
+export async function getRenderLogs(
+  limit: number = 100
+): Promise<RenderLogEntry[]> {
+  const map = new Map<string, RenderLogEntry>();
+
+  // 1. Fetch permanent execution logs from Supabase Database
+  try {
+    const supabase = getSupabaseAdmin();
+    const { data } = await supabase
+      .from("support_tickets")
+      .select("*")
+      .eq("category", "system_render_log")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (data && Array.isArray(data)) {
+      data.forEach((row: any) => {
+        try {
+          if (row.messages_json) {
+            const parsed = JSON.parse(row.messages_json);
+            if (parsed && parsed.id) {
+              map.set(parsed.id, {
+                ...parsed,
+                timestamp: parsed.timestamp || row.created_at,
+              });
+            }
+          }
+        } catch {}
+      });
+    }
+  } catch (err) {
+    console.warn("Supabase fetch warning in getRenderLogs:", err);
+  }
+
+  // 2. Merge in-memory cache
+  memoryRenderLogs.forEach((l) => {
+    if (!map.has(l.id)) {
+      map.set(l.id, l);
+    }
+  });
+
+  // 3. Merge disk cache
   try {
     const logPath = getLogStorePath();
     if (fs.existsSync(logPath)) {
       const raw = fs.readFileSync(logPath, "utf-8");
       if (raw && raw.trim()) {
         const diskLogs = JSON.parse(raw);
-        if (Array.isArray(diskLogs) && diskLogs.length > 0) {
-          return diskLogs.slice(0, limit);
+        if (Array.isArray(diskLogs)) {
+          diskLogs.forEach((l: RenderLogEntry) => {
+            if (l && l.id && !map.has(l.id)) {
+              map.set(l.id, l);
+            }
+          });
         }
       }
     }
-  } catch (err) {
-    console.warn("Failed to load render logs from disk:", err);
-  }
-  return memoryRenderLogs.slice(0, limit);
+  } catch {}
+
+  const sorted = Array.from(map.values()).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
+
+  return sorted.slice(0, limit);
 }
