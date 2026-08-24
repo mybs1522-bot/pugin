@@ -591,10 +591,10 @@
 
       <div style="display:flex; gap:8px; margin-top:12px;">
         <button class="btn" id="renderBtn" onclick="triggerAIRender()" style="flex:1; background:linear-gradient(135deg, #4f46e5, #9333ea); margin-top:0;">
-          ✨ Render Photorealistic Image
+          Create Render
         </button>
         <button class="btn" id="recaptureBtn" onclick="requestViewportCapture()" style="width:auto; padding:0 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#a1a1aa; font-size:11px; margin-top:0;" title="Re-capture SketchUp screen">
-          📸 Refresh
+          Refresh
         </button>
       </div>
       <div id="status"></div>
@@ -611,7 +611,7 @@
         <div class="img-box" id="viewportBox">
           <div class="placeholder-state" id="viewportPlaceholder">
             <div style="font-size:32px; margin-bottom:8px;">📐</div>
-            <p>Click <b>Render Current Viewport</b> to capture your SketchUp screen.</p>
+            <p>Click <b>Create Render</b> to capture and render your SketchUp screen.</p>
           </div>
           <img id="viewportImg" src="" style="display:none; width:100%; height:auto;" alt="SketchUp Viewport Capture">
         </div>
@@ -1449,7 +1449,7 @@
       const renderBtn = document.getElementById('renderBtn');
       if (renderBtn) {
         renderBtn.disabled = false;
-        renderBtn.innerHTML = '✨ Render Photorealistic Image';
+        renderBtn.innerHTML = 'Create Render';
         renderBtn.style.background = 'linear-gradient(135deg, #4f46e5, #9333ea)';
         renderBtn.style.color = '#ffffff';
         renderBtn.style.fontWeight = '700';
