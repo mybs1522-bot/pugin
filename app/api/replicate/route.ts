@@ -340,102 +340,30 @@ export async function POST(request: Request) {
 
     const prompt = buildPhotorealisticPrompt(questionnaire);
 
-    const defaultGeminiKey = Buffer.from(
-      "QVEuQWI4Uk42TC0yeUNiMWpBSnQtTzZpMllxR2Q1VUVWMWxfenpMS2hlSXl3MG4wLVRscXc=",
-      "base64"
-    ).toString("utf-8");
-
-    const geminiKey = process.env.GEMINI_API_KEY || defaultGeminiKey;
-
-    const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
-    const mimeType = match ? match[1] : "image/png";
-    const base64Data = match ? match[2] : image;
-
     const userModels = await getUserModels(normEmail);
-    const assignedModel = userModels.imageModel || "google/nano-banana-pro";
+    const assignedModel =
+      req.model || userModels.imageModel || GOOGLE_NANO_MODEL;
 
     console.log(
       `Generating render via model (${assignedModel}) for ${normEmail}...`
     );
 
-    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${geminiKey}`;
+    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
+    const replicate = new Replicate({ auth: apiToken });
 
-    let imageUri: string | null = null;
+    // Create asynchronous prediction (completes in ~300ms, eliminating Vercel invocation timeouts!)
+    const prediction = await replicate.predictions.create({
+      model: assignedModel,
+      input: buildModelInput(assignedModel, prompt, image),
+    });
 
-    try {
-      const res = await fetch(googleUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Data,
-                  },
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            responseModalities: ["TEXT", "IMAGE"],
-          },
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const candidate = data.candidates?.[0];
-        const parts = candidate?.content?.parts || [];
-
-        for (const part of parts) {
-          if (part.inlineData && part.inlineData.data) {
-            const outMime = part.inlineData.mimeType || "image/png";
-            imageUri = `data:${outMime};base64,${part.inlineData.data}`;
-            break;
-          }
-        }
-      }
-    } catch (geminiErr) {
-      console.warn("Gemini direct vision call notice:", geminiErr);
-    }
-
-    // High-speed photorealistic architectural render fallback via Replicate (3-5s execution)
-    if (!imageUri) {
-      const apiToken =
-        process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
-      const replicate = new Replicate({ auth: apiToken });
-
-      const output = await replicate.run("black-forest-labs/flux-schnell", {
-        input: {
-          prompt: prompt,
-          aspect_ratio: "16:9",
-          num_outputs: 1,
-          output_format: "jpg",
-        },
-      });
-
-      const resolvedUrl = await resolveOutputUrl(output);
-      if (resolvedUrl) {
-        imageUri = resolvedUrl;
-      }
-    }
-
-    if (!imageUri) {
-      throw new Error("AI render engine returned no image output.");
-    }
-
-    await incrementImageCount(normEmail, "gemini-3.6-flash");
-
-    return NextResponse.json(
-      { success: true, output: [imageUri], model: "gemini-3.6-flash" },
-      { status: 200 }
-    );
+    return NextResponse.json({
+      success: true,
+      predictionId: prediction.id,
+      model: assignedModel,
+    });
   } catch (err) {
-    console.error("Google AI Studio API error:", err);
+    console.error("Render API error:", err);
     const raw =
       err instanceof Error ? err.message : "An unexpected error occurred";
     return NextResponse.json({ error: raw }, { status: 400 });
