@@ -188,6 +188,20 @@ function ModelBadge({ model }: { model?: string }) {
       </span>
     );
   }
+  if (model.includes("seedream") || model.includes("bytedance")) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-cyan-500/20 bg-cyan-500/15 px-2 py-0.5 text-xs font-semibold text-cyan-300">
+        🌊 SeaDream 4.5
+      </span>
+    );
+  }
+  if (model.includes("flux")) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-purple-500/20 bg-purple-500/15 px-2 py-0.5 text-xs font-semibold text-purple-300">
+        🎨 FLUX Depth Pro
+      </span>
+    );
+  }
   if (model.includes("instruct-pix2pix")) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md border border-purple-500/20 bg-purple-500/15 px-2 py-0.5 text-xs font-semibold text-purple-300">
@@ -1048,11 +1062,14 @@ function Dashboard() {
                               <option value="google/nano-banana-2">
                                 ⚡ Google Nano Banana 2
                               </option>
+                              <option value="bytedance/seedream-4.5">
+                                🌊 ByteDance SeaDream 4.5 (Replicate)
+                              </option>
                               <option value="flux-depth-pro">
-                                🎨 FLUX Depth Pro
+                                🎨 FLUX Depth Pro (Replicate)
                               </option>
                               <option value="sdxl-controlnet">
-                                🌆 SDXL ControlNet
+                                🌆 SDXL ControlNet (Replicate)
                               </option>
                             </select>
                           </td>

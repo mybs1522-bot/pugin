@@ -201,6 +201,7 @@ export async function getSupportTickets(): Promise<SupportTicket[]> {
       .from("support_tickets")
       .select("*")
       .neq("category", "system_render_log")
+      .neq("category", "user_model_config")
       .order("updated_at", { ascending: false });
 
     if (data && data.length > 0) {

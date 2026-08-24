@@ -201,6 +201,14 @@ function buildModelInput(
   image: string,
   aspect_ratio?: string
 ) {
+  if (modelId.includes("seedream") || modelId.includes("bytedance")) {
+    return {
+      prompt,
+      image_input: [image],
+      aspect_ratio: aspect_ratio || "match_input_image",
+      size: "2K",
+    };
+  }
   if (modelId.includes("pix2pix")) {
     return {
       image: image,
@@ -494,9 +502,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // Case 2: Replicate Models (FLUX Depth Pro, SDXL ControlNet, etc.)
+    // Case 2: Replicate Models (ByteDance SeaDream 4.5, FLUX Depth Pro, SDXL ControlNet, etc.)
     let replicateModel = assignedModel;
-    if (assignedModel === "flux-depth-pro") {
+    if (
+      assignedModel === "seedream-4.5" ||
+      assignedModel === "bytedance/seedream-4.5"
+    ) {
+      replicateModel = "bytedance/seedream-4.5";
+    } else if (assignedModel === "flux-depth-pro") {
       replicateModel = "black-forest-labs/flux-depth-pro";
     } else if (assignedModel === "sdxl-controlnet") {
       replicateModel = "lucataco/sdxl-controlnet";

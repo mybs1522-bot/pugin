@@ -67,12 +67,15 @@ function saveDiskUserRecord(u: { email: string } & UserRecord) {
   }
 }
 
-// In-memory fallback store to ensure zero data loss
 const memoryPaidUsers = new Map<string, { isPaid: boolean; mode: string }>();
 const memoryUserStatuses = new Map<string, "paid" | "trial" | "cancelled">();
 const memoryActiveSessions = new Map<string, string>(); // email -> activeSessionId
 const memoryUserLogins = new Map<string, string>(); // email -> lastLoginAt
 const memoryLastModels = new Map<string, string>(); // email -> lastModelUsed
+const memoryUserModels = new Map<
+  string,
+  { imageModel: string; videoModel: string }
+>(); // email -> assigned models
 const memoryUserCounts = new Map<
   string,
   {
@@ -244,15 +247,58 @@ export async function getUserModels(
   email: string
 ): Promise<{ imageModel: string; videoModel: string }> {
   const norm = email.toLowerCase().trim();
-  const memStatus = memoryUserStatuses.get(norm);
+
+  // 1. Check in-memory fast cache
+  const mem = memoryUserModels.get(norm);
+  if (mem && mem.imageModel) {
+    return mem;
+  }
+
+  // 2. Check Supabase permanent storage (support_tickets table with category user_model_config)
+  try {
+    const { data } = await getSupabaseAdmin()
+      .from("support_tickets")
+      .select("messages_json, message")
+      .eq("category", "user_model_config")
+      .eq("email", norm)
+      .limit(1)
+      .single();
+
+    if (data && data.messages_json) {
+      try {
+        const parsed = JSON.parse(data.messages_json);
+        if (parsed.imageModel) {
+          const res = {
+            imageModel: parsed.imageModel,
+            videoModel:
+              parsed.videoModel || "stability-ai/stable-video-diffusion",
+          };
+          memoryUserModels.set(norm, res);
+          return res;
+        }
+      } catch {}
+    } else if (data && data.message) {
+      const res = {
+        imageModel: data.message,
+        videoModel: "stability-ai/stable-video-diffusion",
+      };
+      memoryUserModels.set(norm, res);
+      return res;
+    }
+  } catch (err) {
+    console.warn("Supabase getUserModels read warning:", err);
+  }
+
+  // 3. Check disk fallback
   const diskMap = loadDiskUsers();
   const diskUser = diskMap.get(norm);
-
   const imageModel = diskUser?.imageModel || "google/nano-banana-pro";
   const videoModel =
     diskUser?.videoModel || "stability-ai/stable-video-diffusion";
+  const res = { imageModel, videoModel };
+  memoryUserModels.set(norm, res);
 
-  return { imageModel, videoModel };
+  return res;
 }
 
 export async function setUserModels(
@@ -261,10 +307,37 @@ export async function setUserModels(
   videoModel: string
 ): Promise<boolean> {
   const norm = email.toLowerCase().trim();
-  const diskMap = loadDiskUsers();
-  const existing = diskMap.get(norm);
   const now = new Date().toISOString();
 
+  // 1. Update in-memory map
+  memoryUserModels.set(norm, { imageModel, videoModel });
+  memoryLastModels.set(norm, imageModel);
+
+  // 2. Save permanently to Supabase support_tickets table
+  const configId = `user_config_${norm.replace(/[^a-zA-Z0-9]/g, "_")}`;
+  try {
+    await getSupabaseAdmin()
+      .from("support_tickets")
+      .upsert({
+        id: configId,
+        email: norm,
+        category: "user_model_config",
+        message: imageModel,
+        messages_json: JSON.stringify({
+          imageModel,
+          videoModel,
+          updatedAt: now,
+        }),
+        status: "active",
+        updated_at: now,
+      });
+  } catch (err) {
+    console.warn("Supabase setUserModels write warning:", err);
+  }
+
+  // 3. Update disk registry
+  const diskMap = loadDiskUsers();
+  const existing = diskMap.get(norm);
   saveDiskUserRecord({
     email: norm,
     count: existing?.count || 0,
@@ -715,14 +788,62 @@ export async function getAllUsers(): Promise<
         });
       }
     );
+
+    // Also load assigned model configurations from Supabase
+    try {
+      const { data: configs } = await getSupabaseAdmin()
+        .from("support_tickets")
+        .select("email, messages_json, message")
+        .eq("category", "user_model_config");
+
+      (configs || []).forEach(
+        (c: { email: string; messages_json?: string; message?: string }) => {
+          const key = c.email.toLowerCase().trim();
+          let imgModel = c.message || "google/nano-banana-pro";
+          let vidModel = "stability-ai/stable-video-diffusion";
+          try {
+            if (c.messages_json) {
+              const parsed = JSON.parse(c.messages_json);
+              if (parsed.imageModel) imgModel = parsed.imageModel;
+              if (parsed.videoModel) vidModel = parsed.videoModel;
+            }
+          } catch {}
+
+          memoryUserModels.set(key, {
+            imageModel: imgModel,
+            videoModel: vidModel,
+          });
+
+          const existing = map.get(key);
+          if (existing) {
+            existing.imageModel = imgModel;
+            existing.videoModel = vidModel;
+            existing.lastModelUsed = imgModel;
+          }
+        }
+      );
+    } catch (cfgErr) {
+      console.warn("Supabase user_model_config fetch warning:", cfgErr);
+    }
   } catch (err) {
     console.warn("Supabase fetch warning in getAllUsers:", err);
   }
 
-  return Array.from(map.values()).map((u) => ({
-    ...u,
-    status: u.status || (u.isPaid ? "paid" : "trial"),
-  }));
+  return Array.from(map.values()).map((u) => {
+    const key = u.email.toLowerCase().trim();
+    const assigned = memoryUserModels.get(key) || {
+      imageModel: u.imageModel || "google/nano-banana-pro",
+      videoModel: u.videoModel || "stability-ai/stable-video-diffusion",
+    };
+    return {
+      ...u,
+      imageModel: assigned.imageModel,
+      videoModel: assigned.videoModel,
+      lastModelUsed:
+        assigned.imageModel || u.lastModelUsed || "google/nano-banana-pro",
+      status: u.status || (u.isPaid ? "paid" : "trial"),
+    };
+  });
 }
 
 /* ─── RENDER AUDIT & EXECUTION LOGS ───────────────────────────────────────── */
