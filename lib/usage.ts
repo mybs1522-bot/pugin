@@ -375,12 +375,12 @@ export async function getImageCount(email: string): Promise<number> {
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
-      .select("image_count, count")
+      .select("count")
       .eq("email", norm)
       .single();
 
-    const row = data as { image_count?: number; count?: number } | null;
-    dbCount = row?.image_count ?? row?.count ?? 0;
+    const row = data as { count?: number } | null;
+    dbCount = row?.count ?? 0;
 
     if (dbCount > mem.imageCount) {
       mem.imageCount = dbCount;
@@ -396,12 +396,12 @@ export async function getVideoCount(email: string): Promise<number> {
   try {
     const { data } = await getSupabaseAdmin()
       .from("user_usage")
-      .select("video_count")
+      .select("count")
       .eq("email", norm)
       .single();
 
-    const row = data as { video_count?: number } | null;
-    const dbVid = row?.video_count ?? 0;
+    const row = data as { count?: number } | null;
+    const dbVid = row?.count ?? 0;
     return Math.max(dbVid, mem.videoCount);
   } catch {
     return mem.videoCount;
@@ -415,7 +415,7 @@ export async function getGenerationCount(email: string): Promise<number> {
   try {
     const { data, error } = await getSupabaseAdmin()
       .from("user_usage")
-      .select("count, image_count, video_count")
+      .select("count")
       .eq("email", norm)
       .single();
 
@@ -423,13 +423,8 @@ export async function getGenerationCount(email: string): Promise<number> {
       return mem.count;
     }
 
-    const row = data as {
-      count?: number;
-      image_count?: number;
-      video_count?: number;
-    };
-    const dbCount =
-      row.count ?? (row.image_count || 0) + (row.video_count || 0);
+    const row = data as { count?: number };
+    const dbCount = row.count ?? 0;
 
     const finalCount = Math.max(dbCount, mem.count);
     mem.count = finalCount;
@@ -474,21 +469,11 @@ export async function incrementImageCount(
   });
 
   try {
-    const { error } = await getSupabaseAdmin().from("user_usage").upsert({
+    await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
-      image_count: nextImg,
       count: nextTotal,
-      last_model_used: modelUsed,
       last_active_at: now,
     });
-
-    if (error) {
-      await getSupabaseAdmin().from("user_usage").upsert({
-        email: norm,
-        count: nextTotal,
-        last_active_at: now,
-      });
-    }
   } catch (err) {
     console.warn("Supabase image increment warning:", err);
   }
@@ -531,21 +516,11 @@ export async function incrementVideoCount(
   });
 
   try {
-    const { error } = await getSupabaseAdmin().from("user_usage").upsert({
+    await getSupabaseAdmin().from("user_usage").upsert({
       email: norm,
-      video_count: nextVid,
       count: nextTotal,
-      last_model_used: modelUsed,
       last_active_at: now,
     });
-
-    if (error) {
-      await getSupabaseAdmin().from("user_usage").upsert({
-        email: norm,
-        count: nextTotal,
-        last_active_at: now,
-      });
-    }
   } catch (err) {
     console.warn("Supabase video increment warning:", err);
   }

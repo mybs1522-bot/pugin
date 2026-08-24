@@ -75,13 +75,12 @@ export async function GET(request: Request) {
       const { getSupabaseAdmin } = await import("@/lib/supabase");
       const { data, error } = await getSupabaseAdmin()
         .from("user_usage")
-        .select("image_count, count, is_paid")
+        .select("count, is_paid")
         .eq("email", normEmail)
         .single();
 
       if (!error && data) {
         const row = data as {
-          image_count?: number;
           count?: number;
           is_paid?: boolean;
         };
@@ -94,7 +93,7 @@ export async function GET(request: Request) {
             source: "supabase",
           });
         }
-        dbCount = Math.max(row.image_count ?? 0, row.count ?? 0);
+        dbCount = row.count ?? 0;
       }
     } catch {
       // Supabase unavailable — rely on other sources
