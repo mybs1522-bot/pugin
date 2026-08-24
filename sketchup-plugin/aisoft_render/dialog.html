@@ -554,7 +554,7 @@
 
       <div style="display:flex; gap:8px; margin-top:12px;">
         <button class="btn" id="renderBtn" onclick="triggerAIRender()" style="flex:1; background:linear-gradient(135deg, #4f46e5, #9333ea); margin-top:0;">
-          ✨ Render Photorealistic AI Image
+          ✨ Render Photorealistic Image
         </button>
         <button class="btn" id="recaptureBtn" onclick="requestViewportCapture()" style="width:auto; padding:0 14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#a1a1aa; font-size:11px; margin-top:0;" title="Re-capture SketchUp screen">
           📸 Refresh
@@ -584,7 +584,7 @@
       <div class="preview-card">
         <div class="preview-title" style="right: 14px; width: calc(100% - 28px); justify-content: space-between;">
           <div style="display:flex; align-items:center; gap:6px;">
-            2. AI Render & Walkthrough
+            2. Render & Walkthrough
             <span id="aiBadge">Output</span>
           </div>
           <div id="viewModeToggle" style="display:none; gap:6px;">
@@ -598,10 +598,15 @@
             <p>Rendered image or 3D video walkthrough will appear here.</p>
           </div>
 
-          <div class="placeholder-state" id="aiLoading" style="display:none;">
-            <div class="spinner"></div>
-            <p id="loadingTitle"><b>Generating AI Render...</b></p>
-            <p id="loadingSub" style="font-size:11px; margin-top:4px;">Processing PBR lighting & materials</p>
+          <div class="placeholder-state" id="aiLoading" style="display:none; text-align:center;">
+            <div style="width: 100%; max-width: 180px; margin: 0 auto 16px auto;">
+              <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                <div id="renderProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4f46e5, #a855f7); border-radius: 2px; transition: width 0.4s ease-out;"></div>
+              </div>
+            </div>
+            <p id="loadingPercentage" style="font-size: 24px; font-weight: 700; color: #fff; margin: 0 0 8px 0; font-family: monospace;">0%</p>
+            <p id="loadingTitle" style="margin:0;"><b>Generating Render...</b></p>
+            <p id="loadingSub" style="font-size:11px; margin-top:4px; color:#a1a1aa;">Processing PBR lighting & materials</p>
           </div>
 
           <!-- TRIAL LIMITS OVER RENDER AREA CARD -->
@@ -1486,7 +1491,9 @@
       document.getElementById('aiTrialOver').style.display = 'none';
       document.getElementById('aiImg').style.display = 'none';
       document.getElementById('aiVideo').style.display = 'none';
-      document.getElementById('loadingTitle').innerHTML = '<b>Generating AI Render...</b>';
+      document.getElementById('loadingPercentage').innerText = '0%';
+      document.getElementById('renderProgressBar').style.width = '0%';
+      document.getElementById('loadingTitle').innerHTML = '<b>Generating Render...</b>';
       document.getElementById('loadingSub').innerHTML = 'Processing PBR lighting & materials';
       document.getElementById('aiLoading').style.display = 'block';
       document.getElementById('downloadLink').style.display = 'none';
@@ -1531,11 +1538,17 @@
             const predictionId = data.predictionId;
             let elapsed = 0;
 
+            // Advance progress rapidly up to 95% over ~20 seconds
             while (true) {
               await new Promise(r => setTimeout(r, 2000));
               elapsed += 2;
-              showStatus(`✨ Rendering Photorealistic AI Image (${elapsed}s)...`, 'loading');
-              document.getElementById('loadingSub').innerHTML = `Processing photorealistic spatial rendering (${elapsed}s)`;
+              
+              let progress = Math.min(95, Math.round((elapsed / 22) * 100));
+              document.getElementById('loadingPercentage').innerText = progress + '%';
+              document.getElementById('renderProgressBar').style.width = progress + '%';
+              
+              showStatus(`✨ Rendering Photorealistic Image...`, 'loading');
+              document.getElementById('loadingSub').innerHTML = `Refining details and lighting...`;
 
               try {
                 const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
@@ -1543,6 +1556,8 @@
                 const pollData = await parseResponseJson(pollRes);
 
                 if (pollData.done) {
+                  document.getElementById('loadingPercentage').innerText = '100%';
+                  document.getElementById('renderProgressBar').style.width = '100%';
                   if (pollData.status === 'succeeded' && pollData.output && pollData.output.length > 0) {
                     imgUrl = pollData.output[0];
                     break;
