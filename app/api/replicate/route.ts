@@ -365,56 +365,91 @@ export async function POST(request: Request) {
       assignedModel.includes("nano-banana") ||
       assignedModel.includes("gemini")
     ) {
-      let googleModel = "nano-banana-pro-preview";
-      if (assignedModel === "google/nano-banana-2") {
-        googleModel = "gemini-3-pro-image-preview";
-      }
-
-      const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:generateContent?key=${geminiKey}`;
-
-      const res = await fetch(googleUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inline_data: {
-                    mime_type: mimeType,
-                    data: base64Data,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        console.error("Google AI Studio error:", res.status, errData);
-        throw new Error(
-          errData.error?.message || `Google AI Studio HTTP ${res.status}`
-        );
-      }
-
-      const data = await res.json();
-      const candidate = data.candidates?.[0];
-      const parts = candidate?.content?.parts || [];
+      const candidateModels = [
+        assignedModel === "google/nano-banana-2"
+          ? "gemini-3-pro-image-preview"
+          : "nano-banana-pro-preview",
+        "gemini-3.1-flash-image-preview",
+        "gemini-3-pro-image-preview",
+      ];
 
       let imageUri: string | null = null;
-      for (const part of parts) {
-        if (part.inlineData && part.inlineData.data) {
-          const outMime = part.inlineData.mimeType || "image/jpeg";
-          imageUri = `data:${outMime};base64,${part.inlineData.data}`;
-          break;
+      let usedModel = candidateModels[0];
+      let lastError: string | null = null;
+
+      for (const googleModel of candidateModels) {
+        try {
+          console.log(`Attempting render with Google model: ${googleModel}...`);
+          const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:generateContent?key=${geminiKey}`;
+
+          const res = await fetch(googleUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    { text: prompt },
+                    {
+                      inline_data: {
+                        mime_type: mimeType,
+                        data: base64Data,
+                      },
+                    },
+                  ],
+                },
+              ],
+            }),
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg =
+              errData.error?.message || `Google AI Studio HTTP ${res.status}`;
+            console.warn(`Model ${googleModel} returned error: ${errMsg}`);
+            lastError = errMsg;
+            // If experiencing high demand (503/429), smoothly cascade to the next available model
+            if (
+              res.status === 503 ||
+              res.status === 429 ||
+              errMsg.includes("demand") ||
+              errMsg.includes("quota")
+            ) {
+              continue;
+            }
+            throw new Error(errMsg);
+          }
+
+          const data = await res.json();
+          const candidate = data.candidates?.[0];
+          const parts = candidate?.content?.parts || [];
+
+          for (const part of parts) {
+            if (part.inlineData && part.inlineData.data) {
+              const outMime = part.inlineData.mimeType || "image/jpeg";
+              imageUri = `data:${outMime};base64,${part.inlineData.data}`;
+              usedModel = googleModel;
+              break;
+            }
+          }
+
+          if (imageUri) {
+            console.log(`Render succeeded using Google model: ${googleModel}`);
+            break;
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : String(err);
+          console.warn(
+            `Error on ${googleModel}, attempting fallback...`,
+            lastError
+          );
         }
       }
 
       if (!imageUri) {
-        throw new Error("Google AI Studio returned no image output.");
+        throw new Error(
+          lastError || "Google AI Studio returned no image output."
+        );
       }
 
       await incrementImageCount(normEmail, assignedModel);
@@ -422,7 +457,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         output: [imageUri],
-        model: assignedModel,
+        model: usedModel,
       });
     }
 
