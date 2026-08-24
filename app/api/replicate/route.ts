@@ -351,63 +351,101 @@ export async function POST(request: Request) {
     const mimeType = match ? match[1] : "image/png";
     const base64Data = match ? match[2] : image;
 
+    const userModels = await getUserModels(normEmail);
+    const assignedModel =
+      userModels.imageModel || req.model || "google/nano-banana-pro";
+
     console.log(
-      `Generating render via Google AI Studio Nano Banana Pro for ${normEmail}...`
+      `Generating render for ${normEmail} using assigned model: ${assignedModel}...`
     );
 
-    const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/nano-banana-pro-preview:generateContent?key=${geminiKey}`;
-
-    const res = await fetch(googleUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: mimeType,
-                  data: base64Data,
-                },
-              },
-            ],
-          },
-        ],
-      }),
-    });
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      console.error("Google AI Studio error:", res.status, errData);
-      throw new Error(
-        errData.error?.message || `Google AI Studio HTTP ${res.status}`
-      );
-    }
-
-    const data = await res.json();
-    const candidate = data.candidates?.[0];
-    const parts = candidate?.content?.parts || [];
-
-    let imageUri: string | null = null;
-    for (const part of parts) {
-      if (part.inlineData && part.inlineData.data) {
-        const outMime = part.inlineData.mimeType || "image/jpeg";
-        imageUri = `data:${outMime};base64,${part.inlineData.data}`;
-        break;
+    // Case 1: Google Gemini AI Studio Native Models (Nano Banana Pro / Gemini 3 Image)
+    if (
+      assignedModel.startsWith("google/") ||
+      assignedModel.includes("nano-banana") ||
+      assignedModel.includes("gemini")
+    ) {
+      let googleModel = "nano-banana-pro-preview";
+      if (assignedModel === "google/nano-banana-2") {
+        googleModel = "gemini-3-pro-image-preview";
       }
+
+      const googleUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:generateContent?key=${geminiKey}`;
+
+      const res = await fetch(googleUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data,
+                  },
+                },
+              ],
+            },
+          ],
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error("Google AI Studio error:", res.status, errData);
+        throw new Error(
+          errData.error?.message || `Google AI Studio HTTP ${res.status}`
+        );
+      }
+
+      const data = await res.json();
+      const candidate = data.candidates?.[0];
+      const parts = candidate?.content?.parts || [];
+
+      let imageUri: string | null = null;
+      for (const part of parts) {
+        if (part.inlineData && part.inlineData.data) {
+          const outMime = part.inlineData.mimeType || "image/jpeg";
+          imageUri = `data:${outMime};base64,${part.inlineData.data}`;
+          break;
+        }
+      }
+
+      if (!imageUri) {
+        throw new Error("Google AI Studio returned no image output.");
+      }
+
+      await incrementImageCount(normEmail, assignedModel);
+
+      return NextResponse.json({
+        success: true,
+        output: [imageUri],
+        model: assignedModel,
+      });
     }
 
-    if (!imageUri) {
-      throw new Error("Nano Banana Pro returned no image output.");
+    // Case 2: Replicate Models (FLUX Depth Pro, SDXL ControlNet, etc.)
+    let replicateModel = assignedModel;
+    if (assignedModel === "flux-depth-pro") {
+      replicateModel = "black-forest-labs/flux-depth-pro";
+    } else if (assignedModel === "sdxl-controlnet") {
+      replicateModel = "lucataco/sdxl-controlnet";
     }
 
-    await incrementImageCount(normEmail, "google/nano-banana-pro");
+    const apiToken = process.env.REPLICATE_API_TOKEN || DEFAULT_REPLICATE_TOKEN;
+    const replicate = new Replicate({ auth: apiToken });
+
+    const prediction = await replicate.predictions.create({
+      model: replicateModel,
+      input: buildModelInput(replicateModel, prompt, image),
+    });
 
     return NextResponse.json({
       success: true,
-      output: [imageUri],
-      model: "google/nano-banana-pro",
+      predictionId: prediction.id,
+      model: assignedModel,
     });
   } catch (err) {
     console.error("Render API error:", err);

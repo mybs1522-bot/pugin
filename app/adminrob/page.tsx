@@ -416,7 +416,7 @@ function Dashboard() {
           trialUsers,
           exhaustedUsers: 0,
           paidUsers,
-          trialLimit: 3,
+          trialLimit: 10,
         },
         users: mergedUsers,
       });
@@ -580,7 +580,7 @@ function Dashboard() {
   }
 
   const users = data?.users ?? [];
-  const limit = data?.stats?.trialLimit ?? 3;
+  const limit = data?.stats?.trialLimit ?? 10;
 
   const filtered = users.filter((u) =>
     u.email.toLowerCase().includes(search.toLowerCase())

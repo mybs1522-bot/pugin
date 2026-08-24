@@ -309,7 +309,7 @@ export default function AdminPage() {
                     color: "bg-emerald-500",
                   },
                   {
-                    label: "Tried (1–2 renders)",
+                    label: "Tried (1–9 renders)",
                     count: data.users.filter(
                       (u) => u.count > 0 && u.count < stats.trialLimit
                     ).length,
