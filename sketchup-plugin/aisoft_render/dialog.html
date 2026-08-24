@@ -969,6 +969,8 @@
         
         if (trialData && trialData.allowed === false) {
           showTrialOverState();
+        } else {
+          resetTrialOverState();
         }
       } catch (err) {
         console.warn('Trial status check on load failed:', err);
@@ -1099,6 +1101,7 @@
       userEmail = null;
       userSessionId = null;
       resetAuthForm();
+      resetTrialOverState();
       document.getElementById('authModal').style.display = 'flex';
     }
 
@@ -1345,6 +1348,28 @@
 
       showStatus('⚡ Trial Limits are over to render more. Activate Pro Plan to continue.', 'error');
       showTrialOverModal();
+    }
+
+    function resetTrialOverState() {
+      const trialState = document.getElementById('aiTrialOver');
+      if (trialState) trialState.style.display = 'none';
+
+      const renderBtn = document.getElementById('renderBtn');
+      if (renderBtn) {
+        renderBtn.disabled = false;
+        renderBtn.innerHTML = '✨ Render Photorealistic AI Image';
+        renderBtn.style.background = 'linear-gradient(135deg, #4f46e5, #9333ea)';
+        renderBtn.style.color = '#ffffff';
+        renderBtn.style.fontWeight = '700';
+        renderBtn.onclick = triggerAIRender;
+      }
+
+      const aiPlaceholder = document.getElementById('aiPlaceholder');
+      const aiImg = document.getElementById('aiImg');
+      const aiVideo = document.getElementById('aiVideo');
+      if (aiPlaceholder && (!aiImg || aiImg.style.display === 'none') && (!aiVideo || aiVideo.style.display === 'none')) {
+        aiPlaceholder.style.display = 'block';
+      }
     }
 
     let capturedViewportImageData = null;
