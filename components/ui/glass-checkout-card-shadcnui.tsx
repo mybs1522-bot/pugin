@@ -228,7 +228,7 @@ export function GlassCheckoutCard({
             >
               <div className="flex w-full items-center justify-between">
                 <span className="text-xs font-bold tracking-wider text-white uppercase">
-                  Monthly
+                  Pay Monthly
                 </span>
                 <span className="text-sm font-black text-white">
                   $20
@@ -260,7 +260,7 @@ export function GlassCheckoutCard({
               </div>
               <div className="flex w-full items-center justify-between">
                 <span className="text-xs font-bold tracking-wider text-white uppercase">
-                  Yearly
+                  Pay Yearly
                 </span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-[10px] text-zinc-500 line-through">
@@ -375,8 +375,7 @@ export function GlassCheckoutCard({
           <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-zinc-400">
             <Lock className="h-3 w-3 text-zinc-300" />
             <span>
-              $0.00 charged today. 14 days free trial with 2,000 Renders. Cancel
-              anytime in 1 click.
+              $0.00 charged today. 14 days free trial. Cancel anytime.
             </span>
           </div>
         </form>

@@ -235,7 +235,7 @@ function UnifiedTrialForm({
         >
           <div className="flex w-full items-center justify-between">
             <span className="text-xs font-bold tracking-wider text-white uppercase">
-              Monthly
+              Pay Monthly
             </span>
             <span className="text-sm font-black text-white">
               $20
@@ -243,7 +243,7 @@ function UnifiedTrialForm({
             </span>
           </div>
           <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
-            14 Days Free • 2,000 Renders
+            14 Days Free • Then $20/mo
           </span>
         </button>
 
@@ -265,7 +265,7 @@ function UnifiedTrialForm({
           </div>
           <div className="flex w-full items-center justify-between">
             <span className="text-xs font-bold tracking-wider text-white uppercase">
-              Yearly
+              Pay Yearly
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-[10px] text-zinc-500 line-through">
@@ -280,7 +280,7 @@ function UnifiedTrialForm({
             </div>
           </div>
           <span className="mt-1.5 text-[11px] font-semibold text-zinc-300">
-            $15/mo • 2,000 Renders/mo (Save $60/yr)
+            14 Days Free • Then $15/mo ($180/yr)
           </span>
         </button>
       </div>
@@ -366,8 +366,7 @@ function UnifiedTrialForm({
 
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">
           <Lock className="mr-1 inline-block h-3 w-3 text-zinc-300" />
-          $0.00 charged today. 14 days free trial with 2,000 Renders. Cancel
-          anytime in 1 click.
+          $0.00 charged today. 14 days free trial. Cancel anytime.
         </p>
       </form>
     </div>
