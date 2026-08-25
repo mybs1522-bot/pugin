@@ -1705,14 +1705,14 @@
         <div class="folder-pocket-wrapper" onclick="toggleGalleryModal(true)">
           <div class="folder-back-panel"></div>
           <div class="folder-card-stack" id="folderCardStack">
-            <div class="folder-mini-photo" style="transform: translateY(-8px) rotate(-6deg); z-index: 1;">
-              <img id="folderThumb1" src="/master_prompt_render.png" alt="Thumb">
+            <div class="folder-mini-photo" style="transform: translateY(-8px) rotate(-6deg); z-index: 1; background: #121216; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.08);">
+              <span style="font-size: 13px; opacity: 0.4;">🖼️</span>
             </div>
-            <div class="folder-mini-photo" style="transform: translateY(-12px) rotate(0deg); z-index: 2;">
-              <img id="folderThumb2" src="/master_prompt_render.png" alt="Thumb">
+            <div class="folder-mini-photo" style="transform: translateY(-12px) rotate(0deg); z-index: 2; background: #18181b; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.12);">
+              <span style="font-size: 13px; opacity: 0.4;">🖼️</span>
             </div>
-            <div class="folder-mini-photo" style="transform: translateY(-8px) rotate(6deg); z-index: 3;">
-              <img id="folderThumb3" src="/master_prompt_render.png" alt="Thumb">
+            <div class="folder-mini-photo" style="transform: translateY(-8px) rotate(6deg); z-index: 3; background: #222228; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.18);">
+              <span style="font-size: 13px; opacity: 0.5;">🖼️</span>
             </div>
           </div>
           <div class="folder-front-panel">
@@ -1788,7 +1788,7 @@
     const TOTAL_TILES = 16;
     const TILE_SPIRAL_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
 
-    function startGpuProgressiveSimulation(targetImageUrl) {
+    function startGpuProgressiveSimulation(targetImageUrl, onComplete) {
       const gpuLayer = document.getElementById('gpuRenderLayer');
       const gpuImg = document.getElementById('gpuTargetImg');
       const cadOverlay = document.getElementById('cadOverlay');
@@ -1881,7 +1881,11 @@
       setTimeout(() => {
         pctVal.textContent = '100%';
         gpuLayer.style.display = 'none';
-        triggerFlightToFolder(targetImageUrl);
+        if (typeof onComplete === 'function') {
+          onComplete();
+        } else {
+          triggerFlightToFolder(targetImageUrl);
+        }
       }, 6400);
     }
   </script>
@@ -3049,26 +3053,35 @@
 
           if (imgUrl) {
             lastRenderUrl = imgUrl;
-            // Record render increment in client localStorage
             const currentLocal = parseInt(localStorage.getItem(localKey) || '0', 10);
             const serverCount = (typeof data.count === 'number') ? data.count : (currentLocal + 1);
             localStorage.setItem(localKey, serverCount.toString());
-            saveToPastRenders(imgUrl, 'image');
 
-            showStatus('✓ Render complete!', 'success');
-            document.getElementById('renderBtn').disabled = false;
-            
             document.getElementById('aiLoading').style.display = 'none';
-            const aiImg = document.getElementById('aiImg');
-            aiImg.src = imgUrl;
-            
-            switchPreviewMode('image');
 
-            const dlBtn = document.getElementById('downloadLink');
-            dlBtn.href = imgUrl;
-            dlBtn.style.display = 'inline-block';
+            // Run GPU simulation ON THE REAL RENDERED 4K IMAGE
+            startGpuProgressiveSimulation(imgUrl, () => {
+              const aiImg = document.getElementById('aiImg');
+              aiImg.src = imgUrl;
+              aiImg.style.display = 'block';
+              
+              switchPreviewMode('image');
 
-            document.getElementById('videoBtn').style.display = 'inline-block';
+              showStatus('✓ Render complete!', 'success');
+              document.getElementById('renderBtn').disabled = false;
+
+              const dlBtn = document.getElementById('downloadLink');
+              dlBtn.href = imgUrl;
+              dlBtn.style.display = 'inline-block';
+
+              document.getElementById('videoBtn').style.display = 'inline-block';
+
+              // Smoothly trigger flight to folder
+              triggerFlightToFolder(imgUrl);
+
+              // Save to past renders and update folder stack
+              saveToPastRenders(imgUrl, 'image');
+            });
           }
         } else {
           const errMsg = data.error || 'Server error occurred during rendering.';
@@ -3392,6 +3405,7 @@
         }
 
         renderPastRendersGallery();
+        updateFolderStack();
       } catch (e) {
         console.warn('Failed to save to past renders:', e);
       }
@@ -3447,7 +3461,36 @@
       showStatus('Loaded past render from gallery', 'success');
     }
 
+    
+    function updateFolderStack() {
+      const list = getPastRenders();
+      const count = list.length;
+      
+      const folderBadge = document.getElementById('folderCountBadge');
+      const modalBadge = document.getElementById('modalCountBadge');
+      const pastCount = document.getElementById('pastRendersCount');
+      if (folderBadge) folderBadge.innerText = count.toString();
+      if (modalBadge) modalBadge.innerText = count + ' ' + (count === 1 ? 'render' : 'renders');
+      if (pastCount) pastCount.innerText = count + ' ' + (count === 1 ? 'render' : 'renders');
+
+      const stackContainer = document.getElementById('folderCardStack');
+      if (!stackContainer) return;
+
+      if (count === 0) {
+        stackContainer.innerHTML = '<div class="folder-mini-photo" style="transform: translateY(-8px) rotate(-6deg); z-index: 1; background: #121216; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.08);"><span style="font-size: 13px; opacity: 0.4;">🖼️</span></div><div class="folder-mini-photo" style="transform: translateY(-12px) rotate(0deg); z-index: 2; background: #18181b; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.12);"><span style="font-size: 13px; opacity: 0.4;">🖼️</span></div><div class="folder-mini-photo" style="transform: translateY(-8px) rotate(6deg); z-index: 3; background: #222228; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.18);"><span style="font-size: 13px; opacity: 0.5;">🖼️</span></div>';
+      } else {
+        const p1 = list[0] ? (list[0].thumb || list[0].poster || list[0].url) : '';
+        const p2 = list[1] ? (list[1].thumb || list[1].poster || list[1].url) : p1;
+        const p3 = list[2] ? (list[2].thumb || list[2].poster || list[2].url) : (p2 || p1);
+
+        stackContainer.innerHTML = '<div class="folder-mini-photo" style="transform: translateY(-8px) rotate(-6deg); z-index: 1;">' + (p3 ? '<img src="' + p3 + '" alt="Past Render" onerror="this.style.display=\'none\'">' : '<div style="background:#18181b; width:100%; height:100%;"></div>') + '</div>' +
+          '<div class="folder-mini-photo" style="transform: translateY(-12px) rotate(0deg); z-index: 2;">' + (p2 ? '<img src="' + p2 + '" alt="Past Render" onerror="this.style.display=\'none\'">' : '<div style="background:#18181b; width:100%; height:100%;"></div>') + '</div>' +
+          '<div class="folder-mini-photo" style="transform: translateY(-8px) rotate(6deg); z-index: 3;">' + (p1 ? '<img src="' + p1 + '" alt="Past Render" onerror="this.style.display=\'none\'">' : '<div style="background:#18181b; width:100%; height:100%;"></div>') + '</div>';
+      }
+    }
+  
     function renderPastRendersGallery() {
+      updateFolderStack();
       const container = document.getElementById('pastRendersCarousel');
       const countEl = document.getElementById('pastRendersCount');
       if (!container) return;
@@ -3513,14 +3556,7 @@
       }
     };
 
-    const origTriggerAIRender = window.triggerAIRender;
-    window.triggerAIRender = async function() {
-      const liveImage = capturedViewportImageData || document.getElementById('viewportImg').src;
-      startGpuProgressiveSimulation(liveImage);
-      if (typeof origTriggerAIRender === 'function') {
-        await origTriggerAIRender();
-      }
-    };
+// triggerAIRender now starts GPU progressive simulation on final render response
 
     const origOnViewportCaptured = window.onViewportCaptured;
     window.onViewportCaptured = function(result) {
