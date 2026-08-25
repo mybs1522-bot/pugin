@@ -2299,9 +2299,13 @@
 
     function updateHeaderUserBadge() {
       const badge = document.getElementById('userAccountBadge');
-      if (badge && userEmail) {
-        badge.innerHTML = `<span style="font-size:11px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; border-radius:9999px; color:#e4e4e7; display:inline-flex; align-items:center; gap:6px;">👤 <b>${userEmail}</b> <button onclick="signOutUser()" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:10px; text-decoration:underline;">Switch</button></span>`;
+      if (badge) {
+        const email = userEmail || localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || 'user@v6render.com';
+        badge.style.display = 'inline-flex';
+        badge.innerHTML = '<span style="font-size:11px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; border-radius:9999px; color:#e4e4e7; display:inline-flex; align-items:center; gap:6px;">👤 <b>' + email + '</b> <button onclick="signOutUser()" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:10px; text-decoration:underline;">Switch</button></span>';
       }
+    }
+    window.renderUserAccountBadge = updateHeaderUserBadge;
     }
 
     function resetAuthForm() {

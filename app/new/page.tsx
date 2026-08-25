@@ -24,6 +24,13 @@ import {
   Crosshair,
   Scan,
   Box,
+  User,
+  MessageSquare,
+  X,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -250,7 +257,6 @@ const STEP_ITEMS = [
 
 // 4x4 GPU Render Tiles (16 total) with progressive multi-pass state
 const TOTAL_TILES = 16;
-// Natural spiral / Hilbert bucket traversal order
 const TILE_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
 
 const DEFAULT_VIEWPORT =
@@ -261,12 +267,39 @@ const DEFAULT_VIDEO =
   "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
 
 export default function SamplePluginRendererPage() {
+  // User Authentication & Session
+  const [userEmail, setUserEmail] = useState<string>("user@v6render.com");
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authInputEmail, setAuthInputEmail] = useState<string>("");
+  const [authOtpCode, setAuthOtpCode] = useState<string>("");
+  const [authStep, setAuthStep] = useState<1 | 2>(1);
+  const [authStatusText, setAuthStatusText] = useState<string>("");
+
+  // Support Modal State
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState<boolean>(false);
+  const [supportCategory, setSupportCategory] =
+    useState<string>("General Question");
+  const [supportMessage, setSupportMessage] = useState<string>("");
+  const [supportStatusText, setSupportStatusText] = useState<string>("");
+  const [supportChatList, setSupportChatList] = useState<
+    Array<{ sender: string; text: string; time: string }>
+  >([
+    {
+      sender: "Admin Support",
+      text: "Welcome to V6 Render! Let us know if you need help with SketchUp rendering, lighting, or materials.",
+      time: "Just now",
+    },
+  ]);
+
   // Loaded images & video state (from /load or default)
   const [viewportImg, setViewportImg] = useState<string>(DEFAULT_VIEWPORT);
   const [renderImg, setRenderImg] = useState<string>(DEFAULT_RENDER);
   const [renderVideo, setRenderVideo] = useState<string>(DEFAULT_VIDEO);
   const [sceneTitle, setSceneTitle] = useState<string>(
     "SketchUp Active Viewport"
+  );
+  const [statusMessage, setStatusMessage] = useState<string>(
+    "Viewport updated! Ready to render."
   );
 
   // Gallery Photos for bottom-right folder
@@ -286,7 +319,6 @@ export default function SamplePluginRendererPage() {
   const [renderStepText, setRenderStepText] = useState<string>("");
 
   // REALISTIC GPU PATH-TRACING STATE
-  // tileStages: 0 = unrendered (blueprint noise), 1 = coarse 64 spp (blurry pixelated), 2 = semi-refined 256 spp, 3 = crystal clear 1024 spp
   const [tileStages, setTileStages] = useState<number[]>(new Array(16).fill(0));
   const [activeBuckets, setActiveBuckets] = useState<number[]>([]);
   const [blueprintPhase, setBlueprintPhase] = useState<
@@ -330,8 +362,15 @@ export default function SamplePluginRendererPage() {
   const [isComparing, setIsComparing] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
 
-  // Load custom images & video from /load if available
+  // Load custom images & video from /load or storage
   useEffect(() => {
+    const savedEmail =
+      localStorage.getItem("v6_user_email") ||
+      sessionStorage.getItem("v6_user_email");
+    if (savedEmail) {
+      setUserEmail(savedEmail);
+    }
+
     const savedViewport =
       localStorage.getItem("custom_viewport_img") ||
       sessionStorage.getItem("custom_viewport_img");
@@ -369,6 +408,63 @@ export default function SamplePluginRendererPage() {
     }
   };
 
+  const handleRefreshViewport = () => {
+    setStatusMessage("Capturing latest SketchUp camera view...");
+    setTimeout(() => {
+      setStatusMessage("Viewport updated! Ready to render.");
+    }, 600);
+  };
+
+  // Auth Handlers
+  const handleSendOtp = () => {
+    if (!authInputEmail || !authInputEmail.includes("@")) {
+      setAuthStatusText("Please enter a valid email address.");
+      return;
+    }
+    setAuthStatusText("Sending 4-digit verification code...");
+    setTimeout(() => {
+      setAuthStep(2);
+      setAuthStatusText("✓ 4-digit code sent to your email!");
+    }, 700);
+  };
+
+  const handleVerifyOtp = () => {
+    if (!authOtpCode || authOtpCode.length < 4) {
+      setAuthStatusText("Please enter the 4-digit code.");
+      return;
+    }
+    setUserEmail(authInputEmail);
+    localStorage.setItem("v6_user_email", authInputEmail);
+    sessionStorage.setItem("v6_user_email", authInputEmail);
+    setIsAuthModalOpen(false);
+    setAuthStep(1);
+    setAuthStatusText("");
+    setStatusMessage(`Logged in as ${authInputEmail}`);
+  };
+
+  const handleSignOut = () => {
+    setIsAuthModalOpen(true);
+    setAuthStep(1);
+    setAuthInputEmail(userEmail);
+    setAuthStatusText("");
+  };
+
+  // Support Message Submit
+  const handleSendSupportMessage = () => {
+    if (!supportMessage.trim()) return;
+    const newMsg = {
+      sender: "You",
+      text: supportMessage,
+      time: "Just now",
+    };
+    setSupportChatList((prev) => [...prev, newMsg]);
+    setSupportMessage("");
+    setSupportStatusText("✓ Message sent! Support will respond shortly.");
+    setTimeout(() => {
+      setSupportStatusText("");
+    }, 3000);
+  };
+
   // REALISTIC SLOWER PROGRESSIVE GPU RENDER PIPELINE (~7.5 SECONDS)
   const handleTriggerRender = () => {
     if (isRendering) return;
@@ -381,6 +477,7 @@ export default function SamplePluginRendererPage() {
     setRenderStepText(
       "Pass 1/64: Initializing CUDA Cores & BVH Spatial Hierarchy..."
     );
+    setStatusMessage("Rendering 4K photorealistic image on GPU...");
     setGpuTelemetry({
       pass: 1,
       totalPasses: 64,
@@ -413,7 +510,6 @@ export default function SamplePluginRendererPage() {
       setRenderStepText(
         "Pass 12/64: Monte-Carlo Path Tracing (Coarse Direct Light & Shadows)..."
       );
-      // All tiles enter stage 1 (noisy pixelated preview)
       setTileStages(new Array(16).fill(1));
       setGpuTelemetry({
         pass: 12,
@@ -432,15 +528,12 @@ export default function SamplePluginRendererPage() {
         "Pass 32/64: Multi-Threaded GPU Bucket Raytracing & Secondary Bounces..."
       );
 
-      // Sequentially process each bucket through Stage 2 (semi-clear) then Stage 3 (crystal clear)
       TILE_ORDER.forEach((tileIdx, i) => {
-        // Parallel secondary bucket
         const pairedTile = TILE_ORDER[(i + 8) % TOTAL_TILES];
 
         setTimeout(() => {
           setActiveBuckets([tileIdx, pairedTile]);
 
-          // Transition to stage 2 (refining)
           setTileStages((prev) => {
             const next = [...prev];
             next[tileIdx] = Math.max(next[tileIdx], 2);
@@ -448,7 +541,6 @@ export default function SamplePluginRendererPage() {
             return next;
           });
 
-          // Shortly after, resolve to stage 3 (crystal clear 4K)
           setTimeout(() => {
             setTileStages((prev) => {
               const next = [...prev];
@@ -499,8 +591,8 @@ export default function SamplePluginRendererPage() {
       setHasRendered(true);
       setBlueprintPhase("idle");
       setPreviewMode("image");
+      setStatusMessage("Render complete! Saved in project renders gallery.");
 
-      // TRIGGER ULTRA-SMOOTH FLY-INTO-FOLDER ANIMATION
       setFlyingImage(renderImg);
       setIsFlyingToFolder(true);
 
@@ -521,6 +613,7 @@ export default function SamplePluginRendererPage() {
     setIsVideoRendering(true);
     setVideoProgress(15);
     setVideoStepText("Interpolating 3D Camera Bezier Path...");
+    setStatusMessage("Rendering 3D camera walkthrough...");
 
     setTimeout(() => {
       setVideoProgress(45);
@@ -543,12 +636,13 @@ export default function SamplePluginRendererPage() {
       setIsVideoRendering(false);
       setHasRenderedVideo(true);
       setPreviewMode("video");
+      setStatusMessage("3D Video Walkthrough Ready!");
     }, 3000);
   };
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#09090b] font-sans text-white select-none [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden">
-      {/* TOP PLUGIN HEADER */}
+      {/* TOP PLUGIN HEADER WITH USER ACCOUNT PILL & LIVE SUPPORT */}
       <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-1.5">
@@ -565,8 +659,49 @@ export default function SamplePluginRendererPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-zinc-500">
-          <span>v6.2.4 Active</span>
+        {/* HEADER RIGHT: USER EMAIL PILL + LIVE SUPPORT BUTTON + VERSION */}
+        <div className="flex items-center gap-2.5">
+          {/* USER ACCOUNT BADGE */}
+          {userEmail ? (
+            <div className="flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/80 px-3 py-1 text-xs text-zinc-200 shadow-sm">
+              <User className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="font-semibold">{userEmail}</span>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="ml-1 cursor-pointer text-[10px] text-red-400 underline hover:text-red-300"
+              >
+                Switch
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsAuthModalOpen(true)}
+              className="flex cursor-pointer items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/80 px-3 py-1 text-xs font-semibold text-zinc-200 hover:bg-zinc-700"
+            >
+              <User className="h-3.5 w-3.5 text-zinc-400" />
+              <span>Sign In</span>
+            </button>
+          )}
+
+          {/* LIVE SUPPORT CHAT BUTTON WITH 1 NEW BADGE */}
+          <button
+            type="button"
+            onClick={() => setIsSupportModalOpen(true)}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/90 px-3 py-1 text-xs font-medium text-zinc-200 transition-all hover:bg-zinc-800 hover:text-white"
+          >
+            <MessageSquare className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Support</span>
+            <span className="py-0.2 rounded-full bg-red-500/90 px-1.5 text-[9px] font-bold text-white shadow-xs">
+              1 New
+            </span>
+          </button>
+
+          {/* VERSION TAG */}
+          <span className="pl-1 text-xs font-medium text-zinc-500">
+            v6.2.4 Active
+          </span>
         </div>
       </header>
 
@@ -600,7 +735,6 @@ export default function SamplePluginRendererPage() {
                   <div className="text-[10px] text-zinc-400">
                     {item.subtitle}
                   </div>
-                  {/* Tooltip triangle arrow */}
                   <div className="absolute top-1/2 right-full -translate-y-1/2 border-4 border-transparent border-r-zinc-900/95" />
                 </div>
               </div>
@@ -828,7 +962,7 @@ export default function SamplePluginRendererPage() {
                       type="color"
                       value={accentColor}
                       onChange={(e) => setAccentColor(e.target.value)}
-                      className="h-8 w-12 cursor-pointer rounded border-0 bg-transparent"
+                      className="h-8 w-12 cursor-pointer border-0 bg-transparent"
                     />
                     <span className="font-mono text-xs font-bold text-zinc-300">
                       {accentColor}
@@ -996,13 +1130,13 @@ export default function SamplePluginRendererPage() {
             )}
           </div>
 
-          {/* BOTTOM FIXED BAR: CREATE RENDER ACTION */}
-          <div className="shrink-0 border-t border-zinc-800 bg-[#0b0b0f] p-4">
+          {/* BOTTOM FIXED BAR: CREATE RENDER & REFRESH VIEWPORT */}
+          <div className="shrink-0 space-y-2 border-t border-zinc-800 bg-[#0b0b0f] p-3.5">
             <button
               type="button"
               onClick={handleTriggerRender}
               disabled={isRendering || isVideoRendering}
-              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
+              className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
             >
               {isRendering ? (
                 <>
@@ -1016,6 +1150,22 @@ export default function SamplePluginRendererPage() {
                 </>
               )}
             </button>
+
+            {/* REFRESH VIEWPORT BUTTON */}
+            <button
+              type="button"
+              onClick={handleRefreshViewport}
+              className="flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/80 text-xs font-semibold text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white"
+            >
+              <RefreshCw className="h-3 w-3 text-zinc-400" />
+              <span>Refresh Viewport</span>
+            </button>
+
+            {/* LIVE STATUS INDICATOR */}
+            <div className="flex items-center gap-1.5 pt-0.5 text-[11px] text-zinc-400">
+              <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400" />
+              <span className="truncate">{statusMessage}</span>
+            </div>
           </div>
         </aside>
 
@@ -1048,7 +1198,7 @@ export default function SamplePluginRendererPage() {
                     className={cn(
                       "cursor-pointer rounded-md px-2 py-1 text-xs font-semibold transition-all",
                       previewMode === "image"
-                        ? "bg-zinc-800 text-white shadow-sm"
+                        ? "bg-zinc-800 text-white shadow-xs"
                         : "text-zinc-400 hover:text-zinc-200"
                     )}
                   >
@@ -1066,7 +1216,7 @@ export default function SamplePluginRendererPage() {
                     className={cn(
                       "flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition-all",
                       previewMode === "video"
-                        ? "bg-zinc-800 text-white shadow-sm"
+                        ? "bg-zinc-800 text-white shadow-xs"
                         : "text-zinc-400 hover:text-zinc-200"
                     )}
                   >
@@ -1125,9 +1275,8 @@ export default function SamplePluginRendererPage() {
             </div>
           </div>
 
-          {/* MAIN CANVAS AREA: SIDE-BY-SIDE DUAL VIEW OR SPLIT SLIDER OR 3D VIDEO */}
+          {/* MAIN CANVAS AREA */}
           <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-4">
-            {/* MODE 1: SIDE-BY-SIDE DUAL VIEW (DEFAULT WHEN SPLIT VIEW IS INACTIVE) */}
             {!isComparing ? (
               <div className="grid h-full max-h-[640px] w-full max-w-[1100px] grid-cols-2 gap-4">
                 {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
@@ -1189,7 +1338,6 @@ export default function SamplePluginRendererPage() {
                         className="h-full w-full object-contain p-1.5"
                       />
                     ) : isVideoRendering ? (
-                      /* Video Rendering Loader */
                       <div className="flex max-w-sm flex-col items-center justify-center p-6 text-center">
                         <RefreshCw className="mb-3 h-8 w-8 animate-spin text-white" />
                         <div className="mb-1 text-sm font-bold text-white">
@@ -1209,12 +1357,8 @@ export default function SamplePluginRendererPage() {
                         </div>
                       </div>
                     ) : isRendering ? (
-                      /* ======================================================================= */
-                      /* REALISTIC MULTI-STAGE PROGRESSIVE PIXELATION & GPU BUCKET TILE RENDERER */
-                      /* ======================================================================= */
                       <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#030712] select-none">
-                        <div className="relative flex h-full w-full flex-1 items-center justify-center overflow-hidden">
-                          {/* 1. Underlying Progressive Render Image Canvas */}
+                        <div className="relative flex flex-1 items-center justify-center overflow-hidden">
                           <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-1.5">
                             <img
                               src={renderImg}
@@ -1231,10 +1375,9 @@ export default function SamplePluginRendererPage() {
                               )}
                             />
 
-                            {/* 2. CAD BLUEPRINT WIREFRAME & SCAN PHASE */}
+                            {/* CAD BLUEPRINT OVERLAY */}
                             {blueprintPhase === "cad" && (
-                              <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between bg-cyan-950/40 p-3 backdrop-blur-sm">
-                                {/* Blueprint CAD Grid Overlay */}
+                              <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between bg-cyan-950/40 p-3 backdrop-blur-xs">
                                 <div
                                   className="absolute inset-0 opacity-40"
                                   style={{
@@ -1243,8 +1386,6 @@ export default function SamplePluginRendererPage() {
                                     backgroundSize: "20px 20px",
                                   }}
                                 />
-
-                                {/* Moving Laser Sweep Line */}
                                 <motion.div
                                   className="absolute right-0 left-0 h-0.5 bg-cyan-400 shadow-[0_0_15px_#22d3ee]"
                                   initial={{ top: "0%" }}
@@ -1255,23 +1396,18 @@ export default function SamplePluginRendererPage() {
                                     ease: "linear",
                                   }}
                                 />
-
-                                {/* Top Blueprint HUD */}
-                                <div className="relative z-30 flex items-center justify-between rounded border border-cyan-500/30 bg-cyan-950/80 px-2 py-1 font-mono text-[10px] text-cyan-400 backdrop-blur-md">
+                                <div className="relative z-30 flex items-center justify-between rounded border border-cyan-500/30 bg-cyan-950/80 px-2.5 py-1 font-mono text-[10px] text-cyan-400 backdrop-blur-md">
                                   <span className="flex items-center gap-1.5 font-bold">
                                     <Cpu className="h-3.5 w-3.5 animate-spin text-cyan-300" />
                                     <span>BVH_VOXELIZE // PASS 01</span>
                                   </span>
                                   <span>RAY_WARPS: 1024</span>
                                 </div>
-
-                                {/* Center Target Crosshair */}
                                 <div className="relative z-30 flex items-center justify-center">
                                   <div className="flex h-16 w-16 animate-ping items-center justify-center rounded-full border border-cyan-400/40">
                                     <Crosshair className="h-6 w-6 text-cyan-400" />
                                   </div>
                                 </div>
-
                                 <div className="relative z-30 flex justify-between font-mono text-[9px] text-cyan-300/80">
                                   <span>STAGE: GEOMETRY_VOXEL_EXTRACTION</span>
                                   <span>CUDA_CORES: 16384 ACTIVE</span>
@@ -1279,7 +1415,7 @@ export default function SamplePluginRendererPage() {
                               </div>
                             )}
 
-                            {/* 3. MULTI-STAGE PIXELATED TILES & GPU BUCKET RENDER PASS */}
+                            {/* GPU TILES / BUCKETS */}
                             {(blueprintPhase === "noise_init" ||
                               blueprintPhase === "progressive_buckets") && (
                               <div className="pointer-events-none absolute inset-0 z-20 grid grid-cols-4 grid-rows-4 gap-0.5 p-1.5">
@@ -1297,13 +1433,12 @@ export default function SamplePluginRendererPage() {
                                           stage === 0
                                             ? "border border-cyan-500/20 bg-cyan-950/80 backdrop-blur-xl"
                                             : stage === 1
-                                              ? "border border-cyan-500/15 bg-black/40 backdrop-blur-md" // Coarse blurry/pixelated noise
+                                              ? "border border-cyan-500/15 bg-black/40 backdrop-blur-md"
                                               : stage === 2
-                                                ? "border border-white/10 bg-transparent backdrop-blur-xs" // Semi-clarified
-                                                : "border border-white/5 bg-transparent" // Fully resolved 4K
+                                                ? "border border-white/10 bg-transparent backdrop-blur-xs"
+                                                : "border border-white/5 bg-transparent"
                                         )}
                                       >
-                                        {/* Stage 1: Heavy Monte-Carlo Grain & Pixelation Grid */}
                                         {stage === 1 && (
                                           <div
                                             className="absolute inset-0 opacity-40 mix-blend-overlay"
@@ -1315,7 +1450,6 @@ export default function SamplePluginRendererPage() {
                                           />
                                         )}
 
-                                        {/* Active GPU Bucket Cursor Frame with Coordinates */}
                                         {isBucketActive && (
                                           <div className="absolute inset-0 z-30 flex flex-col justify-between border-2 border-emerald-400 bg-emerald-500/15 p-1 shadow-[0_0_15px_#34d399]">
                                             <div className="flex justify-between font-mono text-[7px] font-bold text-emerald-200">
@@ -1333,7 +1467,6 @@ export default function SamplePluginRendererPage() {
                                           </div>
                                         )}
 
-                                        {/* Flash Flare when Tile Resolves to Crystal Sharpness */}
                                         {stage === 3 && (
                                           <motion.div
                                             initial={{
@@ -1352,7 +1485,7 @@ export default function SamplePluginRendererPage() {
                               </div>
                             )}
 
-                            {/* 4. OPTIX NEURAL DENOISING HORIZONTAL SWEEP */}
+                            {/* OPTIX DENOISE */}
                             {blueprintPhase === "optix_denoise" && (
                               <motion.div
                                 className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
@@ -1367,7 +1500,7 @@ export default function SamplePluginRendererPage() {
                           </div>
                         </div>
 
-                        {/* BOTTOM GPU TELEMETRY BAR */}
+                        {/* BOTTOM TELEMETRY */}
                         <div className="z-30 flex h-10 shrink-0 items-center justify-between border-t border-zinc-800 bg-[#07090e] px-3.5">
                           <div className="flex items-center gap-2 truncate font-mono text-[11px] text-zinc-300">
                             <RefreshCw className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-400" />
@@ -1398,14 +1531,12 @@ export default function SamplePluginRendererPage() {
                         </div>
                       </div>
                     ) : hasRendered ? (
-                      /* Image Rendered State */
                       <img
                         src={renderImg}
                         alt="Photorealistic Render"
                         className="h-full w-full object-contain p-1.5"
                       />
                     ) : (
-                      /* Standby Placeholder in Right Card */
                       <div className="flex flex-col items-center justify-center p-6 text-center text-zinc-500">
                         <div className="mb-2 text-3xl">🖼️</div>
                         <p className="max-w-xs text-xs text-zinc-400">
@@ -1418,16 +1549,13 @@ export default function SamplePluginRendererPage() {
                 </div>
               </div>
             ) : (
-              /* MODE 2: SPLIT COMPARE SLIDER VIEW (WHEN ACTIVE) */
+              /* SPLIT SLIDER VIEW */
               <div className="relative h-full max-h-[640px] w-full max-w-[960px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl select-none">
-                {/* After (Photorealistic Render Base Image) */}
                 <img
                   src={renderImg}
                   alt="Photorealistic Render"
                   className="pointer-events-none absolute inset-0 h-full w-full object-contain p-1.5"
                 />
-
-                {/* Before (SketchUp Raw Viewport) Clipped with CSS Polygon */}
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
@@ -1444,12 +1572,10 @@ export default function SamplePluginRendererPage() {
                   </div>
                 </div>
 
-                {/* After Label */}
                 <div className="pointer-events-none absolute top-3 right-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
                   4K Photorealistic Render
                 </div>
 
-                {/* Interactive Divider Handle */}
                 <div
                   className="pointer-events-none absolute top-0 bottom-0 z-10 flex w-0.5 items-center justify-center bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                   style={{ left: `${sliderPosition}%` }}
@@ -1459,7 +1585,6 @@ export default function SamplePluginRendererPage() {
                   </div>
                 </div>
 
-                {/* Range Input for dragging */}
                 <input
                   type="range"
                   min="0"
@@ -1471,7 +1596,7 @@ export default function SamplePluginRendererPage() {
               </div>
             )}
 
-            {/* ACTION ROW BENEATH CARDS: GENERATE 3D VIDEO WALKTHROUGH BUTTON */}
+            {/* ACTION ROW BENEATH CARDS */}
             {hasRendered && previewMode === "image" && (
               <div className="flex items-center justify-center pt-3">
                 <button
@@ -1549,6 +1674,213 @@ export default function SamplePluginRendererPage() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* ========================================================= */}
+      {/* AUTH & ACCOUNT SWITCH MODAL                               */}
+      {/* ========================================================= */}
+      <AnimatePresence>
+        {isAuthModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md rounded-2xl border border-zinc-700/70 bg-[#121216] p-6 shadow-2xl"
+            >
+              <button
+                type="button"
+                onClick={() => setIsAuthModalOpen(false)}
+                className="absolute top-4 right-4 cursor-pointer text-zinc-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <div className="mb-4 text-center">
+                <div className="mb-2 text-3xl">🔑</div>
+                <h3 className="text-lg font-bold text-white">
+                  V6 Render Account
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  Verify your email to activate PC and sync cloud renders.
+                </p>
+              </div>
+
+              {authStep === 1 ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-zinc-300">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={authInputEmail}
+                      onChange={(e) => setAuthInputEmail(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2.5 text-sm text-white placeholder-zinc-500 outline-none focus:border-white"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    className="h-10 w-full cursor-pointer rounded-xl bg-white text-xs font-bold text-black transition-all hover:bg-zinc-200"
+                  >
+                    Send 4-Digit Code
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-semibold text-zinc-300">
+                      4-Digit Verification Code
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={4}
+                      placeholder="••••"
+                      value={authOtpCode}
+                      onChange={(e) => setAuthOtpCode(e.target.value)}
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-950 px-3.5 py-2.5 text-center text-lg font-bold tracking-[12px] text-white placeholder-zinc-500 outline-none focus:border-white"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleVerifyOtp}
+                    className="h-10 w-full cursor-pointer rounded-xl bg-white text-xs font-bold text-black transition-all hover:bg-zinc-200"
+                  >
+                    Verify & Activate PC
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setAuthStep(1)}
+                    className="w-full cursor-pointer text-center text-xs text-zinc-400 underline hover:text-white"
+                  >
+                    Use different email
+                  </button>
+                </div>
+              )}
+
+              {authStatusText && (
+                <div className="mt-3 rounded-lg border border-zinc-700 bg-zinc-900/90 p-2 text-center text-xs text-zinc-300">
+                  {authStatusText}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================================================= */}
+      {/* LIVE SUPPORT CHAT MODAL                                   */}
+      {/* ========================================================= */}
+      <AnimatePresence>
+        {isSupportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative flex h-[560px] w-full max-w-lg flex-col rounded-2xl border border-zinc-700/70 bg-[#121216] p-5 shadow-2xl"
+            >
+              <button
+                type="button"
+                onClick={() => setIsSupportModalOpen(false)}
+                className="absolute top-4 right-4 cursor-pointer text-zinc-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              {/* MODAL HEADER */}
+              <div className="flex items-center gap-2.5 border-b border-zinc-800 pb-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+                  <MessageSquare className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">
+                    Live Support Chat
+                  </h3>
+                  <p className="text-[11px] text-zinc-400">
+                    Direct technical help & feature requests
+                  </p>
+                </div>
+              </div>
+
+              {/* 24-HOUR SLA BANNER */}
+              <div className="my-2.5 rounded-lg border border-indigo-500/30 bg-indigo-950/40 px-3 py-2 text-[11px] text-indigo-200">
+                ⏱️ Support replies within <b>24 hours</b>. You will receive
+                notification badges & email updates!
+              </div>
+
+              {/* CHAT MESSAGES LIST */}
+              <div className="flex-1 space-y-2.5 overflow-y-auto p-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {supportChatList.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex max-w-[85%] flex-col rounded-xl p-3 text-xs",
+                      msg.sender === "You"
+                        ? "ml-auto bg-white font-medium text-black"
+                        : "border border-zinc-700 bg-zinc-800/90 text-zinc-200"
+                    )}
+                  >
+                    <div className="mb-1 flex items-center justify-between text-[9px] font-bold opacity-70">
+                      <span>{msg.sender}</span>
+                      <span>{msg.time}</span>
+                    </div>
+                    <p className="leading-relaxed">{msg.text}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CATEGORY DROPDOWN */}
+              <div className="mt-2">
+                <select
+                  value={supportCategory}
+                  onChange={(e) => setSupportCategory(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 px-2.5 py-1.5 text-xs text-zinc-300 outline-none"
+                >
+                  <option value="General Question">
+                    ❓ General Question / Help
+                  </option>
+                  <option value="Bug / Technical Issue">
+                    🐞 Technical Bug or Issue
+                  </option>
+                  <option value="Payment & Access">
+                    💳 Payment & Account Access
+                  </option>
+                  <option value="Feature Request">💡 Feature Request</option>
+                </select>
+              </div>
+
+              {/* INPUT BAR */}
+              <div className="mt-2 flex gap-2">
+                <textarea
+                  rows={2}
+                  value={supportMessage}
+                  onChange={(e) => setSupportMessage(e.target.value)}
+                  placeholder="Type your question or issue here..."
+                  className="flex-1 resize-none rounded-xl border border-zinc-700 bg-zinc-950 p-2.5 text-xs text-white placeholder-zinc-500 outline-none focus:border-white"
+                />
+                <button
+                  type="button"
+                  onClick={handleSendSupportMessage}
+                  className="flex h-auto cursor-pointer items-center justify-center rounded-xl bg-white px-4 text-xs font-bold text-black hover:bg-zinc-200"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </div>
+
+              {supportStatusText && (
+                <div className="mt-2 text-center text-xs font-semibold text-emerald-400">
+                  {supportStatusText}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
