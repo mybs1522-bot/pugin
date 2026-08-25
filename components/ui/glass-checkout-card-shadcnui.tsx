@@ -195,19 +195,21 @@ export function GlassCheckoutCard({
               Native SketchUp Extension • 2,000 Renders
             </div>
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2.5">
-                <h3 className="text-xl font-bold tracking-tight text-white">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
                   Download Plugin Now
                 </h3>
-                <Image
-                  src="/sketchup-logo.png"
-                  alt="SketchUp Logo"
-                  width={24}
-                  height={24}
-                  className="h-5 w-5 shrink-0 object-contain"
-                />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+                  <Image
+                    src="/sketchup-logo.png"
+                    alt="SketchUp Logo"
+                    width={48}
+                    height={48}
+                    className="h-8 w-8 animate-[spin_8s_linear_infinite] object-contain sm:h-9 sm:w-9"
+                  />
+                </div>
               </div>
-              <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
+              <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-white">
                 $0.00 Due Today
               </span>
             </div>
