@@ -26,7 +26,7 @@ module V6Render
 
       # Remote-First Auto-Updating UI Architecture:
       # Loads live UI directly from Vercel so any code/UI changes update instantly without re-installing .rbz!
-      remote_url = "https://pugin-five.vercel.app/plugin.html"
+      remote_url = "https://pugin-five.vercel.app/plugin.html?v=#{Time.now.to_i}"
       html_path = File.join(__dir__, 'dialog.html')
 
       begin

@@ -3552,6 +3552,10 @@
 
               document.getElementById('videoBtn').style.display = 'inline-block';
 
+              // Reveal AI Edit Bar docked inside Render Output card
+              const refineBar = document.getElementById('cardFooterRefine');
+              if (refineBar) refineBar.style.display = 'flex';
+
               // Smoothly trigger flight to folder
               triggerFlightToFolder(imgUrl);
 
