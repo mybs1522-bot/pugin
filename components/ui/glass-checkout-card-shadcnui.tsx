@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import {
   Calendar,
   CreditCard,
@@ -188,23 +189,28 @@ export function GlassCheckoutCard({
     >
       <Card className="group relative overflow-hidden rounded-2xl border-zinc-800 bg-[#09090b] p-0 text-white shadow-2xl">
         <form onSubmit={handleFormSubmit} className="p-6 sm:p-7">
-          <div className="mb-4 text-left">
-            <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
+          <div className="mb-4 space-y-2 text-left">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-              Native SketchUp Extension • Unlimited Renders (2,000 Included)
+              Native SketchUp Extension • 2,000 Renders
             </div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold tracking-tight text-white">
-                Download Plugin Now
-              </h3>
-              <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <h3 className="text-xl font-bold tracking-tight text-white">
+                  Download Plugin Now
+                </h3>
+                <Image
+                  src="/sketchup-logo.png"
+                  alt="SketchUp Logo"
+                  width={24}
+                  height={24}
+                  className="h-5 w-5 shrink-0 object-contain"
+                />
+              </div>
+              <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
                 $0.00 Due Today
               </span>
             </div>
-            <p className="mt-1 text-xs text-zinc-400">
-              14 days free trial. Unlimited 4K photorealistic renders & 3D video
-              walkthroughs (2,000 Renders Included). Cancel anytime in 1 click.
-            </p>
           </div>
 
           {/* Side-by-Side Plan Selector */}
@@ -232,7 +238,7 @@ export function GlassCheckoutCard({
                 </span>
               </div>
               <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
-                14 Days Free • 2,000 Renders Included
+                14 Days Free • 2,000 Renders
               </span>
             </button>
 
@@ -369,8 +375,8 @@ export function GlassCheckoutCard({
           <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-zinc-400">
             <Lock className="h-3 w-3 text-zinc-300" />
             <span>
-              $0.00 charged today. 14 days free trial with 2,000 Renders
-              Included. Cancel anytime in 1 click.
+              $0.00 charged today. 14 days free trial with 2,000 Renders. Cancel
+              anytime in 1 click.
             </span>
           </div>
         </form>

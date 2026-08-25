@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -194,25 +195,29 @@ function UnifiedTrialForm({
   return (
     <div className="flex flex-col gap-4 bg-[#09090b] p-6 text-white sm:p-7">
       {/* Top Badge & Header */}
-      <div className="space-y-1.5 text-left">
-        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
+      <div className="space-y-2 text-left">
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-          Native SketchUp Extension • Unlimited Renders (2,000 Included)
+          Native SketchUp Extension • 2,000 Renders
         </div>
 
-        <div className="flex items-center justify-between">
-          <h3 className="text-xl font-black tracking-tight text-white sm:text-2xl">
-            Download Plugin Now
-          </h3>
-          <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5">
+            <h3 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+              Download Plugin Now
+            </h3>
+            <Image
+              src="/sketchup-logo.png"
+              alt="SketchUp Logo"
+              width={26}
+              height={26}
+              className="h-6 w-6 shrink-0 object-contain"
+            />
+          </div>
+          <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
             $0.00 Due Today
           </span>
         </div>
-
-        <p className="text-xs leading-relaxed text-zinc-400">
-          14 days free trial. Unlimited 4K photorealistic renders & 3D video
-          walkthroughs (2,000 Renders Included). Cancel anytime in 1 click.
-        </p>
       </div>
 
       {/* Side-by-Side Plan Selector (Monochrome Black & White Dark Theme) */}
@@ -238,7 +243,7 @@ function UnifiedTrialForm({
             </span>
           </div>
           <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
-            14 Days Free • 2,000 Renders Included
+            14 Days Free • 2,000 Renders
           </span>
         </button>
 
@@ -361,8 +366,8 @@ function UnifiedTrialForm({
 
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">
           <Lock className="mr-1 inline-block h-3 w-3 text-zinc-300" />
-          $0.00 charged today. 14 days free trial with 2,000 Renders Included.
-          Cancel anytime with 1 click.
+          $0.00 charged today. 14 days free trial with 2,000 Renders. Cancel
+          anytime in 1 click.
         </p>
       </form>
     </div>
