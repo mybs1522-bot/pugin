@@ -2732,13 +2732,20 @@
     window.renderUserAccountBadge = updateHeaderUserBadge;
 
     function resetAuthForm() {
-      document.getElementById('authStepEmail').style.display = 'block';
-      document.getElementById('authStepOtp').style.display = 'none';
-      document.getElementById('authEmail').value = '';
-      document.getElementById('authOtpCode').value = '';
-      document.getElementById('authStatus').style.display = 'none';
-      document.getElementById('btnSendOtp').disabled = false;
-      document.getElementById('btnVerifyOtp').disabled = false;
+      const step1 = document.getElementById('authStep1') || document.getElementById('authStepEmail');
+      const step2 = document.getElementById('authStep2') || document.getElementById('authStepOtp');
+      if (step1) step1.style.display = 'block';
+      if (step2) step2.style.display = 'none';
+      const emailInput = document.getElementById('authEmail');
+      if (emailInput) emailInput.value = '';
+      const codeInput = document.getElementById('authOtpCode');
+      if (codeInput) codeInput.value = '';
+      const statusEl = document.getElementById('authStatus');
+      if (statusEl) statusEl.style.display = 'none';
+      const btnSend = document.getElementById('btnSendOtp');
+      if (btnSend) btnSend.disabled = false;
+      const btnVerify = document.getElementById('btnVerifyOtp');
+      if (btnVerify) btnVerify.disabled = false;
     }
 
     function showAuthStatus(msg, type) {
@@ -2786,11 +2793,17 @@
           window.pendingEmail = emailInput;
           window.pendingOtpToken = data.token;
           
-          document.getElementById('authStepEmail').style.display = 'none';
-          document.getElementById('authStepOtp').style.display = 'block';
-          document.getElementById('authSentToEmail').innerText = emailInput;
+          const step1 = document.getElementById('authStep1') || document.getElementById('authStepEmail');
+          const step2 = document.getElementById('authStep2') || document.getElementById('authStepOtp');
+          if (step1) step1.style.display = 'none';
+          if (step2) step2.style.display = 'block';
+          
+          const notice = document.getElementById('otpNotice') || document.getElementById('authSentToEmail');
+          if (notice) notice.innerText = '4-digit code sent to ' + emailInput + '!';
+          
           showAuthStatus('✓ 4-digit code sent! Please check your inbox.', 'success');
-          document.getElementById('authOtpCode').focus();
+          const codeInput = document.getElementById('authOtpCode');
+          if (codeInput) codeInput.focus();
         } else {
           showAuthStatus('❌ ' + (data.error || 'Failed to send code.'), 'error');
           document.getElementById('btnSendOtp').disabled = false;
