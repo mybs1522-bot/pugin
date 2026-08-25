@@ -125,18 +125,15 @@ export default function HomePage() {
         {/* ── Navbar ─────────────────────────────────────────── */}
         <nav className="dark:bg-background/80 sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 lg:px-12 xl:px-16">
-            <Link href="/" className="flex items-center gap-2.5">
+            <Link href="/" className="flex items-center">
               <Image
                 src="/v6-logo.png"
-                alt="V6 Render Logo"
-                width={36}
-                height={24}
-                className="h-7 w-auto object-contain"
+                alt="V6 Logo"
+                width={54}
+                height={36}
+                className="h-8 w-auto object-contain"
                 priority
               />
-              <span className="text-base font-extrabold tracking-tight">
-                V6 Render
-              </span>
             </Link>
             <div className="text-muted-foreground hidden items-center gap-6 text-sm sm:flex">
               <Link

@@ -149,18 +149,15 @@ export default function SignInPage() {
             transition={{ duration: 0.5, ease: "easeInOut" }}
             className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-white"
           >
-            <div className="mb-2 flex items-center gap-2.5">
+            <div className="mb-2 flex items-center justify-center">
               <Image
                 src="/v6-logo.png"
-                alt="V6 Render"
-                width={36}
-                height={24}
-                className="h-8 w-auto object-contain"
+                alt="V6 Logo"
+                width={54}
+                height={36}
+                className="h-10 w-auto object-contain"
                 priority
               />
-              <span className="text-base font-extrabold tracking-tight text-gray-900">
-                V6 Render
-              </span>
             </div>
             <OnboardCard
               duration={LOADER_DURATION}
@@ -207,18 +204,15 @@ export default function SignInPage() {
       </div>
 
       {/* ── Brand mark ── */}
-      <div className="relative z-10 flex items-center justify-center gap-2.5 pt-10">
+      <div className="relative z-10 flex items-center justify-center pt-10">
         <Image
           src="/v6-logo.png"
-          alt="V6 Render"
-          width={40}
-          height={27}
-          className="h-9 w-auto object-contain"
+          alt="V6 Logo"
+          width={60}
+          height={40}
+          className="h-12 w-auto object-contain"
           priority
         />
-        <span className="text-base font-extrabold tracking-tight text-gray-900">
-          V6 Render
-        </span>
       </div>
 
       {/* ── Main form ── */}
