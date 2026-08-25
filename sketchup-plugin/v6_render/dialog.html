@@ -10,9 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* ========================================================================== */
-    /* V6 RENDER PRO EXTENSION - EXACT /NEW STYLING SYSTEM                        */
-    /* ========================================================================== */
     :root {
       --bg-base: #09090b;
       --bg-header: #0e0e12;
@@ -350,7 +347,6 @@
       margin-bottom: 4px;
     }
 
-    /* CARDS & GRIDS */
     .grid-1 {
       display: grid;
       grid-template-columns: 1fr;
@@ -436,7 +432,6 @@
       padding: 8px 10px;
     }
 
-    /* ACCENT COLOR PICKER */
     .color-picker-box {
       display: flex;
       align-items: center;
@@ -533,7 +528,6 @@
       overflow: hidden;
     }
 
-    /* VIEWPORT ACTION BAR */
     .viewport-top-bar {
       height: 44px;
       flex-shrink: 0;
@@ -619,7 +613,6 @@
       color: #ffffff;
     }
 
-    /* CANVAS AREA CONTAINER */
     .canvas-center {
       position: relative;
       flex: 1;
@@ -631,7 +624,6 @@
       overflow: hidden;
     }
 
-    /* DUAL SIDE-BY-SIDE CARDS */
     .dual-preview-grid, .preview-split {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -825,7 +817,6 @@
       filter: blur(0px) contrast(100%) saturate(100%);
     }
 
-    /* CAD WIREFRAME OVERLAY */
     .cad-blueprint-overlay {
       position: absolute;
       inset: 0;
@@ -886,7 +877,6 @@
       100% { transform: scale(0.9); opacity: 0.8; }
     }
 
-    /* 4x4 GPU BUCKETS MATRIX */
     .gpu-tiles-grid {
       position: absolute;
       inset: 6px;
@@ -978,7 +968,6 @@
       font-weight: 800;
     }
 
-    /* ACTION ROW BELOW CARDS */
     .action-row-bottom, .action-row {
       display: flex;
       align-items: center;
@@ -1280,6 +1269,46 @@
   </style>
 </head>
 <body>
+
+  <!-- INTRO SPLASH SCREEN OVERLAY ON OPEN (EXACT ORIGINAL RESTORED) -->
+  <div id="pluginIntroOverlay" style="position:fixed; inset:0; background:#09090b; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease, visibility 0.6s ease;">
+    <div style="display:flex; flex-direction:column; align-items:center; width:300px; text-align:center;">
+      <!-- Logo Header -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:24px;">
+        <div style="width:36px; height:36px; border-radius:12px; background:#18181b; border:1px solid rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 15px rgba(0,0,0,0.5);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 1 0 10 10 10 10 0 0 0-10-10zm0 3a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm-5 5a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm2 7a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm6 0a2 2 0 1 1-2 2 2 2 0 0 1 2-2zm2-7a2 2 0 1 1-2 2 2 2 0 0 1 2-2z"/></svg>
+        </div>
+        <span style="font-size:17px; font-weight:800; color:#ffffff; letter-spacing:-0.02em;">V6 Render Pro</span>
+      </div>
+
+      <!-- Status Items Card Container -->
+      <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+        <!-- Step 1: Almost Ready -->
+        <div id="splashStep1" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); font-size:12px; color:#71717a; transition:all 0.3s;">
+          <span style="font-size:12px;">⚙️</span>
+          <span>Almost Ready</span>
+        </div>
+
+        <!-- Step 2: Preparing Workspace (Active Highlighted Item) -->
+        <div id="splashStep2" style="display:flex; flex-direction:column; gap:8px; padding:12px 14px; border-radius:12px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); font-size:12px; color:#ffffff; font-weight:600; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.3s;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:13px; animation:spin 2s linear infinite;">⚙️</span>
+            <span>Preparing Workspace</span>
+          </div>
+          <!-- Glowing Green Progress Bar -->
+          <div style="width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;">
+            <div id="splashProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #22c55e, #10b981); border-radius:999px; transition:width 0.4s ease, background 0.4s ease; box-shadow:0 0 10px rgba(34,197,94,0.6);"></div>
+          </div>
+        </div>
+
+        <!-- Step 3: Loading Assets -->
+        <div id="splashStep3" style="display:flex; align-items:center; gap:8px; padding:10px 14px; border-radius:10px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); font-size:12px; color:#71717a; transition:all 0.3s;">
+          <span id="splashCheckIcon" style="font-size:12px;">✔️</span>
+          <span id="splashStep3Text">Loading Assets</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- TOP HEADER -->
   <header>
@@ -1754,7 +1783,6 @@
   </div>
 
   <!-- HIDDEN COMPATIBILITY CONTAINERS -->
-  <div id="pluginIntroOverlay" style="display: none;"></div>
   <div id="pluginTickerBar" style="display: none;">
     <span id="tickerTag"></span>
     <span id="tickerText"></span>
@@ -1763,9 +1791,8 @@
   <div id="renderSettingsDropdownContent" style="display: none;"></div>
   <div id="renderSettingsToggleBtn" style="display: none;"></div>
 
-  <!-- SCRIPT BLOCK INJECTING THE COMPLETE ORIGINAL ENGINE + /NEW UI BRIDGES -->
+  <!-- /NEW UI CONTROLLER HELPERS -->
   <script>
-    // SPLIT SLIDER VIEW STATE
     let isSplitComparing = false;
 
     function toggleSplitSliderView() {
@@ -1793,7 +1820,6 @@
       }, 1200);
     }
 
-    // PROGRESSIVE GPU SIMULATION
     const TOTAL_TILES = 16;
     const TILE_SPIRAL_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
 
@@ -1895,7 +1921,7 @@
     }
   </script>
 
-  <!-- INSERT COMPLETE ORIGINAL PRODUCTION ENGINE SCRIPT -->
+  <!-- INSERT COMPLETE ORIGINAL PRODUCTION SCRIPT -->
   <script>
 
     function showTrialOverModal() {
@@ -3504,9 +3530,8 @@
   
   </script>
 
-  <!-- POST-INITIALIZATION ADAPTER TO SYNC /NEW DOCK & CONTROLS -->
+  <!-- ADAPTERS & HOOKS -->
   <script>
-    // Sync the vertical step dock buttons with original switchStep
     const origSwitchStep = window.switchStep;
     window.switchStep = function(idx) {
       if (typeof origSwitchStep === 'function') {
@@ -3520,7 +3545,6 @@
       }
     };
 
-    // Hook render start to trigger GPU simulation
     const origTriggerAIRender = window.triggerAIRender;
     window.triggerAIRender = async function() {
       const liveImage = capturedViewportImageData || document.getElementById('viewportImg').src;
@@ -3530,7 +3554,6 @@
       }
     };
 
-    // Hook onViewportCaptured to update split slider images
     const origOnViewportCaptured = window.onViewportCaptured;
     window.onViewportCaptured = function(result) {
       if (typeof origOnViewportCaptured === 'function') {
@@ -3542,7 +3565,6 @@
       }
     };
 
-    // Update split slider after image when render finishes
     const aiImgEl = document.getElementById('aiImg');
     if (aiImgEl) {
       const observer = new MutationObserver(() => {
