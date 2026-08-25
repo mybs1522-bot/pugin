@@ -118,8 +118,8 @@ export const Footer = ({
         </div>
 
         {/* Bottom logo */}
-        <div className="hover:border-foreground bg-background/60 border-border absolute bottom-24 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 p-3 drop-shadow-[0_0px_20px_rgba(0,0,0,0.5)] backdrop-blur-sm duration-400 md:bottom-20 dark:drop-shadow-[0_0px_20px_rgba(255,255,255,0.3)]">
-          <div className="from-foreground to-foreground/80 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg sm:h-16 sm:w-16 md:h-24 md:w-24">
+        <div className="hover:border-foreground bg-background/90 border-border absolute bottom-24 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-3xl border-2 p-3.5 drop-shadow-[0_0px_20px_rgba(0,0,0,0.5)] backdrop-blur-sm duration-400 md:bottom-20 dark:drop-shadow-[0_0px_20px_rgba(255,255,255,0.3)]">
+          <div className="flex h-12 w-auto items-center justify-center sm:h-16 md:h-20">
             {brandIcon || (
               <NotepadTextDashed className="text-background h-8 w-8 drop-shadow-lg sm:h-10 sm:w-10 md:h-14 md:w-14" />
             )}

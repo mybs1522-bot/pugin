@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Palette, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import OnboardCard from "@/components/ui/onboard-card";
@@ -149,11 +150,16 @@ export default function SignInPage() {
             className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-white"
           >
             <div className="mb-2 flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900 shadow-md">
-                <Palette className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-sm font-semibold tracking-wide text-gray-900">
-                Interior Designer AI
+              <Image
+                src="/v6-logo.png"
+                alt="V6 Render"
+                width={36}
+                height={24}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+              <span className="text-base font-extrabold tracking-tight text-gray-900">
+                V6 Render
               </span>
             </div>
             <OnboardCard
@@ -202,11 +208,16 @@ export default function SignInPage() {
 
       {/* ── Brand mark ── */}
       <div className="relative z-10 flex items-center justify-center gap-2.5 pt-10">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-900 shadow-md">
-          <Palette className="h-5 w-5 text-white" />
-        </div>
-        <span className="text-sm font-semibold tracking-wide text-gray-900">
-          Interior Designer AI
+        <Image
+          src="/v6-logo.png"
+          alt="V6 Render"
+          width={40}
+          height={27}
+          className="h-9 w-auto object-contain"
+          priority
+        />
+        <span className="text-base font-extrabold tracking-tight text-gray-900">
+          V6 Render
         </span>
       </div>
 

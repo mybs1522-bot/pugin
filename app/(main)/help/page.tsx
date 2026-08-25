@@ -12,9 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 const WA_NUMBER = "919198747810";
-const WA_MESSAGE = encodeURIComponent(
-  "Hi! I need help with Interior Designer AI."
-);
+const WA_MESSAGE = encodeURIComponent("Hi! I need help with V6 Render.");
 const WA_LINK = `https://wa.me/${WA_NUMBER}?text=${WA_MESSAGE}`;
 
 const supportHighlights = [

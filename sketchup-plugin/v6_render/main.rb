@@ -115,6 +115,8 @@ module V6Render
     cmd = UI::Command.new("V6 Render") {
       V6Render.show_dialog
     }
+    cmd.small_icon = File.join(__dir__, 'icon-32.png')
+    cmd.large_icon = File.join(__dir__, 'icon-64.png')
     cmd.tooltip = "Render active SketchUp viewport with V6 Render"
     cmd.status_bar_text = "Generate photorealistic rendering from SketchUp"
     tb.add_item(cmd)

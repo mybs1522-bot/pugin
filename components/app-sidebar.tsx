@@ -59,15 +59,19 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Link href="/">
-                <div className="bg-background flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border">
-                  <Palette className="h-4 w-4" />
-                </div>
+                <Image
+                  src="/v6-logo.png"
+                  alt="V6 Render"
+                  width={32}
+                  height={22}
+                  className="h-7 w-auto shrink-0 object-contain"
+                />
                 <div className="flex flex-col leading-tight">
-                  <span className="text-sm font-semibold">
-                    Interior Designer
+                  <span className="text-sm font-extrabold tracking-tight">
+                    V6 Render
                   </span>
-                  <span className="text-muted-foreground text-xs">
-                    AI Studio
+                  <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
+                    SketchUp Studio
                   </span>
                 </div>
               </Link>

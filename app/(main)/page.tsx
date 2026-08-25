@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import {
   Wand2,
@@ -125,10 +126,15 @@ export default function HomePage() {
         <nav className="dark:bg-background/80 sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 lg:px-12 xl:px-16">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="bg-background flex h-7 w-7 items-center justify-center rounded-lg border">
-                <Palette className="h-3.5 w-3.5" />
-              </div>
-              <span className="text-sm font-bold tracking-tight">
+              <Image
+                src="/v6-logo.png"
+                alt="V6 Render Logo"
+                width={36}
+                height={24}
+                className="h-7 w-auto object-contain"
+                priority
+              />
+              <span className="text-base font-extrabold tracking-tight">
                 V6 Render
               </span>
             </Link>
@@ -305,7 +311,13 @@ export default function HomePage() {
           { label: "Terms of Service", href: "#" },
         ]}
         brandIcon={
-          <Palette className="text-background h-8 w-8 drop-shadow-lg sm:h-10 sm:w-10 md:h-14 md:w-14" />
+          <Image
+            src="/v6-logo.png"
+            alt="V6 Render Logo"
+            width={80}
+            height={53}
+            className="h-10 w-auto object-contain sm:h-12 md:h-14"
+          />
         }
       />
     </>

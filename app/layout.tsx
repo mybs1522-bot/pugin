@@ -14,43 +14,44 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Interior Designer AI",
+  title: "V6 Render — AI Rendering Extension for SketchUp",
   description:
-    "Transform your space with AI-powered interior design in seconds.",
+    "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view in under 10 seconds. 100% geometry preservation, zero GPU needed.",
   keywords: [
-    "interior design",
-    "AI",
-    "home design",
-    "room redesign",
-    "artificial intelligence",
+    "V6 Render",
+    "SketchUp render",
+    "SketchUp AI rendering",
+    "photorealistic SketchUp",
+    "3D walkthrough",
+    "architectural visualization",
   ],
   robots: "index, follow",
   openGraph: {
-    title: "Interior Designer AI",
+    title: "V6 Render — AI Rendering Extension for SketchUp",
     description:
-      "Transform your space with AI-powered interior design in seconds.",
+      "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view in under 10 seconds.",
     url: "https://www.avada.space/",
-    siteName: "Interior Designer AI",
+    siteName: "V6 Render",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: "https://www.avada.space/app-screenshot.png",
-        width: 1200,
-        height: 630,
-        alt: "Interior Designer AI - Transform your space instantly",
+        url: "/v6-logo.png",
+        width: 392,
+        height: 262,
+        alt: "V6 Render - SketchUp AI Rendering Extension",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Interior Designer AI",
-    description: "Transform your space with AI-powered interior design",
-    images: ["https://www.avada.space/app-screenshot.png"],
+    title: "V6 Render — AI Rendering Extension for SketchUp",
+    description: "Lightning-fast SketchUp rendering software you'll love.",
+    images: ["/v6-logo.png"],
   },
   manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/v6-logo.png",
     apple: "/apple-touch-icon.png",
   },
 };
