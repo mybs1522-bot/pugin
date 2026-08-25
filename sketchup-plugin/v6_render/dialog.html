@@ -589,7 +589,7 @@
         Your free trial renders for this account have been used. Activate Pro Plan to unlock unlimited 4K photorealistic renders & 3D video walkthroughs.
       </p>
 
-      <button class="btn" onclick="openProPlanCheckout()" style="background:linear-gradient(135deg, #4f46e5, #9333ea); color:#ffffff; border:none; padding:14px 20px; font-size:14px; font-weight:800; border-radius:12px; width:100%; cursor:pointer; box-shadow:0 8px 25px rgba(147,51,234,0.4); margin-top:0;">
+      <button class="btn" onclick="openProPlanCheckout(this)" style="background:linear-gradient(135deg, #4f46e5, #9333ea); color:#ffffff; border:none; padding:14px 20px; font-size:14px; font-weight:800; border-radius:12px; width:100%; cursor:pointer; box-shadow:0 8px 25px rgba(147,51,234,0.4); margin-top:0;">
         ⚡ Activate Pro Plan
       </button>
 
@@ -911,7 +911,7 @@
             <p style="font-size:11px; color:#a1a1aa; max-width:320px; margin:0 auto 20px auto; line-height:1.5;">
               You have completed your 10 free trial renders. Activate Pro Plan to unlock unlimited photorealistic AI renders & 3D video walkthroughs.
             </p>
-            <button onclick="openProPlanCheckout()" style="background:linear-gradient(135deg, #eab308, #f97316); color:#000000; border:none; padding:12px 26px; font-size:13px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 8px 20px rgba(234,179,8,0.3); transition:transform 0.2s;">
+            <button onclick="openProPlanCheckout(this)" style="background:linear-gradient(135deg, #eab308, #f97316); color:#000000; border:none; padding:12px 26px; font-size:13px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 8px 20px rgba(234,179,8,0.3); transition:transform 0.2s;">
               ⚡ Activate Pro Plan
             </button>
             <p style="font-size:10px; color:#71717a; margin-top:10px;">
@@ -958,11 +958,82 @@
       document.getElementById('trialOverModal').style.display = 'flex';
     }
 
-    function openProPlanCheckout() {
-      const liveUrl = getLiveServerUrl() + '/#pricing';
-      if (window.sketchup) {
-        window.location.href = liveUrl;
-      } else {
+    async function openProPlanCheckout(btnEl) {
+      const userEmail = getUserEmail();
+      if (!userEmail) {
+        promptForUserEmail();
+        return;
+      }
+
+      const originalBtnText = btnEl ? btnEl.innerHTML : null;
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⚡ Activating & Charging Card...';
+      }
+
+      showStatus('⚡ Activating Pro plan and charging saved card on file...', 'loading');
+
+      try {
+        const serverUrl = getLiveServerUrl();
+        const res = await fetch(serverUrl + '/api/stripe/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, plan: 'monthly' })
+        });
+
+        const data = await res.json();
+        console.log('[1-CLICK ACTIVATE RESPONSE]', data);
+
+        if (data.success && data.isPaid) {
+          // 1-Click Success! Card was charged instantly off-session
+          localStorage.setItem('v6_is_paid', 'true');
+          localStorage.setItem('v6_plan_status', 'paid');
+          localStorage.setItem('v6_payment_mode', 'Stripe Pro Active');
+
+          // Close trial over modal
+          const modal = document.getElementById('trialOverModal');
+          if (modal) modal.style.display = 'none';
+
+          // Reset trial over placeholder state in render viewport
+          resetTrialOverState();
+
+          // Refresh account badge to Pro Active
+          renderUserAccountBadge();
+
+          showStatus('🎉 ' + (data.message || 'Subscription successfully activated! Unlimited 4K renders unlocked.'), 'success');
+          alert('🎉 V6 Render Pro Activated!\n\nYour card on file has been charged and your account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
+          return;
+        }
+
+        if (data.needsCheckout && data.url) {
+          // No card on file yet — open Stripe Checkout to add payment method
+          showStatus('Opening secure Stripe Checkout...', 'loading');
+          if (window.sketchup) {
+            window.location.href = data.url;
+          } else {
+            window.open(data.url, '_blank');
+          }
+          return;
+        }
+
+        if (data.error) {
+          showStatus('❌ ' + data.error, 'error');
+          alert('Could not activate plan: ' + data.error + '\nOpening checkout...');
+          const liveUrl = getLiveServerUrl() + '/#pricing';
+          window.open(liveUrl, '_blank');
+        }
+      } catch (err) {
+        console.error('1-Click Activate Exception:', err);
+        showStatus('❌ Network error. Opening checkout...', 'error');
+        const liveUrl = getLiveServerUrl() + '/#pricing';
+        window.open(liveUrl, '_blank');
+      } finally {
+        if (btnEl && originalBtnText) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = originalBtnText;
+        }
+      }
+    } else {
         window.open(liveUrl, '_blank');
       }
     }

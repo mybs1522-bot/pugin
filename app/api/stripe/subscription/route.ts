@@ -1,11 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) {
+  const searchEmail = req.nextUrl.searchParams.get("email");
+  const email = (session?.user?.email || searchEmail || "")
+    .trim()
+    .toLowerCase();
+
+  if (!email || !email.includes("@")) {
     return NextResponse.json({ subscribed: false, status: null });
   }
 
@@ -14,7 +19,7 @@ export async function GET() {
   }
 
   try {
-    const customers = await stripe.customers.list({ email: session.user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email, limit: 1 });
     if (customers.data.length === 0) {
       return NextResponse.json({ subscribed: false, status: null });
     }
@@ -44,7 +49,9 @@ export async function GET() {
       subscribed: true,
       status: active.status,
       trialEnd: active.trial_end ?? null,
-      currentPeriodEnd: (active as unknown as Record<string, unknown>)["current_period_end"] ?? null,
+      currentPeriodEnd:
+        (active as unknown as Record<string, unknown>)["current_period_end"] ??
+        null,
       cancelAtPeriodEnd: active.cancel_at_period_end ?? false,
       subscriptionId: active.id,
       plan: interval === "year" ? "Yearly" : "Monthly",

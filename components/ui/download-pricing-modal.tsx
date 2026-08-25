@@ -26,10 +26,15 @@ export function DownloadPricingModal({
   onOpenChange,
 }: DownloadPricingModalProps) {
   const [step, setStep] = useState<"pricing" | "email" | "done">("pricing");
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
-  const handleStartTrialClick = () => {
+  const handleStartTrialClick = (plan?: "monthly" | "yearly") => {
+    if (plan) setSelectedPlan(plan);
     setStep("email");
   };
 
@@ -47,7 +52,7 @@ export function DownloadPricingModal({
       videoCount: 0,
       isPaid: false,
       status: "trial",
-      paymentMode: "14-Day Free Trial",
+      paymentMode: "Stripe 14-Day Free Trial",
       lastModelUsed: "google/nano-banana-pro",
       signedUpAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
@@ -73,6 +78,23 @@ export function DownloadPricingModal({
       console.warn("Trial registration API warning:", err);
     }
 
+    // Initiate Stripe Free Trial Checkout session
+    let stripeUrl: string | null = null;
+    try {
+      const checkoutRes = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normEmail, plan: selectedPlan }),
+      });
+      const checkoutData = await checkoutRes.json();
+      if (checkoutData.url) {
+        stripeUrl = checkoutData.url;
+        setCheckoutUrl(stripeUrl);
+      }
+    } catch (err) {
+      console.warn("Stripe trial checkout creation warning:", err);
+    }
+
     setLoading(false);
     setStep("done");
 
@@ -83,6 +105,13 @@ export function DownloadPricingModal({
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+
+    // If Stripe checkout URL is ready, open Checkout in a clean tab
+    if (stripeUrl) {
+      setTimeout(() => {
+        window.location.href = stripeUrl!;
+      }, 1200);
+    }
   };
 
   const handleManualDownload = () => {

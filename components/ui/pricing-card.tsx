@@ -27,7 +27,7 @@ const TRANSITION = {
 };
 
 interface PricingCardProps {
-  onStartTrial?: () => void;
+  onStartTrial?: (plan: "monthly" | "yearly") => void;
 }
 
 export function PricingCard({ onStartTrial }: PricingCardProps) {
@@ -143,7 +143,7 @@ export function PricingCard({ onStartTrial }: PricingCardProps) {
         <Button
           size="lg"
           className="w-full text-base font-bold"
-          onClick={onStartTrial}
+          onClick={() => onStartTrial?.(billing)}
         >
           Activate 14-Day Free Trial & Download
         </Button>
