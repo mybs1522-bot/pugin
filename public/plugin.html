@@ -2291,6 +2291,9 @@
           showTrialOverState();
         } else {
           resetTrialOverState();
+          if (trialData && typeof trialData.imageCount === 'number') {
+            localStorage.setItem(localKey, trialData.imageCount);
+          }
         }
       } catch (err) {
         console.warn('Trial check network error:', err);
