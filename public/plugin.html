@@ -977,25 +977,43 @@
       z-index: 10;
     }
     .btn-generate-video-walkthrough, .btn-video {
-      height: 40px;
-      padding: 0 20px;
-      border-radius: 12px;
-      background: #18181b;
-      border: 1px solid #3f3f46;
+      height: 42px;
+      padding: 0 22px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1px solid rgba(129, 140, 248, 0.35);
       color: #ffffff;
       font-size: 12px;
       font-weight: 700;
+      letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 9px;
       cursor: pointer;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-      transition: all 0.2s;
+      box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.75), 0 0 16px rgba(99, 102, 241, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .btn-generate-video-walkthrough:hover, .btn-video:hover {
-      background: #27272a;
-      border-color: #71717a;
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, rgba(49, 46, 129, 0.95) 0%, rgba(30, 41, 59, 1) 100%);
+      border-color: rgba(165, 180, 252, 0.7);
+      box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.85), 0 0 26px rgba(99, 102, 241, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transform: translateY(-1.5px) scale(1.02);
+    }
+    .btn-generate-video-walkthrough:active, .btn-video:active {
+      transform: translateY(0.5px) scale(0.99);
+    }
+    .btn-video-badge {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(129, 140, 248, 0.4);
+      padding: 2px 7px;
+      border-radius: 9999px;
+      margin-left: 2px;
     }
 
     /* INTERACTIVE BOTTOM-RIGHT 3D FOLDER GALLERY */
@@ -1694,8 +1712,9 @@
         <!-- GENERATE 3D VIDEO WALKTHROUGH BUTTON ROW -->
         <div class="action-row-bottom action-row" id="actionRowBottom">
           <button type="button" class="btn-generate-video-walkthrough btn-video" id="videoBtn" onclick="triggerVideoWalkthrough()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 8 6 4-6 4Z"/></svg>
-            <span>🎬 Generate 3D Video Walkthrough</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(165,180,252,0.6));"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+            <span>Generate 3D Video Walkthrough</span>
+            <span class="btn-video-badge">4K 60FPS</span>
           </button>
         </div>
       </div>

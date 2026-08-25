@@ -1603,10 +1603,13 @@ export default function SamplePluginRendererPage() {
                   type="button"
                   onClick={handleTriggerVideoWalkthrough}
                   disabled={isVideoRendering}
-                  className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-6 text-xs font-bold text-white shadow-xl transition-all hover:border-zinc-500 hover:bg-zinc-800 disabled:opacity-50"
+                  className="group flex h-10.5 cursor-pointer items-center gap-2.5 rounded-full border border-indigo-500/40 bg-gradient-to-r from-indigo-950/90 via-slate-900/95 to-indigo-950/90 px-6 text-xs font-bold tracking-wide text-white shadow-[0_12px_28px_-6px_rgba(0,0,0,0.75),0_0_16px_rgba(99,102,241,0.25)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-indigo-400/70 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.85),0_0_26px_rgba(99,102,241,0.45)] active:translate-y-0 active:scale-100 disabled:opacity-50"
                 >
-                  <Film className="h-3.5 w-3.5 text-indigo-400" />
-                  <span>🎬 Generate 3D Video Walkthrough</span>
+                  <Film className="h-4 w-4 text-indigo-300 drop-shadow-[0_0_8px_rgba(165,180,252,0.6)] transition-transform duration-200 group-hover:scale-110" />
+                  <span>Generate 3D Video Walkthrough</span>
+                  <span className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-2 py-0.5 text-[9px] font-extrabold tracking-wider text-indigo-200 uppercase">
+                    4K 60FPS
+                  </span>
                 </button>
               </div>
             )}
