@@ -209,9 +209,9 @@ function UnifiedTrialForm({
             <Image
               src="/sketchup-logo.png"
               alt="SketchUp Logo"
-              width={26}
-              height={26}
-              className="h-6 w-6 shrink-0 object-contain"
+              width={40}
+              height={40}
+              className="h-8 w-8 shrink-0 object-contain"
             />
           </div>
           <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
@@ -359,7 +359,7 @@ function UnifiedTrialForm({
           ) : (
             <>
               <Download className="h-4 w-4 text-black" />
-              Start 14-Day Free Trial & Download (.rbz)
+              Download Plugin
             </>
           )}
         </Button>

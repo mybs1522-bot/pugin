@@ -367,7 +367,7 @@ export function GlassCheckoutCard({
             ) : (
               <>
                 <Download className="h-4 w-4 text-black" />
-                Start 14-Day Free Trial & Download (.rbz)
+                Download Plugin
               </>
             )}
           </Button>
