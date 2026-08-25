@@ -146,7 +146,7 @@ export default function LoadPluginImagesPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-2">
             <span className="text-base font-black tracking-tight text-white">
-              V6 RENDER
+              V6 Render
             </span>
             <span className="rounded bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-300">
               SCENE &amp; VIDEO LOADER

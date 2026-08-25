@@ -553,10 +553,7 @@ export default function SamplePluginRendererPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-baseline gap-1.5">
             <span className="text-base font-black tracking-tight text-white">
-              V6 RENDER
-            </span>
-            <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300">
-              PRO EXTENSION
+              V6 Render
             </span>
           </div>
 
