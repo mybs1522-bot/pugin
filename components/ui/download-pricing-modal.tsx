@@ -223,29 +223,29 @@ function UnifiedTrialForm({
       </div>
 
       {/* Side-by-Side Plan Selector (Monochrome Black & White Dark Theme) */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
+      <div className="grid grid-cols-2 gap-2.5 pt-1 sm:gap-3">
         {/* Monthly Card */}
         <button
           type="button"
           onClick={() => setSelectedPlan("monthly")}
           className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-2.5 text-left transition-all sm:p-3",
             selectedPlan === "monthly"
               ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
               : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
           )}
         >
-          <div className="flex w-full items-center justify-between">
-            <span className="text-xs font-bold tracking-wider text-white uppercase">
+          <div className="flex w-full items-center justify-between gap-1">
+            <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
               Pay Monthly
             </span>
-            <span className="text-sm font-black text-white">
+            <span className="text-sm font-black whitespace-nowrap text-white">
               $20
               <span className="text-[10px] font-normal text-zinc-400">/mo</span>
             </span>
           </div>
-          <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
-            14 Days Free • Then $20/mo
+          <span className="mt-1 text-[11px] font-medium whitespace-nowrap text-zinc-400">
+            14 Days Free
           </span>
         </button>
 
@@ -254,22 +254,22 @@ function UnifiedTrialForm({
           type="button"
           onClick={() => setSelectedPlan("yearly")}
           className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-2.5 text-left transition-all sm:p-3",
             selectedPlan === "yearly"
               ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
               : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
           )}
         >
           <div className="absolute -top-2.5 right-2">
-            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
+            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider whitespace-nowrap text-black uppercase shadow-sm">
               25% OFF
             </span>
           </div>
-          <div className="flex w-full items-center justify-between">
-            <span className="text-xs font-bold tracking-wider text-white uppercase">
+          <div className="flex w-full items-center justify-between gap-1">
+            <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
               Pay Yearly
             </span>
-            <div className="flex items-baseline gap-1">
+            <div className="flex items-baseline gap-1 whitespace-nowrap">
               <span className="text-[10px] text-zinc-500 line-through">
                 $240
               </span>
@@ -281,8 +281,8 @@ function UnifiedTrialForm({
               </span>
             </div>
           </div>
-          <span className="mt-1.5 text-[11px] font-semibold text-zinc-300">
-            14 Days Free • Then $15/mo ($180/yr)
+          <span className="mt-1 text-[11px] font-semibold whitespace-nowrap text-zinc-300">
+            14 Days Free
           </span>
         </button>
       </div>
