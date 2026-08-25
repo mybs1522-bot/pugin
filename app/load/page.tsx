@@ -5,14 +5,9 @@ import { useRouter } from "next/navigation";
 import {
   Upload,
   Image as ImageIcon,
-  Zap,
   ArrowRight,
   Sparkles,
-  CheckCircle2,
   Trash2,
-  Layers,
-  RotateCcw,
-  Video,
   Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -49,6 +44,9 @@ export default function LoadPluginImagesPage() {
   const [sceneTitle, setSceneTitle] = useState<string>(
     "My SketchUp Project View"
   );
+  const [draggingZone, setDraggingZone] = useState<
+    "viewport" | "render" | "video" | null
+  >(null);
 
   const viewportInputRef = useRef<HTMLInputElement>(null);
   const renderInputRef = useRef<HTMLInputElement>(null);
@@ -75,17 +73,23 @@ export default function LoadPluginImagesPage() {
     if (savedTitle) setSceneTitle(savedTitle);
   }, []);
 
-  const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "viewport" | "render" | "video"
-  ) => {
-    const file = e.target.files?.[0];
+  const processFile = (file: File, type: "viewport" | "render" | "video") => {
     if (!file) return;
 
     if (type === "video") {
-      // Create an object URL or data URL for video
+      if (!file.type.startsWith("video/")) {
+        alert("Please select or drop a valid video file (.mp4, .webm, etc.)");
+        return;
+      }
       const url = URL.createObjectURL(file);
       setRenderVideo(url);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert(
+        "Please select or drop a valid image file (.png, .jpg, .webp, etc.)"
+      );
       return;
     }
 
@@ -99,6 +103,44 @@ export default function LoadPluginImagesPage() {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFileUpload = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "viewport" | "render" | "video"
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file, type);
+    }
+  };
+
+  const handleDragOver = (
+    e: React.DragEvent,
+    type: "viewport" | "render" | "video"
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingZone(type);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingZone(null);
+  };
+
+  const handleDrop = (
+    e: React.DragEvent,
+    type: "viewport" | "render" | "video"
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDraggingZone(null);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file, type);
+    }
   };
 
   const handleApplySample = (sample: (typeof DEFAULT_SAMPLES)[0]) => {
@@ -169,15 +211,15 @@ export default function LoadPluginImagesPage() {
         {/* TOP TITLE */}
         <div className="space-y-1.5 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-3 py-1 text-xs font-semibold text-zinc-300">
-            <Sparkles className="h-3.5 w-3.5 text-white" />
+            <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
             <span>Interactive Custom Simulation Setup</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">
             Upload Viewport, 4K Render &amp; 3D Video
           </h1>
           <p className="mx-auto max-w-lg text-xs text-zinc-400 md:text-sm">
-            Upload your raw SketchUp screen capture, final render, and optional
-            3D video walkthrough.
+            Drag &amp; drop or click to upload your SketchUp screen capture,
+            final render, and 3D video walkthrough.
           </p>
         </div>
 
@@ -214,11 +256,16 @@ export default function LoadPluginImagesPage() {
 
             <div
               onClick={() => viewportInputRef.current?.click()}
+              onDragOver={(e) => handleDragOver(e, "viewport")}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, "viewport")}
               className={cn(
-                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all",
-                viewportImg
-                  ? "border-zinc-700"
-                  : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
+                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
+                draggingZone === "viewport"
+                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  : viewportImg
+                    ? "border-zinc-700 hover:border-zinc-500"
+                    : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
               )}
             >
               {viewportImg ? (
@@ -231,7 +278,7 @@ export default function LoadPluginImagesPage() {
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
                     <Upload className="h-5 w-5 text-white" />
                     <span className="text-xs font-bold text-white">
-                      Change Viewport
+                      Drop or Click to Change
                     </span>
                   </div>
                   <div className="absolute top-2.5 left-2.5 rounded-md border border-white/10 bg-black/80 px-2 py-0.5 text-[10px] font-bold text-white shadow-lg">
@@ -240,19 +287,27 @@ export default function LoadPluginImagesPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-2.5 p-4 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors group-hover:text-white">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
+                      draggingZone === "viewport" &&
+                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                    )}
+                  >
                     <Upload className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-white">
-                      Upload Viewport
+                      {draggingZone === "viewport"
+                        ? "Drop Viewport Image Here"
+                        : "Upload Viewport"}
                     </div>
                     <div className="mt-0.5 text-[10px] text-zinc-500">
-                      Raw SketchUp screen
+                      Drag &amp; drop or click to browse
                     </div>
                   </div>
                   <span className="rounded-md bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-300">
-                    Browse
+                    Browse or Drop
                   </span>
                 </div>
               )}
@@ -290,11 +345,16 @@ export default function LoadPluginImagesPage() {
 
             <div
               onClick={() => renderInputRef.current?.click()}
+              onDragOver={(e) => handleDragOver(e, "render")}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, "render")}
               className={cn(
-                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all",
-                renderImg
-                  ? "border-zinc-700"
-                  : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
+                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
+                draggingZone === "render"
+                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  : renderImg
+                    ? "border-zinc-700 hover:border-zinc-500"
+                    : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
               )}
             >
               {renderImg ? (
@@ -307,7 +367,7 @@ export default function LoadPluginImagesPage() {
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
                     <Upload className="h-5 w-5 text-white" />
                     <span className="text-xs font-bold text-white">
-                      Change Render
+                      Drop or Click to Change
                     </span>
                   </div>
                   <div className="absolute top-2.5 left-2.5 rounded-md border border-white/10 bg-black/80 px-2 py-0.5 text-[10px] font-bold text-white shadow-lg">
@@ -316,19 +376,27 @@ export default function LoadPluginImagesPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-2.5 p-4 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors group-hover:text-white">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
+                      draggingZone === "render" &&
+                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                    )}
+                  >
                     <ImageIcon className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-white">
-                      Upload 4K Render
+                      {draggingZone === "render"
+                        ? "Drop 4K Render Image Here"
+                        : "Upload 4K Render"}
                     </div>
                     <div className="mt-0.5 text-[10px] text-zinc-500">
-                      Target output image
+                      Drag &amp; drop or click to browse
                     </div>
                   </div>
                   <span className="rounded-md bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-300">
-                    Browse
+                    Browse or Drop
                   </span>
                 </div>
               )}
@@ -366,11 +434,16 @@ export default function LoadPluginImagesPage() {
 
             <div
               onClick={() => videoInputRef.current?.click()}
+              onDragOver={(e) => handleDragOver(e, "video")}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, "video")}
               className={cn(
-                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all",
-                renderVideo
-                  ? "border-zinc-700"
-                  : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
+                "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
+                draggingZone === "video"
+                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  : renderVideo
+                    ? "border-zinc-700 hover:border-zinc-500"
+                    : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
               )}
             >
               {renderVideo ? (
@@ -386,7 +459,7 @@ export default function LoadPluginImagesPage() {
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
                     <Upload className="h-5 w-5 text-white" />
                     <span className="text-xs font-bold text-white">
-                      Change Video
+                      Drop or Click to Change
                     </span>
                   </div>
                   <div className="absolute top-2.5 left-2.5 rounded-md border border-white/10 bg-black/80 px-2 py-0.5 text-[10px] font-bold text-white shadow-lg">
@@ -395,19 +468,27 @@ export default function LoadPluginImagesPage() {
                 </>
               ) : (
                 <div className="flex flex-col items-center gap-2.5 p-4 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors group-hover:text-white">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
+                      draggingZone === "video" &&
+                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                    )}
+                  >
                     <Film className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="text-xs font-bold text-white">
-                      Upload 3D Video
+                      {draggingZone === "video"
+                        ? "Drop 3D Video Here"
+                        : "Upload 3D Video"}
                     </div>
                     <div className="mt-0.5 text-[10px] text-zinc-500">
-                      MP4 or WebM walkthrough
+                      Drag &amp; drop MP4 or WebM walkthrough
                     </div>
                   </div>
                   <span className="rounded-md bg-zinc-800 px-2.5 py-1 text-[10px] font-bold text-zinc-300">
-                    Browse Video
+                    Browse or Drop Video
                   </span>
                 </div>
               )}
