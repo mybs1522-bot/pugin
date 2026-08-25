@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -27,6 +27,7 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
+  ChevronsLeftRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +43,9 @@ const SAMPLE_GALLERY = [
     model: "Flux 2 Pro",
     lighting: "Golden Hour",
     beforeImg:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
     afterImg:
-      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80",
   },
   {
     id: "sample-2",
@@ -56,9 +57,9 @@ const SAMPLE_GALLERY = [
     model: "Nano Banana Pro",
     lighting: "Cinematic Dusk",
     beforeImg:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
     afterImg:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80",
   },
   {
     id: "sample-3",
@@ -70,9 +71,9 @@ const SAMPLE_GALLERY = [
     model: "Flux 2 Pro",
     lighting: "Natural Daylight",
     beforeImg:
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1400&q=80",
     afterImg:
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1400&q=80",
   },
   {
     id: "sample-4",
@@ -84,9 +85,9 @@ const SAMPLE_GALLERY = [
     model: "SDXL 4K Turbo",
     lighting: "Volumetric Sun",
     beforeImg:
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=1400&q=80",
     afterImg:
-      "https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
@@ -139,7 +140,7 @@ export default function SamplePluginRendererPage() {
   const [geometryStrength, setGeometryStrength] = useState(85);
   const [aspectRatio, setAspectRatio] = useState("16:9");
 
-  // Interactive Split Slider
+  // Interactive Split Slider (0 to 100)
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isComparing, setIsComparing] = useState(true);
 
@@ -192,42 +193,35 @@ export default function SamplePluginRendererPage() {
     setRenderProgress(10);
     setRenderStepText("Exporting SketchUp Camera & Viewport Mesh...");
 
-    const timer1 = setTimeout(() => {
+    setTimeout(() => {
       setRenderProgress(35);
       setRenderStepText("Analyzing Geometry & Lighting Map...");
     }, 600);
 
-    const timer2 = setTimeout(() => {
+    setTimeout(() => {
       setRenderProgress(65);
       setRenderStepText(
         `Generating 4K Render with ${MODELS.find((m) => m.id === selectedModel)?.name}...`
       );
     }, 1300);
 
-    const timer3 = setTimeout(() => {
+    setTimeout(() => {
       setRenderProgress(90);
       setRenderStepText("Applying AI Super-Resolution & Color Grade...");
     }, 2000);
 
-    const timer4 = setTimeout(() => {
+    setTimeout(() => {
       setRenderProgress(100);
       setRenderStepText("Render Complete!");
       setIsRendering(false);
       setRenderCount((c) => Math.max(0, c - 1));
     }, 2600);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-      clearTimeout(timer4);
-    };
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#0a0a0c] font-sans text-zinc-100 select-none">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#09090b] font-sans text-white select-none">
       {/* TOP PLUGIN HEADER */}
-      <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-[#0e0e12] px-4">
+      <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         {/* Brand & SketchUp Badge */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5">
@@ -278,8 +272,8 @@ export default function SamplePluginRendererPage() {
       {/* MAIN PLUGIN WORKSPACE (SIDEBAR + PREVIEW CANAVS) */}
       <div className="flex flex-1 overflow-hidden">
         {/* LEFT CONTROLS PANEL */}
-        <aside className="custom-scrollbar flex w-[380px] shrink-0 flex-col overflow-y-auto border-r border-zinc-800/80 bg-[#0d0d11]">
-          <div className="space-y-4.5 p-4">
+        <aside className="flex w-[380px] shrink-0 flex-col overflow-y-auto border-r border-zinc-800 bg-[#0d0d11]">
+          <div className="space-y-4 p-4">
             {/* Quick Render Presets */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
@@ -298,7 +292,7 @@ export default function SamplePluginRendererPage() {
                       "flex cursor-pointer items-center gap-2 rounded-lg border p-2 text-left text-xs font-medium transition-all",
                       selectedPreset === preset.id
                         ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                        : "border-zinc-800/80 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                        : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
                     )}
                   >
                     <span className="text-sm">{preset.icon}</span>
@@ -317,7 +311,7 @@ export default function SamplePluginRendererPage() {
                 <button
                   type="button"
                   onClick={handleEnhancePrompt}
-                  className="flex items-center gap-1 text-[11px] font-bold text-amber-400 transition-colors hover:text-amber-300"
+                  className="flex cursor-pointer items-center gap-1 text-[11px] font-bold text-amber-400 transition-colors hover:text-amber-300"
                 >
                   <Wand2 className="h-3 w-3" />
                   <span>Enhance AI</span>
@@ -354,7 +348,7 @@ export default function SamplePluginRendererPage() {
                 <select
                   value={selectedLighting}
                   onChange={(e) => setSelectedLighting(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pr-8 text-xs text-white focus:border-white focus:outline-none"
+                  className="w-full cursor-pointer appearance-none rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pr-8 text-xs text-white focus:border-white focus:outline-none"
                 >
                   {LIGHTING_OPTIONS.map((opt) => (
                     <option
@@ -402,7 +396,7 @@ export default function SamplePluginRendererPage() {
             </div>
 
             {/* Creativity & Geometry Controls */}
-            <div className="space-y-3 rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-3">
+            <div className="space-y-3 rounded-lg border border-zinc-800 bg-zinc-950/40 p-3">
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-zinc-300">
@@ -486,7 +480,7 @@ export default function SamplePluginRendererPage() {
         {/* RIGHT PREVIEW & VIEWPORT WORKSPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden bg-[#070709]">
           {/* Viewport Action Bar */}
-          <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-[#0c0c10] px-4">
+          <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0c0c10] px-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-zinc-300">
                 {activeScene.title}
@@ -508,7 +502,9 @@ export default function SamplePluginRendererPage() {
                 )}
               >
                 <Split className="h-3.5 w-3.5" />
-                <span>Split Compare</span>
+                <span>
+                  {isComparing ? "Hide Split View" : "Show Split View"}
+                </span>
               </button>
 
               <a
@@ -527,38 +523,51 @@ export default function SamplePluginRendererPage() {
           {/* MAIN INTERACTIVE CANVAS VIEW */}
           <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
             {/* Interactive Before & After Comparison */}
-            <div className="relative h-full max-h-[640px] w-full max-w-[960px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
-              {/* After (Rendered) Image */}
+            <div className="relative h-full max-h-[640px] w-full max-w-[960px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl select-none">
+              {/* After (Photorealistic AI Render) Base Image */}
               <img
                 src={activeScene.afterImg}
                 alt="AI Photorealistic Render"
-                className="absolute inset-0 h-full w-full object-cover"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
               />
 
-              {/* Before (SketchUp Clay) Image Clipped */}
+              {/* Before (SketchUp Raw Viewport) Image Clipped with pure CSS ClipPath */}
               {isComparing && (
                 <div
-                  className="absolute inset-0 overflow-hidden border-r-2 border-white shadow-2xl"
-                  style={{ width: `${sliderPosition}%` }}
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`,
+                  }}
                 >
                   <img
                     src={activeScene.beforeImg}
-                    alt="SketchUp Model Wireframe"
-                    className="absolute inset-0 h-full w-full max-w-none object-cover brightness-90 grayscale"
-                    style={{ width: "100%", height: "100%" }}
+                    alt="SketchUp Raw Viewport"
+                    className="h-full w-full object-cover brightness-90 contrast-105 grayscale"
                   />
-                  <div className="absolute top-3 left-3 rounded-md bg-black/75 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+                  <div className="absolute top-3 left-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
                     SketchUp Raw Viewport
                   </div>
                 </div>
               )}
 
               {/* After Label */}
-              <div className="absolute top-3 right-3 rounded-md bg-black/75 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+              <div className="pointer-events-none absolute top-3 right-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
                 V6 AI 4K Render
               </div>
 
-              {/* Interactive Draggable Slider Handle */}
+              {/* Interactive Divider Line & Handle */}
+              {isComparing && (
+                <div
+                  className="pointer-events-none absolute top-0 bottom-0 z-10 flex w-0.5 items-center justify-center bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                  style={{ left: `${sliderPosition}%` }}
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-black/90 text-white shadow-xl">
+                    <ChevronsLeftRight className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+              )}
+
+              {/* Invisible Range Slider on top for smooth dragging */}
               {isComparing && (
                 <input
                   type="range"
@@ -572,8 +581,8 @@ export default function SamplePluginRendererPage() {
 
               {/* Live Rendering Progress Overlay */}
               {isRendering && (
-                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 p-6 backdrop-blur-md">
-                  <div className="flex w-full max-w-md flex-col items-center gap-3 text-center">
+                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-6 backdrop-blur-md">
+                  <div className="flex w-full max-w-md flex-col items-center gap-3.5 text-center">
                     <RefreshCw className="h-8 w-8 animate-spin text-white" />
                     <div className="text-base font-bold text-white">
                       {renderStepText}
@@ -585,7 +594,7 @@ export default function SamplePluginRendererPage() {
                       />
                     </div>
                     <div className="text-xs text-zinc-400">
-                      Processing with GPU Acceleration (Flux 2 Pro)
+                      GPU Accelerator: Flux 2 Pro Neural Core
                     </div>
                   </div>
                 </div>
@@ -594,7 +603,7 @@ export default function SamplePluginRendererPage() {
           </div>
 
           {/* BOTTOM GALLERY & RENDER HISTORY STRIP */}
-          <div className="custom-scrollbar flex h-24 shrink-0 items-center gap-3 overflow-x-auto border-t border-zinc-800/80 bg-[#0a0a0e] px-4 py-2.5">
+          <div className="flex h-24 shrink-0 items-center gap-3 overflow-x-auto border-t border-zinc-800 bg-[#0a0a0e] px-4 py-2.5">
             <span className="shrink-0 text-[11px] font-bold tracking-wider text-zinc-400 uppercase">
               Sample Scenes
             </span>
