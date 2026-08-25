@@ -48,6 +48,7 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
           new THREE.PlaneGeometry(planeSize, planeSize, planeSize, planeSize),
           new THREE.RawShaderMaterial({
             uniforms: this.uniforms,
+            wireframe: true,
             vertexShader: `
               #define GLSLIFY 1
               attribute vec3 position;
@@ -162,9 +163,10 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
               varying vec3 vPosition;
 
               void main(void) {
-                float opacity = (96.0 - length(vPosition)) / 256.0 * 0.6;
-                vec3 color = vec3(0.6);
-                gl_FragColor = vec4(color, opacity);
+                float dist = length(vPosition);
+                float alpha = clamp((220.0 - dist) / 160.0, 0.15, 0.95);
+                vec3 baseColor = mix(vec3(0.38, 0.40, 0.95), vec3(0.13, 0.82, 0.93), clamp(vPosition.y / 35.0, 0.0, 1.0));
+                gl_FragColor = vec4(baseColor, alpha);
               }
             `,
             transparent: true,
@@ -258,7 +260,7 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
     >
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-60"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-90"
       />
     </div>
   );
