@@ -575,9 +575,28 @@ ${basePrompt}`;
 
     const geminiKey = process.env.GEMINI_API_KEY || defaultGeminiKey;
 
-    const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
-    const mimeType = match ? match[1] : "image/png";
-    const base64Data = match ? match[2] : image;
+    let mimeType = "image/png";
+    let base64Data = image;
+
+    if (image.startsWith("http://") || image.startsWith("https://")) {
+      try {
+        const imgRes = await fetch(image);
+        if (imgRes.ok) {
+          const arrayBuf = await imgRes.arrayBuffer();
+          base64Data = Buffer.from(arrayBuf).toString("base64");
+          mimeType = imgRes.headers.get("content-type") || "image/jpeg";
+        }
+      } catch (e) {
+        console.warn(
+          "Could not fetch remote image URL for base64 conversion:",
+          e
+        );
+      }
+    } else {
+      const match = image.match(/^data:(image\/\w+);base64,(.+)$/);
+      mimeType = match ? match[1] : "image/png";
+      base64Data = match ? match[2] : image;
+    }
 
     console.log(
       `Generating render for ${normEmail} using assigned model: ${assignedModel}...`
