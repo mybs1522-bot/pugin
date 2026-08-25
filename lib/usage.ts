@@ -1002,6 +1002,7 @@ export interface RenderLogEntry {
   provider: "Google AI Studio" | "Replicate";
   status: "success" | "fallback_cascade" | "failed";
   durationSeconds: number;
+  prompt?: string;
   details?: string;
   error?: string;
   outputPreview?: string;

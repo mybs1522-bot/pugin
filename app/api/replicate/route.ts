@@ -127,7 +127,7 @@ You are performing a strict **1:1 pixel-accurate photorealistic render pass** on
 
 ### ABSOLUTE RULES — ZERO PIXEL, CAMERA, OR GEOMETRIC DISCREPANCY:
 1. **ZERO CAMERA MOVEMENT / ZERO REPOSITIONING:** The camera position, viewing angle, height, pitch, tilt, focal length, zoom level, framing, and cropping MUST BE 100% IDENTICAL to the input viewport down to the single pixel. Do NOT zoom out, do NOT pull back, do NOT reposition the camera, do NOT change the perspective or field of view.
-2. **ZERO GEOMETRY / OBJECT CHANGES:** DO NOT move, resize, add, remove, or rearrange ANY architectural elements or objects. Every single wall, doorway, window, staircase, dining table, chair, light fixture, rug, plant, painting, and decorative item MUST remain in its exact spatial coordinate and 2D pixel position.
+2. **ZERO GEOMETRY / OBJECT / FURNITURE CHANGES:** DO NOT move, resize, add, remove, or rearrange ANY architectural elements or objects. Every single wall, doorway, window, piece of furniture (bed, headboard, vanity table, mirror, armchair, desk, cabinetry, etc.) MUST remain in its exact spatial coordinate and 2D pixel position. Do NOT convert bedroom scenes into living rooms. Do NOT replace a bed or vanity with a sofa. Every object in the viewport MUST retain its exact identity, location, and form.
 3. **SOLE TASK — PBR MATERIAL & LIGHTING UPGRADE:** Replace ONLY the computer-graphics flat colors, simplified shading, and CAD outlines with hyper-photorealistic real-world physical materials and realistic architectural lighting.
 
 ### REALISM & MATERIALS
@@ -608,13 +608,13 @@ export async function POST(request: Request) {
               contents: [
                 {
                   parts: [
-                    { text: prompt },
                     {
                       inline_data: {
                         mime_type: mimeType,
                         data: base64Data,
                       },
                     },
+                    { text: prompt },
                   ],
                 },
               ],
@@ -677,6 +677,7 @@ export async function POST(request: Request) {
           provider: "Google AI Studio",
           status: "failed",
           durationSeconds,
+          prompt,
           error: lastError || "Google AI Studio returned no image output.",
         });
 
@@ -695,6 +696,7 @@ export async function POST(request: Request) {
         provider: "Google AI Studio",
         status: isCascade ? "fallback_cascade" : "success",
         durationSeconds,
+        prompt,
         details: isCascade
           ? `Primary model (${candidateModels[0]}) was overloaded (503); successfully cascaded to ${usedModel}`
           : `Direct execution via Google AI Studio (${usedModel})`,
@@ -743,6 +745,7 @@ export async function POST(request: Request) {
       provider: "Replicate",
       status: "success",
       durationSeconds,
+      prompt,
       details: `Initialized async Replicate prediction: ${prediction.id}`,
     });
 
