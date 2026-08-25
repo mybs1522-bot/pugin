@@ -33,7 +33,7 @@ const ELEMENT_STYLE = {
       "::placeholder": {
         color: "var(--muted-foreground, #71717a)",
       },
-      iconColor: "#a855f7",
+      iconColor: "#10b981",
     },
     invalid: {
       color: "#ef4444",
@@ -46,9 +46,10 @@ interface GlassCheckoutCardProps {
   amount?: number;
   className?: string;
   selectedPlan?: "monthly" | "yearly";
+  onPlanChange?: (plan: "monthly" | "yearly") => void;
   email?: string;
   onEmailChange?: (email: string) => void;
-  onSubmitTrial?: (email: string, cardholderName: string) => Promise<void>;
+  onSubmitTrial?: (email: string) => Promise<void>;
   loading?: boolean;
   errorMessage?: string | null;
 }
@@ -56,22 +57,24 @@ interface GlassCheckoutCardProps {
 export function GlassCheckoutCard({
   amount = 20,
   className,
-  selectedPlan = "monthly",
+  selectedPlan: propPlan,
+  onPlanChange,
   email: propEmail,
   onEmailChange,
   onSubmitTrial,
   loading: propLoading,
   errorMessage: propError,
 }: GlassCheckoutCardProps) {
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [localPlan, setLocalPlan] = useState<"monthly" | "yearly">("monthly");
   const [localEmail, setLocalEmail] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
   const stripe = useStripe();
   const elements = useElements();
 
+  const selectedPlan = propPlan !== undefined ? propPlan : localPlan;
+  const setSelectedPlan = onPlanChange || setLocalPlan;
   const currentEmail = propEmail !== undefined ? propEmail : localEmail;
   const setEmail = onEmailChange || setLocalEmail;
   const isLoading = propLoading !== undefined ? propLoading : localLoading;
@@ -88,7 +91,7 @@ export function GlassCheckoutCard({
     }
 
     if (onSubmitTrial) {
-      await onSubmitTrial(normEmail, cardholderName);
+      await onSubmitTrial(normEmail);
       return;
     }
 
@@ -116,7 +119,7 @@ export function GlassCheckoutCard({
         throw new Error(setupData.error || "Failed to initialize card setup.");
       }
 
-      // 2. Confirm card setup with Stripe ($0 charged today)
+      // 2. Confirm card setup with Stripe ($0 charged today, cardholder name bypassed)
       const confirmResult = await stripe.confirmCardSetup(
         setupData.clientSecret,
         {
@@ -124,7 +127,6 @@ export function GlassCheckoutCard({
             card: cardNumber,
             billing_details: {
               email: normEmail,
-              name: cardholderName || undefined,
             },
           },
         }
@@ -182,25 +184,97 @@ export function GlassCheckoutCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={cn("mx-auto w-full max-w-[460px]", className)}
+      className={cn("mx-auto w-full max-w-[480px]", className)}
     >
-      <Card className="group border-border/60 bg-card/60 hover:border-primary/50 hover:shadow-primary/10 relative overflow-hidden rounded-2xl p-0 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-2xl">
+      <Card className="group border-border/60 bg-card/60 relative overflow-hidden rounded-2xl p-0 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10">
         <form onSubmit={handleFormSubmit} className="p-6 sm:p-7">
-          <div className="mb-5">
+          <div className="mb-4">
+            <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+              Native SketchUp Extension • Unlimited 4K Renders
+            </div>
             <div className="flex items-center justify-between">
               <h3 className="text-foreground text-xl font-bold tracking-tight">
                 Download Plugin Now
               </h3>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500">
-                14 Days Free · $0 Today
+              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                $0.00 Due Today
               </span>
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Complete your 14-day free trial setup securely with card on file
+              14 days free trial. Unrestricted access to unlimited 4K renders &
+              3D video walkthroughs.
             </p>
           </div>
 
-          <div className="space-y-3.5">
+          {/* Side-by-Side Plan Selector */}
+          <div className="mb-4 grid grid-cols-2 gap-3">
+            {/* Monthly */}
+            <button
+              type="button"
+              onClick={() => setSelectedPlan("monthly")}
+              className={cn(
+                "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+                selectedPlan === "monthly"
+                  ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
+                  : "border-border/60 bg-background/50 hover:bg-background/80 opacity-80 hover:opacity-100"
+              )}
+            >
+              <div className="flex w-full items-center justify-between">
+                <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+                  Monthly
+                </span>
+                <span className="text-foreground text-sm font-black">
+                  $20
+                  <span className="text-muted-foreground text-[10px] font-normal">
+                    /mo
+                  </span>
+                </span>
+              </div>
+              <span className="text-muted-foreground mt-1.5 text-[11px] font-medium">
+                14 Days Free • Then $20/mo
+              </span>
+            </button>
+
+            {/* Yearly */}
+            <button
+              type="button"
+              onClick={() => setSelectedPlan("yearly")}
+              className={cn(
+                "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+                selectedPlan === "yearly"
+                  ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
+                  : "border-border/60 bg-background/50 hover:bg-background/80 opacity-80 hover:opacity-100"
+              )}
+            >
+              <div className="absolute -top-2.5 right-2">
+                <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
+                  25% OFF
+                </span>
+              </div>
+              <div className="flex w-full items-center justify-between">
+                <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+                  Yearly
+                </span>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-muted-foreground text-[10px] line-through">
+                    $240
+                  </span>
+                  <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                    $180
+                    <span className="text-muted-foreground text-[10px] font-normal">
+                      /yr
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <span className="mt-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                $15/mo • Save $60/yr
+              </span>
+            </button>
+          </div>
+
+          <div className="space-y-3">
             {/* Email Address */}
             <div className="space-y-1.5">
               <Label
@@ -215,7 +289,7 @@ export function GlassCheckoutCard({
                 placeholder="architect@studio.com"
                 value={currentEmail}
                 onChange={(e) => setEmail(e.target.value)}
-                className="border-border/60 bg-background/60 focus:border-primary focus:bg-background/90 h-10 text-sm backdrop-blur-sm"
+                className="border-border/60 bg-background/60 focus:bg-background/90 h-10 text-sm backdrop-blur-sm focus:border-emerald-500"
                 required
               />
             </div>
@@ -234,7 +308,7 @@ export function GlassCheckoutCard({
                   Encrypted
                 </span>
               </div>
-              <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:ring-1">
+              <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
                 <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
                 <CardNumberElement options={ELEMENT_STYLE} />
               </div>
@@ -249,7 +323,7 @@ export function GlassCheckoutCard({
                 >
                   Expiry Date
                 </Label>
-                <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:ring-1">
+                <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
                   <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
                   <CardExpiryElement options={ELEMENT_STYLE} />
                 </div>
@@ -261,28 +335,11 @@ export function GlassCheckoutCard({
                 >
                   CVC
                 </Label>
-                <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:ring-1">
+                <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
                   <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
                   <CardCvcElement options={ELEMENT_STYLE} />
                 </div>
               </div>
-            </div>
-
-            {/* Cardholder Name */}
-            <div className="space-y-1.5">
-              <Label
-                htmlFor="name"
-                className="text-foreground text-xs font-semibold tracking-wider uppercase"
-              >
-                Cardholder Name
-              </Label>
-              <Input
-                id="name"
-                placeholder="John Doe"
-                value={cardholderName}
-                onChange={(e) => setCardholderName(e.target.value)}
-                className="border-border/60 bg-background/60 focus:border-primary focus:bg-background/90 h-10 text-sm backdrop-blur-sm"
-              />
             </div>
           </div>
 
@@ -297,21 +354,24 @@ export function GlassCheckoutCard({
           <Button
             type="submit"
             disabled={isLoading || !stripe}
-            className="bg-primary text-primary-foreground shadow-primary/25 hover:shadow-primary/45 mt-5 h-11 w-full gap-2 font-bold shadow-lg transition-all"
+            className="mt-4 h-11 w-full gap-2 bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
           >
             {isLoading ? (
               "Setting up trial..."
             ) : (
               <>
                 <Download className="h-4 w-4" />
-                Start 14-Day Free Trial ($0 Today)
+                Start 14-Day Free Trial & Download (.rbz)
               </>
             )}
           </Button>
 
-          <div className="text-muted-foreground mt-3.5 flex items-center justify-center gap-1.5 text-center text-xs">
-            <Lock className="text-muted-foreground h-3.5 w-3.5" />
-            <span>256-bit encrypted · Auto-downloads SketchUp plugin</span>
+          <div className="text-muted-foreground mt-3 flex items-center justify-center gap-1.5 text-center text-xs">
+            <Lock className="h-3 w-3 text-emerald-500" />
+            <span>
+              $0.00 charged today. 14 days free trial. Cancel anytime in 1
+              click.
+            </span>
           </div>
         </form>
       </Card>

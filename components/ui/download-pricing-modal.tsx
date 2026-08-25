@@ -8,19 +8,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { PricingCard } from "@/components/ui/pricing-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Download,
   CheckCircle2,
-  ArrowLeft,
   Lock,
   ShieldCheck,
   AlertCircle,
   CreditCard,
   Calendar,
-  User,
+  Sparkles,
 } from "lucide-react";
 import {
   Elements,
@@ -31,6 +29,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { getStripeClient } from "@/lib/stripe-client";
+import { cn } from "@/lib/utils";
 
 interface DownloadPricingModalProps {
   open: boolean;
@@ -43,14 +42,14 @@ interface DownloadPricingModalProps {
 const ELEMENT_STYLE = {
   style: {
     base: {
-      color: "#18181b",
+      color: "var(--foreground, #18181b)",
       fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       fontSmoothing: "antialiased",
       fontSize: "14px",
       "::placeholder": {
-        color: "#a1a1aa",
+        color: "var(--muted-foreground, #a1a1aa)",
       },
-      iconColor: "#7c3aed",
+      iconColor: "#10b981",
     },
     invalid: {
       color: "#ef4444",
@@ -59,21 +58,18 @@ const ELEMENT_STYLE = {
   },
 };
 
-function TrialCheckoutForm({
-  selectedPlan,
-  onBack,
+function UnifiedTrialForm({
   onSuccess,
 }: {
-  selectedPlan: "monthly" | "yearly";
-  onBack: () => void;
   onSuccess: (email: string) => void;
 }) {
   const stripe = useStripe();
   const elements = useElements();
 
+  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
+    "monthly"
+  );
   const [email, setEmail] = useState("");
-  const [cardholderName, setCardholderName] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("card");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -89,7 +85,7 @@ function TrialCheckoutForm({
 
     if (!stripe || !elements) {
       setErrorMessage(
-        "Stripe payment gateway is still initializing. Please wait a moment."
+        "Stripe payment gateway is initializing. Please wait a moment."
       );
       return;
     }
@@ -117,7 +113,7 @@ function TrialCheckoutForm({
         );
       }
 
-      // 2. Confirm Card Setup with Stripe ($0 charged today)
+      // 2. Confirm Card Setup with Stripe ($0 charged today, cardholder name bypassed)
       const confirmResult = await stripe.confirmCardSetup(
         setupData.clientSecret,
         {
@@ -125,7 +121,6 @@ function TrialCheckoutForm({
             card: cardNumberElement,
             billing_details: {
               email: normEmail,
-              name: cardholderName || undefined,
             },
           },
         }
@@ -169,7 +164,7 @@ function TrialCheckoutForm({
           videoCount: 0,
           isPaid: false,
           status: "trial",
-          paymentMode: "Stripe 14-Day Free Trial (Card Saved)",
+          paymentMode: `Stripe 14-Day Free Trial (${selectedPlan})`,
           lastModelUsed: "google/nano-banana-pro",
           signedUpAt: new Date().toISOString(),
           lastLoginAt: new Date().toISOString(),
@@ -183,7 +178,7 @@ function TrialCheckoutForm({
         }
       } catch {}
 
-      // 5. Trigger download of .rbz
+      // 5. Trigger automatic download of .rbz
       const downloadLink = document.createElement("a");
       downloadLink.href = "/v6_render.rbz";
       downloadLink.download = "v6_render.rbz";
@@ -196,7 +191,7 @@ function TrialCheckoutForm({
       console.error("Trial submission error:", err);
       setErrorMessage(
         err.message ||
-          "Something went wrong while verifying your card. Please try again."
+          "Something went wrong while verifying your card. Please check your details."
       );
     } finally {
       setLoading(false);
@@ -205,29 +200,96 @@ function TrialCheckoutForm({
 
   return (
     <div className="flex flex-col gap-4 p-6 sm:p-7">
-      <button
-        type="button"
-        onClick={onBack}
-        className="text-muted-foreground hover:text-foreground flex w-fit items-center gap-1.5 text-xs font-semibold transition-colors"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to plans
-      </button>
+      {/* Top Badge & Header */}
+      <div className="space-y-1.5 text-left">
+        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+          Native SketchUp Extension • Unlimited 4K Renders
+        </div>
 
-      <div className="space-y-1 text-left">
         <div className="flex items-center justify-between">
-          <h3 className="text-foreground text-xl font-bold tracking-tight">
+          <h3 className="text-foreground text-xl font-black tracking-tight sm:text-2xl">
             Download Plugin Now
           </h3>
-          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
             $0.00 Due Today
           </span>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Complete your 14-day free trial setup securely with card on file
+
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          14 days free trial. Unrestricted access to unlimited 4K photorealistic
+          renders & 3D video walkthroughs. Cancel anytime in 1 click.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+      {/* Side-by-Side Plan Selector (Directly on the page) */}
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        {/* Monthly Card */}
+        <button
+          type="button"
+          onClick={() => setSelectedPlan("monthly")}
+          className={cn(
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+            selectedPlan === "monthly"
+              ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
+              : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-85 hover:opacity-100"
+          )}
+        >
+          <div className="flex w-full items-center justify-between">
+            <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+              Monthly
+            </span>
+            <span className="text-foreground text-sm font-black">
+              $20
+              <span className="text-muted-foreground text-[10px] font-normal">
+                /mo
+              </span>
+            </span>
+          </div>
+          <span className="text-muted-foreground mt-1.5 text-[11px] font-medium">
+            14 Days Free • Then $20/mo
+          </span>
+        </button>
+
+        {/* Yearly Card */}
+        <button
+          type="button"
+          onClick={() => setSelectedPlan("yearly")}
+          className={cn(
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+            selectedPlan === "yearly"
+              ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
+              : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-85 hover:opacity-100"
+          )}
+        >
+          <div className="absolute -top-2.5 right-2">
+            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
+              25% OFF
+            </span>
+          </div>
+          <div className="flex w-full items-center justify-between">
+            <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+              Yearly
+            </span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-muted-foreground text-[10px] line-through">
+                $240
+              </span>
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                $180
+                <span className="text-muted-foreground text-[10px] font-normal">
+                  /yr
+                </span>
+              </span>
+            </div>
+          </div>
+          <span className="mt-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            $15/mo • Save $60/yr
+          </span>
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 pt-1">
         {/* EMAIL ADDRESS */}
         <div className="space-y-1.5">
           <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
@@ -238,7 +300,7 @@ function TrialCheckoutForm({
             placeholder="architect@studio.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-border/60 bg-background/60 focus:border-primary h-10 text-sm"
+            className="border-border/60 bg-background/60 h-10 text-sm focus:border-emerald-500"
             required
             autoFocus
           />
@@ -254,7 +316,7 @@ function TrialCheckoutForm({
               <ShieldCheck className="h-3 w-3 text-emerald-500" /> SSL Encrypted
             </span>
           </div>
-          <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+          <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
             <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
             <CardNumberElement options={ELEMENT_STYLE} />
           </div>
@@ -266,7 +328,7 @@ function TrialCheckoutForm({
             <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
               Expiry Date
             </label>
-            <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+            <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
               <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
               <CardExpiryElement options={ELEMENT_STYLE} />
             </div>
@@ -275,26 +337,10 @@ function TrialCheckoutForm({
             <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
               CVC
             </label>
-            <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+            <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
               <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
               <CardCvcElement options={ELEMENT_STYLE} />
             </div>
-          </div>
-        </div>
-
-        {/* CARDHOLDER NAME */}
-        <div className="space-y-1.5">
-          <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
-            Cardholder Name
-          </label>
-          <div className="relative">
-            <Input
-              placeholder="John Doe"
-              value={cardholderName}
-              onChange={(e) => setCardholderName(e.target.value)}
-              className="border-border/60 bg-background/60 focus:border-primary h-10 pl-10 text-sm"
-            />
-            <User className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
           </div>
         </div>
 
@@ -305,11 +351,12 @@ function TrialCheckoutForm({
           </div>
         )}
 
+        {/* SUBMIT CTA */}
         <Button
           type="submit"
           size="lg"
           disabled={loading || !stripe}
-          className="mt-1 h-12 w-full gap-2 text-sm font-bold shadow-lg"
+          className="mt-1 h-12 w-full gap-2 bg-emerald-600 text-sm font-bold text-white shadow-lg transition-all hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
         >
           {loading ? (
             "Verifying Card & Starting Trial..."
@@ -334,20 +381,12 @@ export function DownloadPricingModal({
   open,
   onOpenChange,
 }: DownloadPricingModalProps) {
-  const [step, setStep] = useState<"pricing" | "email" | "done">("pricing");
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
-    "monthly"
-  );
+  const [done, setDone] = useState(false);
   const [confirmedEmail, setConfirmedEmail] = useState("");
-
-  const handleStartTrialClick = (plan?: "monthly" | "yearly") => {
-    if (plan) setSelectedPlan(plan);
-    setStep("email");
-  };
 
   const handleSuccess = (email: string) => {
     setConfirmedEmail(email);
-    setStep("done");
+    setDone(true);
   };
 
   const handleManualDownload = () => {
@@ -365,39 +404,16 @@ export function DownloadPricingModal({
       onOpenChange={(val) => {
         onOpenChange(val);
         if (!val) {
-          setTimeout(() => setStep("pricing"), 300);
+          setTimeout(() => setDone(false), 300);
         }
       }}
     >
-      <DialogContent className="border-border bg-background max-w-[500px] overflow-hidden rounded-2xl p-0">
-        {step === "pricing" && (
-          <>
-            <DialogHeader className="px-6 pt-6 pb-0 text-left">
-              <DialogTitle className="text-xl font-bold">
-                Activate 14-Day Free Trial
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground text-sm">
-                Get 14 days of unlimited SketchUp AI rendering & 3D video
-                walkthroughs.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="p-6">
-              <PricingCard onStartTrial={handleStartTrialClick} />
-            </div>
-          </>
-        )}
-
-        {step === "email" && (
+      <DialogContent className="border-border bg-background max-w-[480px] overflow-hidden rounded-2xl p-0 shadow-2xl">
+        {!done ? (
           <Elements stripe={getStripeClient()}>
-            <TrialCheckoutForm
-              selectedPlan={selectedPlan}
-              onBack={() => setStep("pricing")}
-              onSuccess={handleSuccess}
-            />
+            <UnifiedTrialForm onSuccess={handleSuccess} />
           </Elements>
-        )}
-
-        {step === "done" && (
+        ) : (
           <div className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
             <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-500">
               <CheckCircle2 className="h-8 w-8" />
