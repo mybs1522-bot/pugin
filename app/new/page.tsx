@@ -1294,9 +1294,9 @@ export default function SamplePluginRendererPage() {
           </div>
 
           {/* MAIN CANVAS AREA */}
-          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-4">
+          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-2.5 sm:p-3.5">
             {!isComparing ? (
-              <div className="grid h-full max-h-[640px] w-full max-w-[1100px] grid-cols-2 gap-4">
+              <div className="grid h-full max-h-[calc(100vh-125px)] w-full max-w-[1680px] grid-cols-2 gap-3 sm:gap-4">
                 {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
                 <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
                   <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
