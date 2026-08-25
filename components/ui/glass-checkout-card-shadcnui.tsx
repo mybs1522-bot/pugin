@@ -189,7 +189,7 @@ export function GlassCheckoutCard({
           <div className="mb-5">
             <div className="flex items-center justify-between">
               <h3 className="text-foreground text-xl font-bold tracking-tight">
-                Payment Details
+                Download Plugin Now
               </h3>
               <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-500">
                 14 Days Free · $0 Today
@@ -198,36 +198,6 @@ export function GlassCheckoutCard({
             <p className="text-muted-foreground mt-1 text-xs">
               Complete your 14-day free trial setup securely with card on file
             </p>
-          </div>
-
-          {/* Payment Methods Tabs */}
-          <div className="mb-5 grid grid-cols-3 gap-2">
-            {[
-              { id: "card", label: "Credit Card", icon: CreditCard },
-              { id: "paypal", label: "PayPal", text: "Pay" },
-              { id: "apple", label: "Apple Pay", text: "Pay" },
-            ].map((method) => {
-              const Icon = method.icon;
-              const isSelected = paymentMethod === method.id;
-              return (
-                <button
-                  type="button"
-                  key={method.id}
-                  onClick={() => setPaymentMethod(method.id)}
-                  className={cn(
-                    "border-border/50 bg-background/50 hover:bg-background/80 flex h-11 items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all",
-                    isSelected &&
-                      "border-primary bg-primary/15 text-primary ring-primary/40 shadow-sm ring-1"
-                  )}
-                >
-                  {Icon && <Icon className="h-4 w-4" />}
-                  {method.text && (
-                    <span className="font-bold">{method.text}</span>
-                  )}
-                  {method.id === "card" && <span>Card</span>}
-                </button>
-              );
-            })}
           </div>
 
           <div className="space-y-3.5">
