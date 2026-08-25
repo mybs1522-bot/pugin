@@ -791,13 +791,19 @@ export default function SamplePluginRendererPage() {
                   <div
                     onClick={() => handleSpaceChange("interior")}
                     className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-all",
+                      "flex cursor-pointer items-center gap-3.5 rounded-xl border p-3 transition-all",
                       spaceType === "interior"
-                        ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                        : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        ? "border-indigo-500 bg-indigo-500/15 text-white shadow-lg ring-1 shadow-indigo-500/10 ring-indigo-500/50"
+                        : "border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700"
                     )}
                   >
-                    <span className="text-3xl">🏠</span>
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-indigo-400/40 shadow-md">
+                      <img
+                        src="/images/space-interior.jpg"
+                        alt="Interior"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <div>
                       <div className="text-sm font-bold text-white">
                         Interior
@@ -811,13 +817,19 @@ export default function SamplePluginRendererPage() {
                   <div
                     onClick={() => handleSpaceChange("exterior")}
                     className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-all",
+                      "flex cursor-pointer items-center gap-3.5 rounded-xl border p-3 transition-all",
                       spaceType === "exterior"
-                        ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                        : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        ? "border-emerald-500 bg-emerald-500/15 text-white shadow-lg ring-1 shadow-emerald-500/10 ring-emerald-500/50"
+                        : "border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700"
                     )}
                   >
-                    <span className="text-3xl">🏡</span>
+                    <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full border-2 border-emerald-400/40 shadow-md">
+                      <img
+                        src="/images/space-exterior.jpg"
+                        alt="Exterior"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <div>
                       <div className="text-sm font-bold text-white">
                         Exterior
