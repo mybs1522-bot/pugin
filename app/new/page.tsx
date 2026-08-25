@@ -645,7 +645,12 @@ export default function SamplePluginRendererPage() {
       {/* TOP PLUGIN HEADER WITH USER ACCOUNT PILL & LIVE SUPPORT */}
       <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-1.5">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/v6-logo.png"
+              alt="V6 Render"
+              className="h-6 w-6 object-contain drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+            />
             <span className="text-base font-black tracking-tight text-white">
               V6 Render
             </span>

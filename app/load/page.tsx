@@ -144,7 +144,12 @@ export default function LoadPluginImagesPage() {
       {/* HEADER */}
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-6">
         <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/v6-logo.png"
+              alt="V6 Render"
+              className="h-6 w-6 object-contain drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+            />
             <span className="text-base font-black tracking-tight text-white">
               V6 Render
             </span>
