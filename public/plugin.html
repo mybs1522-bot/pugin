@@ -1197,69 +1197,6 @@
       }
     }
 
-    /* OVERLAYS & MODALS */
-    .full-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(9, 9, 11, 0.92);
-      backdrop-filter: blur(16px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      padding: 20px;
-    }
-    .dialog-box {
-      width: 100%;
-      max-width: 440px;
-      background: #121216;
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.9);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .dialog-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .dialog-desc {
-      font-size: 12px;
-      color: #a1a1aa;
-      line-height: 1.5;
-    }
-    .dialog-input {
-      width: 100%;
-      height: 44px;
-      background: #09090b;
-      border: 1px solid var(--border-subtle);
-      border-radius: 10px;
-      padding: 0 14px;
-      color: #ffffff;
-      font-size: 13px;
-    }
-    .dialog-input:focus {
-      outline: none;
-      border-color: #ffffff;
-    }
-    .dialog-btn-primary {
-      height: 44px;
-      border-radius: 10px;
-      background: #ffffff;
-      color: #000000;
-      font-size: 13px;
-      font-weight: 800;
-      border: none;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .dialog-btn-primary:hover {
-      background: #e4e4e7;
-    }
-
     .spinner-icon {
       animation: spin 1s linear infinite;
     }
@@ -1307,6 +1244,94 @@
           <span id="splashStep3Text">Loading Assets</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL FOR ONE-TIME EMAIL & 4-DIGIT OTP PC VERIFICATION (EXACT ORIGINAL) -->
+  <div id="authModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:380px; padding:28px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.8);">
+      <div style="font-size:36px; margin-bottom:8px;">🔑</div>
+      <h3 style="font-size:18px; font-weight:700; color:#fff; margin-bottom:6px;">Verify PC Access</h3>
+      <p style="font-size:11px; color:#a1a1aa; margin-bottom:20px; line-height:1.4;">Enter your email to receive a 4-digit code. Once verified, this PC will stay logged in permanently!</p>
+
+      <!-- Step 1: Email Input -->
+      <div id="authStep1">
+        <input type="email" id="authEmail" placeholder="your.name@gmail.com" style="margin-bottom:12px; padding:10px 14px; font-size:13px; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
+        <button class="btn-create-render" id="btnSendOtp" onclick="sendOtpCode()" style="margin-top:0; height:42px; font-size:12px;">Send 4-Digit Code</button>
+      </div>
+
+      <!-- Step 2: 4-Digit OTP Code Input -->
+      <div id="authStep2" style="display:none;">
+        <p style="font-size:11px; color:#38bdf8; margin-bottom:10px;" id="otpNotice">4-digit code sent to your email!</p>
+        <input type="text" id="authOtpCode" placeholder="••••" maxlength="4" style="margin-bottom:12px; padding:10px 14px; font-size:22px; letter-spacing:10px; text-align:center; font-weight:800; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
+        <button class="btn-create-render" id="btnVerifyOtp" onclick="verifyOtpCode()" style="margin-top:0; height:42px; font-size:12px;">Verify & Activate PC</button>
+        <button onclick="resetAuthForm()" style="background:transparent; border:none; color:#a1a1aa; font-size:11px; margin-top:12px; cursor:pointer; text-decoration:underline;">Use a different email</button>
+      </div>
+
+      <div id="authStatus" style="margin-top:14px; font-size:11px; display:none; padding:8px; border-radius:8px;"></div>
+    </div>
+  </div>
+
+  <!-- TRIAL LIMIT OVER MODAL (EXACT ORIGINAL) -->
+  <div id="trialOverModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(10px); z-index:99999; align-items:center; justify-content:center;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.18); border-radius:24px; width:400px; padding:32px; text-align:center; box-shadow:0 25px 60px rgba(0,0,0,0.95); position:relative;">
+      <button onclick="document.getElementById('trialOverModal').style.display='none'" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+      <div style="font-size:42px; margin-bottom:12px;">⚡</div>
+      <h3 style="font-size:20px; font-weight:800; color:#ffffff; margin-bottom:8px; letter-spacing:-0.02em;">Trial Limits are over to render more</h3>
+      <p style="font-size:12px; color:#a1a1aa; margin-bottom:24px; line-height:1.5;">
+        Your free trial renders for this account have been used. Activate Pro Plan to unlock unlimited 4K photorealistic renders & 3D video walkthroughs.
+      </p>
+
+      <button class="btn-create-render" onclick="openProPlanCheckout(this)" style="background:#ffffff; color:#000000; border:none; padding:14px 20px; font-size:14px; font-weight:800; border-radius:12px; width:100%; cursor:pointer; box-shadow:0 8px 25px rgba(255,255,255,0.2); margin-top:0;">
+        ⚡ Activate Pro Plan
+      </button>
+
+      <button onclick="document.getElementById('trialOverModal').style.display='none'" style="background:transparent; border:none; color:#71717a; font-size:12px; margin-top:14px; cursor:pointer; text-decoration:underline;">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- SUPPORT CHAT MODAL (EXACT ORIGINAL) -->
+  <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:480px; height:600px; max-height:92vh; display:flex; flex-direction:column; padding:20px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
+      <button onclick="toggleSupportModal(false)" style="position:absolute; top:16px; right:16px; background:none; border:none; color:#a1a1aa; font-size:18px; cursor:pointer; z-index:10;">✕</button>
+
+      <!-- CHAT HEADER -->
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+        <div style="font-size:24px;">💬</div>
+        <div>
+          <h3 style="font-size:15px; font-weight:700; color:#fff;">Live Support Chat</h3>
+          <p style="font-size:10px; color:#a1a1aa;">Ask questions & receive real-time admin replies</p>
+        </div>
+      </div>
+
+      <!-- 24-HOUR RESOLUTION NOTICE -->
+      <div style="font-size:10px; color:#c7d2fe; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.25); border-radius:8px; padding:6px 10px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+        ⏱️ <span>Support will reply within <b>24 hours</b>. You will receive a red badge notification & email update!</span>
+      </div>
+
+      <!-- CHAT MESSAGES CONTAINER -->
+      <div id="supportChatContainer" style="flex:1; overflow-y:auto; padding-right:4px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px;">
+        <div style="text-align:center; color:#71717a; font-size:11px; padding:20px;">Loading chat messages...</div>
+      </div>
+
+      <!-- CATEGORY SELECTOR FOR NEW INQUIRY -->
+      <div style="margin-bottom:8px;">
+        <select id="supportCategory" style="padding:6px 10px; font-size:11px; width:100%; background:#09090b; border:1px solid #27272a; border-radius:8px; color:#fff; outline:none;">
+          <option value="General Question">❓ General Question / Help</option>
+          <option value="Bug / Technical Issue">🐞 Technical Bug or Issue</option>
+          <option value="Payment & Access">💳 Payment & Account Access</option>
+          <option value="Feature Request">💡 Feature Request</option>
+        </select>
+      </div>
+
+      <!-- CHAT INPUT BAR -->
+      <div style="display:flex; gap:8px; align-items:flex-end;">
+        <textarea id="supportMessage" rows="2" placeholder="Type your message to support..." style="flex:1; background:#09090b; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#fff; padding:8px 12px; font-size:12px; resize:none; outline:none;" required></textarea>
+        <button class="btn-create-render" id="btnSubmitSupport" onclick="submitSupportRequest()" style="width:auto; padding:10px 16px; height:42px; margin-top:0; font-size:12px;">Send 💬</button>
+      </div>
+      <div id="supportStatus" style="margin-top:8px; font-size:11px; display:none; padding:6px 8px; border-radius:6px;"></div>
     </div>
   </div>
 
@@ -1723,65 +1748,6 @@
   <!-- FLYING SNAPSHOT OVERLAY CONTAINER -->
   <div id="flyingSnapshotAnchor"></div>
 
-  <!-- AUTHENTICATION / OTP MODAL -->
-  <div class="full-overlay" id="authModal" style="display: none;">
-    <div class="dialog-box">
-      <div class="dialog-title">🔑 Verify Account & Device</div>
-      <div class="dialog-desc">Enter your email address to link your V6 Render license and sync render passes.</div>
-
-      <div id="authStep1">
-        <input type="email" id="authEmail" class="dialog-input" placeholder="architect@studio.com" autocomplete="email">
-        <button type="button" class="dialog-btn-primary" id="btnSendOtp" onclick="sendOtpCode()" style="width: 100%; margin-top: 12px;">Send 4-Digit Verification Code</button>
-      </div>
-
-      <div id="authStep2" style="display: none;">
-        <div class="dialog-desc" id="otpNotice" style="margin-bottom: 8px;">Enter the 4-digit code sent to your inbox:</div>
-        <input type="text" id="authOtpCode" class="dialog-input font-mono" placeholder="1234" maxlength="6" style="text-align: center; letter-spacing: 4px; font-size: 18px;">
-        <button type="button" class="dialog-btn-primary" id="btnVerifyOtp" onclick="verifyOtpCode()" style="width: 100%; margin-top: 12px;">Confirm & Access V6 Render</button>
-        <button type="button" onclick="resetAuthForm()" style="background: none; border: none; color: #a1a1aa; font-size: 11px; cursor: pointer; text-align: center; width: 100%; margin-top: 8px;">Use different email</button>
-      </div>
-
-      <div id="authStatus" style="display: none; font-size: 11px; text-align: center;"></div>
-    </div>
-  </div>
-
-  <!-- TRIAL LIMIT MODAL -->
-  <div class="full-overlay" id="trialOverModal" style="display: none;">
-    <div class="dialog-box" style="text-align: center;">
-      <div style="font-size: 32px;">⚡</div>
-      <div class="dialog-title">Trial Limit Reached</div>
-      <div class="dialog-desc">You've completed your free trial renders. Activate the V6 Pro Plan for unlimited 4K photorealistic renders and 3D video walkthroughs.</div>
-      <button type="button" class="dialog-btn-primary" onclick="openProPlanCheckout(this)" style="margin-top: 10px;">Activate V6 Pro Plan</button>
-      <button type="button" onclick="document.getElementById('trialOverModal').style.display='none'" style="background: none; border: none; color: #71717a; font-size: 11px; cursor: pointer;">Close</button>
-    </div>
-  </div>
-
-  <!-- LIVE SUPPORT MODAL -->
-  <div class="full-overlay" id="supportModal" style="display: none;">
-    <div class="dialog-box" style="max-width: 520px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <div class="dialog-title">💬 Live Studio Support</div>
-        <button type="button" onclick="toggleSupportModal(false)" style="background: none; border: none; color: #a1a1aa; font-size: 16px; cursor: pointer;">✕</button>
-      </div>
-
-      <div id="supportChatContainer" style="height: 200px; overflow-y: auto; background: #09090b; border: 1px solid var(--border-subtle); border-radius: 10px; padding: 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
-        <div style="color: #71717a; text-align: center; margin: auto;">Direct live support channel active. Send a message below.</div>
-      </div>
-
-      <select id="supportCategory" class="dialog-input" style="height: 38px;">
-        <option value="General Question">General Inquiry</option>
-        <option value="Render Quality">Render Quality & Lighting</option>
-        <option value="Billing & Pro Plan">Billing & Subscription</option>
-        <option value="Bug / Error">Bug Report</option>
-      </select>
-
-      <textarea id="supportMessage" class="dialog-input" rows="3" style="height: auto; padding: 10px;" placeholder="Describe your inquiry or scene feedback..."></textarea>
-
-      <button type="button" class="dialog-btn-primary" id="btnSubmitSupport" onclick="submitSupportRequest()">Send Message to Support</button>
-      <div id="supportStatus" style="display: none; font-size: 11px; text-align: center;"></div>
-    </div>
-  </div>
-
   <!-- HIDDEN COMPATIBILITY CONTAINERS -->
   <div id="pluginTickerBar" style="display: none;">
     <span id="tickerTag"></span>
@@ -1921,7 +1887,7 @@
     }
   </script>
 
-  <!-- INSERT COMPLETE ORIGINAL PRODUCTION SCRIPT -->
+  <!-- INSERT COMPLETE ORIGINAL PRODUCTION SCRIPT (FIXED) -->
   <script>
 
     function showTrialOverModal() {
@@ -2002,9 +1968,6 @@
           btnEl.disabled = false;
           btnEl.innerHTML = originalBtnText;
         }
-      }
-    } else {
-        window.open(liveUrl, '_blank');
       }
     }
 
