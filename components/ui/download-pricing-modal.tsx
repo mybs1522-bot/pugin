@@ -18,10 +18,15 @@ import {
   Lock,
   ShieldCheck,
   AlertCircle,
+  CreditCard,
+  Calendar,
+  User,
 } from "lucide-react";
 import {
   Elements,
-  CardElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
@@ -35,7 +40,7 @@ interface DownloadPricingModalProps {
   macHref?: string;
 }
 
-const CARD_ELEMENT_OPTIONS = {
+const ELEMENT_STYLE = {
   style: {
     base: {
       color: "#18181b",
@@ -52,7 +57,6 @@ const CARD_ELEMENT_OPTIONS = {
       iconColor: "#ef4444",
     },
   },
-  hidePostalCode: false,
 };
 
 function TrialCheckoutForm({
@@ -68,6 +72,8 @@ function TrialCheckoutForm({
   const elements = useElements();
 
   const [email, setEmail] = useState("");
+  const [cardholderName, setCardholderName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("card");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -88,9 +94,9 @@ function TrialCheckoutForm({
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setErrorMessage("Please enter your card details.");
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
+      setErrorMessage("Please enter your card number.");
       return;
     }
 
@@ -116,9 +122,10 @@ function TrialCheckoutForm({
         setupData.clientSecret,
         {
           payment_method: {
-            card: cardElement,
+            card: cardNumberElement,
             billing_details: {
               email: normEmail,
+              name: cardholderName || undefined,
             },
           },
         }
@@ -197,7 +204,7 @@ function TrialCheckoutForm({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6 sm:p-8">
+    <div className="flex flex-col gap-4 p-6 sm:p-7">
       <button
         type="button"
         onClick={onBack}
@@ -206,22 +213,51 @@ function TrialCheckoutForm({
         <ArrowLeft className="h-3.5 w-3.5" /> Back to plans
       </button>
 
-      <DialogHeader className="space-y-1.5 p-0 text-left">
-        <DialogTitle className="text-2xl font-black tracking-tight">
-          Enter your details
-        </DialogTitle>
-        <DialogDescription className="text-muted-foreground text-sm">
-          We'll activate your 14-day free trial and start your SketchUp plugin
-          download immediately.{" "}
-          <strong className="text-foreground font-semibold">
-            $0.00 is charged today.
-          </strong>
-        </DialogDescription>
-      </DialogHeader>
+      <div className="space-y-1 text-left">
+        <div className="flex items-center justify-between">
+          <h3 className="text-foreground text-xl font-bold tracking-tight">
+            Payment Details
+          </h3>
+          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            $0.00 Due Today
+          </span>
+        </div>
+        <p className="text-muted-foreground text-xs">
+          Complete your 14-day free trial setup securely with card on file
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="mt-2 flex flex-col gap-4">
+      {/* Payment Methods */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { id: "card", label: "Credit Card", icon: CreditCard },
+          { id: "paypal", label: "PayPal", text: "Pay" },
+          { id: "apple", label: "Apple Pay", text: "Pay" },
+        ].map((method) => {
+          const Icon = method.icon;
+          const isSelected = paymentMethod === method.id;
+          return (
+            <button
+              type="button"
+              key={method.id}
+              onClick={() => setPaymentMethod(method.id)}
+              className={`flex h-11 items-center justify-center gap-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                isSelected
+                  ? "border-primary bg-primary/10 text-primary ring-primary/40 shadow-sm ring-1"
+                  : "border-border/50 bg-background/50 text-muted-foreground hover:bg-background/80"
+              }`}
+            >
+              {Icon && <Icon className="h-4 w-4" />}
+              {method.text && <span className="font-bold">{method.text}</span>}
+              {method.id === "card" && <span>Card</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
         {/* EMAIL ADDRESS */}
-        <div className="flex flex-col gap-1.5">
+        <div className="space-y-1.5">
           <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
             Email Address
           </label>
@@ -230,33 +266,63 @@ function TrialCheckoutForm({
             placeholder="architect@studio.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-border bg-muted/30 focus-visible:ring-primary h-11 px-3.5 text-sm"
+            className="border-border/60 bg-background/60 focus:border-primary h-10 text-sm"
             required
             autoFocus
           />
         </div>
 
-        {/* CARD DETAILS */}
-        <div className="flex flex-col gap-1.5">
+        {/* CARD NUMBER */}
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-foreground flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
-              <Lock className="text-primary h-3 w-3" /> Card Details
+            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+              Card Number
             </label>
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px] font-medium">
-              <ShieldCheck className="h-3 w-3 text-emerald-500" /> 256-Bit SSL
-              Encrypted
+            <span className="text-muted-foreground flex items-center gap-1 text-[10px]">
+              <ShieldCheck className="h-3 w-3 text-emerald-500" /> SSL Encrypted
             </span>
           </div>
-
-          <div className="border-border bg-muted/20 focus-within:border-primary focus-within:ring-primary dark:bg-muted/30 rounded-xl border p-3.5 shadow-sm transition-colors focus-within:ring-1">
-            <CardElement options={CARD_ELEMENT_OPTIONS} />
+          <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+            <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <CardNumberElement options={ELEMENT_STYLE} />
           </div>
+        </div>
 
-          <div className="text-muted-foreground flex items-center justify-between pt-0.5 text-[11px]">
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-              ⚡ $0.00 due today
-            </span>
-            <span>14 days free · Cancel anytime</span>
+        {/* EXPIRY DATE & CVC */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+              Expiry Date
+            </label>
+            <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+              <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+              <CardExpiryElement options={ELEMENT_STYLE} />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+              CVC
+            </label>
+            <div className="border-border/60 bg-background/60 focus-within:border-primary focus-within:ring-primary relative rounded-lg border p-2.5 pl-10 focus-within:ring-1">
+              <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+              <CardCvcElement options={ELEMENT_STYLE} />
+            </div>
+          </div>
+        </div>
+
+        {/* CARDHOLDER NAME */}
+        <div className="space-y-1.5">
+          <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+            Cardholder Name
+          </label>
+          <div className="relative">
+            <Input
+              placeholder="John Doe"
+              value={cardholderName}
+              onChange={(e) => setCardholderName(e.target.value)}
+              className="border-border/60 bg-background/60 focus:border-primary h-10 pl-10 text-sm"
+            />
+            <User className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
           </div>
         </div>
 
@@ -271,23 +337,21 @@ function TrialCheckoutForm({
           type="submit"
           size="lg"
           disabled={loading || !stripe}
-          className="mt-2 h-12 w-full gap-2 text-sm font-bold shadow-lg"
+          className="mt-1 h-12 w-full gap-2 text-sm font-bold shadow-lg"
         >
           {loading ? (
             "Verifying Card & Starting Trial..."
           ) : (
             <>
               <Download className="h-4 w-4" />
-              Confirm & Download SketchUp Plugin (.rbz)
+              Start 14-Day Free Trial & Download (.rbz)
             </>
           )}
         </Button>
 
         <p className="text-muted-foreground text-center text-[11px] leading-relaxed">
-          🔒 Zero-friction 1-click activation: Once your trial renders finish,
-          you can activate your{" "}
-          {selectedPlan === "yearly" ? "$15/mo ($180/yr)" : "$20/mo"} plan with
-          1 click directly inside the plugin.
+          <Lock className="mr-1 inline-block h-3 w-3 text-emerald-500" />
+          $0.00 charged today. 14 days free trial. Cancel anytime with 1 click.
         </p>
       </form>
     </div>
