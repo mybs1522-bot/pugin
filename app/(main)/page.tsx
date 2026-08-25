@@ -22,6 +22,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GoogleAuth } from "@/components/google-auth";
 
+const FeaturesBento = dynamic(
+  () => import("@/components/ui/features-8").then((m) => m.Features),
+  { loading: () => null }
+);
 const CinematicFooter = dynamic(
   () => import("@/components/ui/motion-footer").then((m) => m.CinematicFooter),
   { loading: () => null }
@@ -220,6 +224,9 @@ export default function HomePage() {
               ))}
             </div>
           </section>
+
+          {/* ── Features Bento Section ──────────────────────── */}
+          <FeaturesBento />
 
           {/* ── How it works ─────────────────────────────────── */}
           <section
