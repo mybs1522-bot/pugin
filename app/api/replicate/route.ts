@@ -552,15 +552,17 @@ export async function POST(request: Request) {
       assignedModel.includes("nano-banana") ||
       assignedModel.includes("gemini");
 
-    const editPrompt: string = req.editPrompt || req.customPrompt || "";
+    const rawEdit = req.editPrompt || req.customPrompt;
+    const editPrompt: string =
+      typeof rawEdit === "string" ? rawEdit.trim() : "";
     let basePrompt = isGoogle
       ? buildNanoBananaPhotorealisticPrompt(questionnaire)
       : buildFluxPhotorealisticPrompt(questionnaire);
 
     let prompt = basePrompt;
-    if (editPrompt && editPrompt.trim()) {
+    if (editPrompt) {
       prompt = `### CRITICAL USER EDIT / REFINEMENT INSTRUCTION:
-Apply this specific user edit modification: "${editPrompt.trim()}".
+Apply this specific user edit modification: "${editPrompt}".
 Seamlessly apply these exact color/material/lighting adjustments to the target objects while preserving 100% of the camera angle, perspective, and architectural geometry.
 
 ${basePrompt}`;
