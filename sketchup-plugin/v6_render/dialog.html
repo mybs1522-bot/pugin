@@ -3376,17 +3376,22 @@
       const renderBtn = document.getElementById('renderBtn');
       renderBtn.disabled = true;
 
-      // 1. ALWAYS CAPTURE FRESH LIVE VIEWPORT AT THE MOMENT OF CLICKING RENDER
-      showStatus('📸 Capturing active SketchUp viewport...', 'loading');
-      const liveImage = await captureLiveViewport();
+      let imageToRender = null;
+      if (editPrompt && lastRenderUrl) {
+        // If refining an existing 4K render, use the current high-res render as the base
+        imageToRender = lastRenderUrl;
+      } else {
+        // 1. ALWAYS CAPTURE FRESH LIVE VIEWPORT AT THE MOMENT OF CLICKING RENDER
+        showStatus('📸 Capturing active SketchUp viewport...', 'loading');
+        const liveImage = await captureLiveViewport();
 
-      if (!liveImage && !capturedViewportImageData) {
-        showStatus('❌ Could not capture current SketchUp viewport. Please try again.', 'error');
-        renderBtn.disabled = false;
-        return;
+        if (!liveImage && !capturedViewportImageData) {
+          showStatus('❌ Could not capture current SketchUp viewport. Please try again.', 'error');
+          renderBtn.disabled = false;
+          return;
+        }
+        imageToRender = liveImage || capturedViewportImageData;
       }
-
-      const imageToRender = liveImage || capturedViewportImageData;
 
       showStatus('🔍 Checking render eligibility...', 'loading');
 
@@ -3460,7 +3465,8 @@
             questionnaire: payloadQuestionnaire,
             model: document.getElementById('modelSelect').value,
             userEmail: userEmail,
-            sessionId: userSessionId
+            sessionId: userSessionId,
+            editPrompt: editPrompt || ""
           })
         });
 

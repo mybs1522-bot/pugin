@@ -553,12 +553,17 @@ export async function POST(request: Request) {
       assignedModel.includes("gemini");
 
     const editPrompt: string = req.editPrompt || req.customPrompt || "";
-    let prompt = isGoogle
+    let basePrompt = isGoogle
       ? buildNanoBananaPhotorealisticPrompt(questionnaire)
       : buildFluxPhotorealisticPrompt(questionnaire);
 
+    let prompt = basePrompt;
     if (editPrompt && editPrompt.trim()) {
-      prompt += ` SPECIFIC USER REFINEMENT / EDIT INSTRUCTION: "${editPrompt.trim()}". Seamlessly apply these user modifications while maintaining 100% of the architectural perspective and geometry.`;
+      prompt = `### CRITICAL USER EDIT / REFINEMENT INSTRUCTION:
+Apply this specific user edit modification: "${editPrompt.trim()}".
+Seamlessly apply these exact color/material/lighting adjustments to the target objects while preserving 100% of the camera angle, perspective, and architectural geometry.
+
+${basePrompt}`;
     }
 
     const defaultGeminiKey = Buffer.from(
