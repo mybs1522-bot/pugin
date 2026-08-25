@@ -55,7 +55,6 @@
       flex-direction: column;
     }
 
-    /* TYPOGRAPHY UTILITIES */
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
@@ -363,7 +362,7 @@
       gap: 8px;
     }
 
-    .opt-card {
+    .card-item, .opt-card {
       background: rgba(24, 24, 27, 0.4);
       border: 1px solid #27272a;
       border-radius: 10px;
@@ -374,25 +373,25 @@
       flex-direction: column;
       gap: 3px;
     }
-    .opt-card:hover {
+    .card-item:hover, .opt-card:hover {
       border-color: #3f3f46;
       background: rgba(39, 39, 42, 0.5);
     }
-    .opt-card.active {
+    .card-item.selected, .card-item.active, .opt-card.active {
       border-color: #ffffff;
       background: rgba(39, 39, 42, 0.9);
       box-shadow: 0 0 0 1px #ffffff;
     }
-    .opt-card-emoji {
+    .card-emoji, .opt-card-emoji {
       font-size: 18px;
       line-height: 1.2;
     }
-    .opt-card-title {
+    .card-label, .opt-card-title {
       font-size: 12px;
       font-weight: 700;
       color: #ffffff;
     }
-    .opt-card-sub {
+    .card-desc, .opt-card-sub {
       font-size: 10px;
       color: #a1a1aa;
       line-height: 1.3;
@@ -410,7 +409,7 @@
       font-size: 30px;
     }
 
-    .color-swatch-bar {
+    .swatch-bar, .color-swatch-bar {
       display: flex;
       height: 12px;
       width: 100%;
@@ -418,23 +417,23 @@
       overflow: hidden;
       margin-bottom: 4px;
     }
-    .swatch-segment {
+    .swatch-color, .swatch-segment {
       flex: 1;
       height: 100%;
     }
 
-    .material-opt-card {
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-    }
-    .material-circle {
+    .color-box, .material-circle {
       width: 16px;
       height: 16px;
       border-radius: 50%;
       border: 1px solid #3f3f46;
       flex-shrink: 0;
+    }
+    .material-opt-card {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
     }
 
     /* ACCENT COLOR PICKER */
@@ -471,7 +470,7 @@
       flex-direction: column;
       gap: 10px;
     }
-    .btn-create-render {
+    .btn-create-render, .anti-metal-btn {
       width: 100%;
       height: 48px;
       border-radius: 12px;
@@ -488,11 +487,11 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .btn-create-render:hover:not(:disabled) {
+    .btn-create-render:hover:not(:disabled), .anti-metal-btn:hover:not(:disabled) {
       background: #e4e4e7;
       transform: translateY(-1px);
     }
-    .btn-create-render:disabled {
+    .btn-create-render:disabled, .anti-metal-btn:disabled {
       opacity: 0.75;
       cursor: not-allowed;
     }
@@ -503,7 +502,7 @@
       justify-content: space-between;
       gap: 8px;
     }
-    .btn-recapture-small {
+    .btn-recapture-small, .btn-refresh-ui {
       flex: 1;
       height: 32px;
       background: #18181b;
@@ -519,7 +518,7 @@
       gap: 6px;
       transition: all 0.15s;
     }
-    .btn-recapture-small:hover {
+    .btn-recapture-small:hover, .btn-refresh-ui:hover {
       background: #27272a;
       color: #ffffff;
     }
@@ -556,7 +555,7 @@
       font-weight: 700;
       color: #e4e4e7;
     }
-    .scene-status-pill {
+    .scene-status-pill, .badge-dim {
       background: rgba(39, 39, 42, 0.8);
       color: #a1a1aa;
       font-size: 10px;
@@ -580,7 +579,7 @@
       padding: 2px;
       gap: 2px;
     }
-    .mode-toggle-btn {
+    .mode-toggle-btn, .toggle-btn {
       background: transparent;
       border: none;
       padding: 4px 8px;
@@ -591,16 +590,16 @@
       cursor: pointer;
       transition: all 0.15s;
     }
-    .mode-toggle-btn:hover {
+    .mode-toggle-btn:hover, .toggle-btn:hover {
       color: #ffffff;
     }
-    .mode-toggle-btn.active {
+    .mode-toggle-btn.active, .toggle-btn.active {
       background: #27272a;
       color: #ffffff;
       box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
-    .btn-action-tool {
+    .btn-action-tool, .download-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -615,7 +614,7 @@
       text-decoration: none;
       transition: all 0.15s;
     }
-    .btn-action-tool:hover {
+    .btn-action-tool:hover, .download-btn:hover {
       background: #27272a;
       color: #ffffff;
     }
@@ -633,7 +632,7 @@
     }
 
     /* DUAL SIDE-BY-SIDE CARDS */
-    .dual-preview-grid {
+    .dual-preview-grid, .preview-split {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
@@ -686,7 +685,7 @@
       color: #a5b4fc;
     }
 
-    .card-content-viewport {
+    .card-content-viewport, .img-box {
       position: relative;
       flex: 1;
       background: #09090b;
@@ -696,7 +695,9 @@
       overflow: hidden;
     }
     .card-content-viewport img,
-    .card-content-viewport video {
+    .card-content-viewport video,
+    .img-box img,
+    .img-box video {
       height: 100%;
       width: 100%;
       object-fit: contain;
@@ -785,9 +786,7 @@
       z-index: 20;
     }
 
-    /* ========================================================================== */
-    /* PROGRESSIVE GPU PATH-TRACING SIMULATION OVERLAY                            */
-    /* ========================================================================== */
+    /* GPU PROGRESSIVE PATH-TRACING SIMULATION OVERLAY */
     .gpu-render-layer {
       display: none;
       position: absolute;
@@ -980,7 +979,7 @@
     }
 
     /* ACTION ROW BELOW CARDS */
-    .action-row-bottom {
+    .action-row-bottom, .action-row {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -988,7 +987,7 @@
       padding-top: 12px;
       z-index: 10;
     }
-    .btn-generate-video-walkthrough {
+    .btn-generate-video-walkthrough, .btn-video {
       height: 40px;
       padding: 0 20px;
       border-radius: 12px;
@@ -1004,15 +1003,13 @@
       box-shadow: 0 10px 20px rgba(0,0,0,0.5);
       transition: all 0.2s;
     }
-    .btn-generate-video-walkthrough:hover {
+    .btn-generate-video-walkthrough:hover, .btn-video:hover {
       background: #27272a;
       border-color: #71717a;
       transform: translateY(-1px);
     }
 
-    /* ========================================================================== */
-    /* INTERACTIVE BOTTOM-RIGHT 3D FOLDER GALLERY COMPONENT                       */
-    /* ========================================================================== */
+    /* INTERACTIVE BOTTOM-RIGHT 3D FOLDER GALLERY */
     .folder-gallery-anchor {
       position: absolute;
       bottom: 16px;
@@ -1134,14 +1131,14 @@
       align-items: center;
       justify-content: space-between;
     }
-    .gallery-grid-body {
+    .gallery-grid-body, .past-renders-carousel {
       padding: 20px;
       overflow-y: auto;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 16px;
     }
-    .gallery-grid-item {
+    .gallery-grid-item, .past-renders-card {
       background: #18181b;
       border: 1px solid #27272a;
       border-radius: 12px;
@@ -1149,7 +1146,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .gallery-grid-item:hover {
+    .gallery-grid-item:hover, .past-renders-card:hover {
       border-color: #c084fc;
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(0,0,0,0.6);
@@ -1211,7 +1208,7 @@
       }
     }
 
-    /* OVERLAYS & MODALS (AUTH, TRIAL, SUPPORT, SPLASH) */
+    /* OVERLAYS & MODALS */
     .full-overlay {
       position: fixed;
       inset: 0;
@@ -1274,7 +1271,6 @@
       background: #e4e4e7;
     }
 
-    /* SPINNER */
     .spinner-icon {
       animation: spin 1s linear infinite;
     }
@@ -1386,7 +1382,7 @@
     <aside class="controls-panel">
       <!-- Active Step Header Bar -->
       <div class="panel-header">
-        <span class="panel-header-title" id="stepIndicator">Step 1: Space Type</span>
+        <span class="panel-header-title" id="stepIndicator">Step 1 of 6: Space Type</span>
         <div class="panel-nav-btns">
           <button type="button" class="panel-nav-btn" id="stepPrevBtn" onclick="prevStep()" disabled>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
@@ -1404,17 +1400,17 @@
         <input type="hidden" id="modelSelect" value="google/nano-banana-pro">
 
         <!-- STEP 0: Space Type -->
-        <div class="step-section active" id="step-0">
+        <div class="step-section active step-content" id="step-0">
           <div class="section-label">Space Type</div>
           <div class="grid-1">
-            <div class="opt-card space-card-large active" id="space-interior" onclick="selectSpace('interior')">
+            <div class="opt-card card-item space-card-large selected" id="space-interior" onclick="selectSpace('interior')">
               <span class="space-emoji">🏠</span>
               <div>
                 <div class="opt-card-title">Interior</div>
                 <div class="opt-card-sub">Inside a building — rooms, hallways, living spaces</div>
               </div>
             </div>
-            <div class="opt-card space-card-large" id="space-exterior" onclick="selectSpace('exterior')">
+            <div class="opt-card card-item space-card-large" id="space-exterior" onclick="selectSpace('exterior')">
               <span class="space-emoji">🏡</span>
               <div>
                 <div class="opt-card-title">Exterior</div>
@@ -1425,13 +1421,13 @@
         </div>
 
         <!-- STEP 1: Room & Building Type -->
-        <div class="step-section" id="step-1">
+        <div class="step-section step-content" id="step-1">
           <div class="section-label" id="roomSectionTitle">Room & Space Type</div>
           <div class="grid-2" id="roomGrid"></div>
         </div>
 
         <!-- STEP 2: Style & Mood -->
-        <div class="step-section" id="step-2">
+        <div class="step-section step-content" id="step-2">
           <div class="section-label">Design Style</div>
           <div class="grid-2" id="styleGrid"></div>
 
@@ -1440,19 +1436,19 @@
         </div>
 
         <!-- STEP 3: Color Palette & Accent -->
-        <div class="step-section" id="step-3">
+        <div class="step-section step-content" id="step-3">
           <div class="section-label">Color Scheme</div>
           <div class="grid-2" id="paletteGrid"></div>
 
           <div class="section-label" style="margin-top: 10px;">Custom Accent Color</div>
           <div class="color-picker-box">
-            <input type="color" id="accentColor" value="#8B5CF6" class="color-picker-input" onchange="document.getElementById('hexValText').textContent=this.value">
+            <input type="color" id="accentColor" value="#8B5CF6" class="color-picker-input" onchange="document.getElementById('hexValText').textContent=this.value; markCustomized();">
             <span class="color-picker-hex" id="hexValText">#8B5CF6</span>
           </div>
         </div>
 
         <!-- STEP 4: Finishes & Materials -->
-        <div class="step-section" id="step-4">
+        <div class="step-section step-content" id="step-4">
           <div class="section-label">Wall Finish</div>
           <div class="grid-2" id="wallGrid"></div>
 
@@ -1461,7 +1457,7 @@
         </div>
 
         <!-- STEP 5: Furniture, Accents & Lighting -->
-        <div class="step-section" id="step-5">
+        <div class="step-section step-content" id="step-5">
           <div class="section-label">Wood Tone</div>
           <div class="grid-2" id="woodGrid"></div>
 
@@ -1475,20 +1471,21 @@
 
       <!-- BOTTOM FIXED BAR: CREATE RENDER ACTION -->
       <div class="panel-footer">
-        <button type="button" class="btn-create-render" id="renderBtn" onclick="triggerAIRender()">
+        <button type="button" class="btn-create-render anti-metal-btn" id="renderBtn" onclick="triggerAIRender()">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
           <span id="renderBtnLabel">Create Render</span>
         </button>
 
         <div class="btn-recapture-bar">
-          <button type="button" class="btn-recapture-small" id="recaptureBtn" onclick="requestViewportCapture()">
+          <button type="button" class="btn-recapture-small btn-refresh-ui" id="recaptureBtn" onclick="requestViewportCapture()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
             <span>Refresh Viewport</span>
           </button>
         </div>
 
-        <!-- Hidden status output -->
+        <!-- Hidden / legacy status output element -->
         <div id="status" style="display: none;"></div>
+        <div id="customizedBadge" style="display: none;"></div>
       </div>
     </aside>
 
@@ -1498,14 +1495,14 @@
       <div class="viewport-top-bar">
         <div class="viewport-info">
           <span class="scene-title-text" id="sceneTitle">SketchUp Active Viewport</span>
-          <span class="scene-status-pill" id="dimBadge">1920x1080</span>
+          <span class="scene-status-pill badge-dim" id="dimBadge">1920x1080</span>
         </div>
 
         <div class="viewport-actions">
           <!-- IMAGE VS 3D VIDEO SWITCHER -->
           <div class="mode-toggle-group" id="viewModeToggle" style="display: none;">
-            <button type="button" class="mode-toggle-btn active" id="btnShowImg" onclick="switchPreviewMode('image')">🖼️ Image</button>
-            <button type="button" class="mode-toggle-btn" id="btnShowVid" onclick="switchPreviewMode('video')">🎬 3D Video</button>
+            <button type="button" class="mode-toggle-btn toggle-btn active" id="btnShowImg" onclick="switchPreviewMode('image')">🖼️ Image</button>
+            <button type="button" class="mode-toggle-btn toggle-btn" id="btnShowVid" onclick="switchPreviewMode('video')">🎬 3D Video</button>
           </div>
 
           <!-- SPLIT SLIDER VS SIDE-BY-SIDE TOGGLE -->
@@ -1515,11 +1512,11 @@
           </button>
 
           <!-- DOWNLOAD BUTTONS -->
-          <a id="downloadLink" href="#" download="v6_render_4k.jpg" target="_blank" class="btn-action-tool" style="display: none;">
+          <a id="downloadLink" href="#" download="v6_render_4k.jpg" target="_blank" class="btn-action-tool download-btn" style="display: none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Download Image</span>
           </a>
-          <a id="downloadVideoLink" href="#" download="v6_walkthrough.mp4" target="_blank" class="btn-action-tool" style="display: none;">
+          <a id="downloadVideoLink" href="#" download="v6_walkthrough.mp4" target="_blank" class="btn-action-tool download-btn" style="display: none;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span>Download MP4</span>
           </a>
@@ -1529,14 +1526,14 @@
       <!-- MAIN CANVAS AREA: SIDE-BY-SIDE DUAL VIEW OR SPLIT SLIDER -->
       <div class="canvas-center">
         <!-- MODE 1: DUAL SIDE-BY-SIDE CARDS -->
-        <div class="dual-preview-grid" id="dualPreviewGrid">
+        <div class="dual-preview-grid preview-split" id="dualPreviewGrid">
           <!-- LEFT CARD: SKETCHUP VIEWPORT -->
           <div class="preview-card" id="viewportBox">
             <div class="card-header">
               <div class="card-title-text">1. SketchUp Viewport</div>
               <div class="card-tag">Original</div>
             </div>
-            <div class="card-content-viewport">
+            <div class="card-content-viewport img-box">
               <img id="viewportImg" src="/master_prompt_render.png" alt="SketchUp Viewport">
               <div id="viewportPlaceholder" style="display: none;">📐 Viewport Standby</div>
             </div>
@@ -1551,12 +1548,12 @@
               <div class="card-tag accent" id="aiBadge">4K Output</div>
             </div>
 
-            <div class="card-content-viewport" style="position: relative;">
+            <div class="card-content-viewport img-box" style="position: relative;">
               <!-- RENDER IMAGE -->
               <img id="aiImg" src="/master_prompt_render.png" alt="4K Photorealistic Render" style="display: block;">
 
               <!-- VIDEO PLAYER -->
-              <video id="aiVideo" controls autoplay loop muted playsinline style="display: none;"></video>
+              <video id="aiVideo" controls autoplay loop muted playsinline preload="auto" crossorigin="anonymous" style="display: none;"></video>
 
               <!-- PLACEHOLDER -->
               <div id="aiPlaceholder" style="display: none; text-align: center; color: #71717a;">
@@ -1615,6 +1612,8 @@
                 <div id="loadingTitle">Rendering...</div>
                 <div id="loadingSub">Processing PBR Lighting</div>
               </div>
+
+              <div id="aiTrialOver" style="display: none;"></div>
             </div>
           </div>
         </div>
@@ -1640,8 +1639,8 @@
         </div>
 
         <!-- GENERATE 3D VIDEO WALKTHROUGH BUTTON ROW -->
-        <div class="action-row-bottom" id="actionRowBottom">
-          <button type="button" class="btn-generate-video-walkthrough" id="videoBtn" onclick="triggerVideoWalkthrough()">
+        <div class="action-row-bottom action-row" id="actionRowBottom">
+          <button type="button" class="btn-generate-video-walkthrough btn-video" id="videoBtn" onclick="triggerVideoWalkthrough()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 8 6 4-6 4Z"/></svg>
             <span>🎬 Generate 3D Video Walkthrough</span>
           </button>
@@ -1649,7 +1648,7 @@
       </div>
 
       <!-- BOTTOM-RIGHT: INTERACTIVE 3D FOLDER GALLERY DOCK -->
-      <div class="folder-gallery-anchor">
+      <div class="folder-gallery-anchor" id="pastRendersSection">
         <div class="folder-pocket-wrapper" onclick="toggleGalleryModal(true)">
           <div class="folder-back-panel"></div>
           <div class="folder-card-stack" id="folderCardStack">
@@ -1665,7 +1664,8 @@
           </div>
           <div class="folder-front-panel">
             <span class="folder-label-text">Project Renders</span>
-            <span class="folder-count-badge" id="folderCountBadge">1</span>
+            <span class="folder-count-badge" id="folderCountBadge">0</span>
+            <span id="pastRendersCount" style="display: none;">0</span>
           </div>
         </div>
       </div>
@@ -1685,7 +1685,7 @@
           <button type="button" onclick="toggleGalleryModal(false)" style="background: none; border: none; color: #a1a1aa; font-size: 18px; cursor: pointer;">✕</button>
         </div>
       </div>
-      <div class="gallery-grid-body" id="pastRendersCarousel">
+      <div class="gallery-grid-body past-renders-carousel" id="pastRendersCarousel">
         <div id="pastRendersEmpty" style="grid-column: 1/-1; text-align: center; color: #71717a; padding: 30px 0;">No saved renders yet. Click Create Render to generate!</div>
       </div>
     </div>
@@ -1753,11 +1753,712 @@
     </div>
   </div>
 
-  <!-- SCRIPT LOGIC (EXACT FUNCTIONALITY & SKETCHUP BRIDGE PRESERVED) -->
+  <!-- HIDDEN COMPATIBILITY CONTAINERS -->
+  <div id="pluginIntroOverlay" style="display: none;"></div>
+  <div id="pluginTickerBar" style="display: none;">
+    <span id="tickerTag"></span>
+    <span id="tickerText"></span>
+  </div>
+  <div id="renderSettingsDefaultNotice" style="display: none;"></div>
+  <div id="renderSettingsDropdownContent" style="display: none;"></div>
+  <div id="renderSettingsToggleBtn" style="display: none;"></div>
+
+  <!-- SCRIPT BLOCK INJECTING THE COMPLETE ORIGINAL ENGINE + /NEW UI BRIDGES -->
   <script>
-    // ==========================================================================
-    // DATA ARRAYS & STATE
-    // ==========================================================================
+    // SPLIT SLIDER VIEW STATE
+    let isSplitComparing = false;
+
+    function toggleSplitSliderView() {
+      isSplitComparing = !isSplitComparing;
+      document.getElementById('dualPreviewGrid').style.display = isSplitComparing ? 'none' : 'grid';
+      document.getElementById('splitSliderContainer').classList.toggle('active', isSplitComparing);
+      document.getElementById('btnToggleSplit').classList.toggle('active', isSplitComparing);
+      document.getElementById('splitToggleText').textContent = isSplitComparing ? 'Side-by-Side View' : 'Split Compare Slider';
+    }
+
+    function updateSplitSlider(val) {
+      document.getElementById('splitOverlayWrapper').style.clipPath = 'polygon(0 0, ' + val + '% 0, ' + val + '% 100%, 0 100%)';
+      document.getElementById('splitDividerLine').style.left = val + '%';
+    }
+
+    function toggleGalleryModal(show) {
+      document.getElementById('galleryModal').classList.toggle('active', show);
+    }
+
+    function triggerFlightToFolder(imgUrl) {
+      const anchor = document.getElementById('flyingSnapshotAnchor');
+      anchor.innerHTML = '<div class="flying-snapshot"><img src="' + imgUrl + '" alt="Fly"></div>';
+      setTimeout(() => {
+        anchor.innerHTML = '';
+      }, 1200);
+    }
+
+    // PROGRESSIVE GPU SIMULATION
+    const TOTAL_TILES = 16;
+    const TILE_SPIRAL_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
+
+    function startGpuProgressiveSimulation(targetImageUrl) {
+      const gpuLayer = document.getElementById('gpuRenderLayer');
+      const gpuImg = document.getElementById('gpuTargetImg');
+      const cadOverlay = document.getElementById('cadOverlay');
+      const tilesGrid = document.getElementById('gpuTilesGrid');
+      const statusText = document.getElementById('gpuStatusText');
+      const sppVal = document.getElementById('gpuSppVal');
+      const raysVal = document.getElementById('gpuRaysVal');
+      const pctVal = document.getElementById('gpuPctVal');
+
+      gpuImg.src = targetImageUrl;
+      gpuImg.className = 'gpu-target-img stage-cad';
+      cadOverlay.style.display = 'flex';
+      tilesGrid.style.display = 'none';
+      tilesGrid.innerHTML = '';
+      gpuLayer.style.display = 'flex';
+
+      for (let i = 0; i < TOTAL_TILES; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'gpu-tile-cell unrendered';
+        tile.id = 'gpu-tile-' + i;
+        tilesGrid.appendChild(tile);
+      }
+
+      statusText.textContent = 'Pass 1/64: Initializing CUDA Cores & BVH Hierarchy...';
+      sppVal.textContent = '16';
+      raysVal.textContent = '1.8M';
+      pctVal.textContent = '4%';
+
+      setTimeout(() => {
+        statusText.textContent = 'Pass 8/64: Raycasting Primary Geometry Intersections...';
+        sppVal.textContent = '64';
+        raysVal.textContent = '8.4M';
+        pctVal.textContent = '18%';
+      }, 800);
+
+      setTimeout(() => {
+        cadOverlay.style.display = 'none';
+        tilesGrid.style.display = 'grid';
+        gpuImg.className = 'gpu-target-img stage-noise';
+        statusText.textContent = 'Pass 20/64: Monte-Carlo Path Tracing (Coarse Preview)...';
+        sppVal.textContent = '128';
+        raysVal.textContent = '18.2M';
+        pctVal.textContent = '28%';
+
+        for (let i = 0; i < TOTAL_TILES; i++) {
+          const t = document.getElementById('gpu-tile-' + i);
+          if (t) t.className = 'gpu-tile-cell coarse';
+        }
+      }, 1600);
+
+      setTimeout(() => {
+        statusText.textContent = 'Pass 32/64: Multi-Threaded GPU Bucket Raytracing...';
+        
+        TILE_SPIRAL_ORDER.forEach((tIdx, seq) => {
+          const pairedIdx = TILE_SPIRAL_ORDER[(seq + 8) % TOTAL_TILES];
+          setTimeout(() => {
+            const tileA = document.getElementById('gpu-tile-' + tIdx);
+            const tileB = document.getElementById('gpu-tile-' + pairedIdx);
+
+            if (tileA) {
+              tileA.className = 'gpu-tile-cell semi';
+              tileA.innerHTML = '<div class="gpu-active-bucket"><span class="bucket-coord-text">[' + ((tIdx%4)+1) + ',' + (Math.floor(tIdx/4)+1) + ']</span><span class="bucket-coord-text font-mono">512 SPP</span></div>';
+            }
+            if (tileB) {
+              tileB.className = 'gpu-tile-cell semi';
+              tileB.innerHTML = '<div class="gpu-active-bucket"><span class="bucket-coord-text">[' + ((pairedIdx%4)+1) + ',' + (Math.floor(pairedIdx/4)+1) + ']</span><span class="bucket-coord-text font-mono">512 SPP</span></div>';
+            }
+
+            setTimeout(() => {
+              if (tileA) { tileA.className = 'gpu-tile-cell clear'; tileA.innerHTML = ''; }
+              if (tileB) { tileB.className = 'gpu-tile-cell clear'; tileB.innerHTML = ''; }
+            }, 180);
+
+            const progress = Math.round(28 + ((seq + 1) / TOTAL_TILES) * 58);
+            pctVal.textContent = progress + '%';
+            sppVal.textContent = 128 + seq * 56;
+            raysVal.textContent = (22.0 + seq * 2.8).toFixed(1) + 'M';
+          }, seq * 170);
+        });
+      }, 2400);
+
+      setTimeout(() => {
+        gpuImg.className = 'gpu-target-img stage-clear';
+        statusText.textContent = 'Pass 64/64: OptiX AI Neural Denoising & 4K Polish...';
+        sppVal.textContent = '1024';
+        raysVal.textContent = '68.4M';
+        pctVal.textContent = '96%';
+      }, 5600);
+
+      setTimeout(() => {
+        pctVal.textContent = '100%';
+        gpuLayer.style.display = 'none';
+        triggerFlightToFolder(targetImageUrl);
+      }, 6400);
+    }
+  </script>
+
+  <!-- INSERT COMPLETE ORIGINAL PRODUCTION ENGINE SCRIPT -->
+  <script>
+
+    function showTrialOverModal() {
+      document.getElementById('trialOverModal').style.display = 'flex';
+    }
+
+    async function openProPlanCheckout(btnEl) {
+      const userEmail = getUserEmail();
+      if (!userEmail) {
+        promptForUserEmail();
+        return;
+      }
+
+      const originalBtnText = btnEl ? btnEl.innerHTML : null;
+      if (btnEl) {
+        btnEl.disabled = true;
+        btnEl.innerHTML = '⚡ Activating & Charging Card...';
+      }
+
+      showStatus('⚡ Activating Pro plan and charging saved card on file...', 'loading');
+
+      try {
+        const serverUrl = getLiveServerUrl();
+        const res = await fetch(serverUrl + '/api/stripe/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userEmail, plan: 'monthly' })
+        });
+
+        const data = await res.json();
+        console.log('[1-CLICK ACTIVATE RESPONSE]', data);
+
+        if (data.success && data.isPaid) {
+          // 1-Click Success! Card was charged instantly off-session
+          localStorage.setItem('v6_is_paid', 'true');
+          localStorage.setItem('v6_plan_status', 'paid');
+          localStorage.setItem('v6_payment_mode', 'Stripe Pro Active');
+
+          // Close trial over modal
+          const modal = document.getElementById('trialOverModal');
+          if (modal) modal.style.display = 'none';
+
+          // Reset trial over placeholder state in render viewport
+          resetTrialOverState();
+
+          // Refresh account badge to Pro Active
+          renderUserAccountBadge();
+
+          showStatus('🎉 ' + (data.message || 'Subscription successfully activated! Unlimited 4K renders unlocked.'), 'success');
+          alert('🎉 V6 Render Pro Activated!\n\nYour card on file has been charged and your account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
+          return;
+        }
+
+        if (data.needsCheckout && data.url) {
+          // No card on file yet — open Stripe Checkout to add payment method
+          showStatus('Opening secure Stripe Checkout...', 'loading');
+          if (window.sketchup) {
+            window.location.href = data.url;
+          } else {
+            window.open(data.url, '_blank');
+          }
+          return;
+        }
+
+        if (data.error) {
+          showStatus('❌ ' + data.error, 'error');
+          alert('Could not activate plan: ' + data.error + '\nOpening checkout...');
+          const liveUrl = getLiveServerUrl() + '/#pricing';
+          window.open(liveUrl, '_blank');
+        }
+      } catch (err) {
+        console.error('1-Click Activate Exception:', err);
+        showStatus('❌ Network error. Opening checkout...', 'error');
+        const liveUrl = getLiveServerUrl() + '/#pricing';
+        window.open(liveUrl, '_blank');
+      } finally {
+        if (btnEl && originalBtnText) {
+          btnEl.disabled = false;
+          btnEl.innerHTML = originalBtnText;
+        }
+      }
+    } else {
+        window.open(liveUrl, '_blank');
+      }
+    }
+
+    function runSplashIntroAnimation() {
+      const overlay = document.getElementById('pluginIntroOverlay');
+      const bar = document.getElementById('splashProgressBar');
+      const step1 = document.getElementById('splashStep1');
+      const step3 = document.getElementById('splashStep3');
+
+      if (!overlay) return;
+
+      setTimeout(() => {
+        if (bar) bar.style.width = '45%';
+        if (step1) {
+          step1.style.color = '#a1a1aa';
+          step1.style.borderColor = 'rgba(255,255,255,0.1)';
+        }
+      }, 150);
+
+      setTimeout(() => {
+        if (bar) bar.style.width = '100%';
+        if (step3) {
+          step3.style.color = '#22c55e';
+          step3.style.fontWeight = '600';
+          step3.style.background = 'rgba(34,197,94,0.08)';
+          step3.style.borderColor = 'rgba(34,197,94,0.2)';
+        }
+      }, 700);
+
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'hidden';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          requestViewportCapture();
+        }, 600);
+      }, 1400);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', runSplashIntroAnimation);
+    } else {
+      runSplashIntroAnimation();
+    }
+
+    const questionnaire = {
+      spaceType: "interior",
+      roomType: "Living Room",
+      roomSize: "medium",
+      ceilingHeight: "standard",
+      naturalLight: "moderate",
+      primaryStyle: "Modern",
+      mood: "luxurious",
+      era: "contemporary",
+      colorPalette: "warm-neutrals",
+      accentColor: "#8B5CF6",
+      wallFinish: "cream",
+      floorMaterial: "marble",
+      furnitureDensity: "moderate",
+      woodTone: "dark-walnut",
+      metalAccent: "brushed-gold",
+      textileRichness: "layered",
+      lightingMood: "warm-ambient",
+      greenery: "minimal",
+      specialElements: []
+    };
+
+    function getLiveServerUrl() {
+      if (window.location.origin && window.location.origin !== 'null' && !window.location.origin.startsWith('file:')) {
+        return window.location.origin.replace(/\/+$/, '');
+      }
+      const serverInput = document.getElementById('serverUrl');
+      if (serverInput && serverInput.value.trim()) return serverInput.value.trim().replace(/\/+$/, '');
+      return 'https://pugin-five.vercel.app';
+    }
+
+    let currentServerUrl = getLiveServerUrl();
+    let lastRenderUrl = null;
+    let activeTicketId = null;
+
+    /* ─── SAFE RESPONSE PARSER TO PREVENT UNEXPECTED END OF JSON INPUT ───────── */
+    async function parseResponseJson(response) {
+      try {
+        const text = await response.text();
+        if (!text || !text.trim()) {
+          return { error: response.status ? `Server error (Status ${response.status})` : 'Empty response from server' };
+        }
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          if (response.status === 413 || text.includes('FUNCTION_PAYLOAD_TOO_LARGE')) {
+            return { error: 'Image file too large for server. Please zoom in or reduce viewport size.' };
+          }
+          if (text.includes('<html') || text.includes('<!DOCTYPE')) {
+            return { error: `Server error (${response.status || 500}: ${response.statusText || 'Request failed'})` };
+          }
+          return { error: text.substring(0, 150) };
+        }
+      } catch (err) {
+        return { error: 'Failed to read response from server: ' + (err.message || String(err)) };
+      }
+    }
+
+    /* ─── SUPPORT CHAT & REAL-TIME NOTIFICATION SYSTEM ─────────────────────── */
+    let lastUnreadCount = 0;
+
+    function toggleSupportModal(show) {
+      document.getElementById('supportModal').style.display = show ? 'flex' : 'none';
+      document.getElementById('supportStatus').style.display = 'none';
+      if (show) {
+        loadUserSupportChat();
+        markSupportRead();
+      }
+    }
+
+    async function markSupportRead() {
+      if (!userEmail) return;
+      document.getElementById('supportBadgePill').style.display = 'none';
+      lastUnreadCount = 0;
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail) + '&action=mark_read');
+      } catch (err) {}
+    }
+
+    async function checkSupportNotifications() {
+      if (!userEmail) return;
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail));
+        const data = await parseResponseJson(response);
+
+        const unread = data.unreadCount || 0;
+        const pill = document.getElementById('supportBadgePill');
+        const tickerBar = document.getElementById('pluginTickerBar');
+        const tickerText = document.getElementById('tickerText');
+        const tickerTag = document.getElementById('tickerTag');
+
+        if (unread > 0) {
+          pill.style.display = 'inline-block';
+          pill.innerText = `🔴 ${unread} New Reply`;
+
+          if (tickerBar && tickerText) {
+            tickerBar.style.display = 'flex';
+            tickerBar.style.background = 'linear-gradient(90deg, #7f1d1d, #991b1b)';
+            tickerTag.innerText = '🔔 SUPPORT REPLY';
+            tickerTag.style.background = '#dc2626';
+            tickerText.innerHTML = '<b>New Reply Received from Support!</b> Click <b>💬 Support</b> above to view message.';
+          }
+
+          if (unread > lastUnreadCount) {
+            showStatus(`🔔 New support reply from Admin! Click <b>💬 Support</b> to read.`, 'success');
+          }
+        } else {
+          pill.style.display = 'none';
+        }
+        lastUnreadCount = unread;
+      } catch (err) {}
+    }
+
+    async function loadUserSupportChat() {
+      const container = document.getElementById('supportChatContainer');
+      if (!container || !userEmail) return;
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/support?email=' + encodeURIComponent(userEmail));
+        const data = await parseResponseJson(response);
+
+        if (data.tickets && data.tickets.length > 0) {
+          const mainTicket = data.tickets[0];
+          activeTicketId = mainTicket.id;
+
+          let html = '';
+          (mainTicket.messages || []).forEach(m => {
+            const isAdmin = m.sender === 'admin';
+            html += `
+              <div style="display:flex; flex-direction:column; align-items:${isAdmin ? 'flex-end' : 'flex-start'}; margin-bottom:8px;">
+                <div style="font-size:9px; color:#71717a; margin-bottom:2px; padding:0 4px;">
+                  ${isAdmin ? '✦ Admin Support' : '👤 You'}
+                </div>
+                <div style="max-width:82%; padding:10px 14px; border-radius:12px; font-size:12px; line-height:1.4; ${
+                  isAdmin 
+                    ? 'background:rgba(99,102,241,0.2); border:1px solid rgba(99,102,241,0.4); color:#ffffff;' 
+                    : 'background:#18181b; border:1px solid rgba(255,255,255,0.1); color:#e4e4e7;'
+                }">
+                  ${m.text.replace(/\n/g, '<br/>')}
+                </div>
+              </div>
+            `;
+          });
+
+          container.innerHTML = html;
+          container.scrollTop = container.scrollHeight;
+        } else {
+          activeTicketId = null;
+          container.innerHTML = `<div style="text-align:center; color:#a1a1aa; font-size:11px; padding:30px;">
+            💬 No previous messages.<br/>Type your question below to start a chat with our support team!<br/><br/>
+            ⏱️ <i>Support will reply within 24 hours.</i>
+          </div>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<div style="text-align:center; color:#f87171; font-size:11px; padding:20px;">
+          ❌ Failed to load chat history.
+        </div>`;
+      }
+    }
+
+    async function submitSupportRequest() {
+      const msg = document.getElementById('supportMessage').value.trim();
+      const cat = document.getElementById('supportCategory').value;
+      const statusEl = document.getElementById('supportStatus');
+
+      if (!msg) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-error';
+        statusEl.innerHTML = 'Please type a message.';
+        return;
+      }
+
+      document.getElementById('btnSubmitSupport').disabled = true;
+      statusEl.style.display = 'block';
+      statusEl.className = 'status-loading';
+      statusEl.innerHTML = 'Sending message to support...';
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        let payload = {};
+        if (activeTicketId) {
+          payload = {
+            action: 'send_message',
+            ticketId: activeTicketId,
+            text: msg,
+            sender: 'user',
+            email: userEmail
+          };
+        } else {
+          payload = {
+            email: userEmail || 'anonymous@plugin.user',
+            message: msg,
+            category: cat
+          };
+        }
+
+        const response = await fetch(targetUrl + '/api/support', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await parseResponseJson(response);
+
+        if (response.ok && data.ok) {
+          statusEl.className = 'status-success';
+          statusEl.innerHTML = '✓ Message sent! Support will reply within 24 hours. You will receive an email & in-app notification.';
+          document.getElementById('supportMessage').value = '';
+          loadUserSupportChat();
+          setTimeout(() => {
+            document.getElementById('btnSubmitSupport').disabled = false;
+          }, 1500);
+        } else {
+          statusEl.className = 'status-error';
+          statusEl.innerHTML = '❌ ' + (data.error || 'Failed to send message.');
+          document.getElementById('btnSubmitSupport').disabled = false;
+        }
+      } catch (err) {
+        statusEl.className = 'status-error';
+        statusEl.innerHTML = '❌ Connection error sending message.';
+        document.getElementById('btnSubmitSupport').disabled = false;
+      }
+    }
+
+    // Start background polling for support replies every 10s
+    setInterval(checkSupportNotifications, 10000);
+
+    /* ─── AUTH & ONE-TIME PC VERIFICATION LOGIC ───────────────────────────── */
+    let userEmail = localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || null;
+    let userSessionId = localStorage.getItem('v6_session_id') || localStorage.getItem('aisoft_session_id') || null;
+
+    function checkAuthOnLoad() {
+      if (!userEmail || !userSessionId) {
+        document.getElementById('authModal').style.display = 'flex';
+      } else {
+        document.getElementById('authModal').style.display = 'none';
+        updateHeaderUserBadge();
+        checkSupportNotifications();
+        // Check trial status immediately on plugin load
+        checkTrialStatusOnLoad();
+      }
+    }
+
+    async function checkTrialStatusOnLoad() {
+      if (!userEmail) return;
+      
+      const localKey = 'v6_render_count_' + userEmail.toLowerCase().trim();
+      const fallbackKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || localStorage.getItem(fallbackKey) || '0', 10);
+
+      try {
+        const serverUrl = getLiveServerUrl();
+        const trialCheckUrl = serverUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail) + '&clientCount=' + localCount;
+        const trialRes = await fetch(trialCheckUrl);
+        const trialData = await trialRes.json();
+        
+        console.log('[TRIAL ON-LOAD CHECK]', trialData);
+        
+        if (trialData && trialData.allowed === false) {
+          showTrialOverState();
+        } else {
+          resetTrialOverState();
+        }
+      } catch (err) {
+        console.warn('Trial check network error:', err);
+      }
+    }
+
+    function updateHeaderUserBadge() {
+      const badge = document.getElementById('userAccountBadge');
+      if (badge && userEmail) {
+        badge.innerHTML = `<span style="font-size:11px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); padding:3px 10px; border-radius:9999px; color:#e4e4e7; display:inline-flex; align-items:center; gap:6px;">👤 <b>${userEmail}</b> <button onclick="signOutUser()" style="background:none; border:none; color:#f87171; cursor:pointer; font-size:10px; text-decoration:underline;">Switch</button></span>`;
+      }
+    }
+
+    function resetAuthForm() {
+      document.getElementById('authStepEmail').style.display = 'block';
+      document.getElementById('authStepOtp').style.display = 'none';
+      document.getElementById('authEmail').value = '';
+      document.getElementById('authOtpCode').value = '';
+      document.getElementById('authStatus').style.display = 'none';
+      document.getElementById('btnSendOtp').disabled = false;
+      document.getElementById('btnVerifyOtp').disabled = false;
+    }
+
+    function showAuthStatus(msg, type) {
+      const el = document.getElementById('authStatus');
+      el.innerText = msg;
+      el.style.display = 'block';
+      if (type === 'error') {
+        el.style.background = 'rgba(239, 68, 68, 0.15)';
+        el.style.color = '#f87171';
+        el.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      } else if (type === 'success') {
+        el.style.background = 'rgba(16, 185, 129, 0.15)';
+        el.style.color = '#34d399';
+        el.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      } else {
+        el.style.background = 'rgba(255, 255, 255, 0.08)';
+        el.style.color = '#e4e4e7';
+        el.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+      }
+    }
+
+    async function sendOtpCode() {
+      const emailInput = document.getElementById('authEmail').value.trim();
+      if (!emailInput || !emailInput.includes('@')) {
+        showAuthStatus('Please enter a valid email address.', 'error');
+        return;
+      }
+
+      document.getElementById('btnSendOtp').disabled = true;
+      showAuthStatus('Sending 4-digit code to your email...', 'loading');
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/auth/otp-send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput })
+        });
+
+        const data = await parseResponseJson(response);
+        if (response.ok && data.ok) {
+          window.pendingEmail = emailInput;
+          window.pendingOtpToken = data.token;
+          
+          document.getElementById('authStepEmail').style.display = 'none';
+          document.getElementById('authStepOtp').style.display = 'block';
+          document.getElementById('authSentToEmail').innerText = emailInput;
+          showAuthStatus('✓ 4-digit code sent! Please check your inbox.', 'success');
+          document.getElementById('authOtpCode').focus();
+        } else {
+          showAuthStatus('❌ ' + (data.error || 'Failed to send code.'), 'error');
+          document.getElementById('btnSendOtp').disabled = false;
+        }
+      } catch (err) {
+        console.error('OTP Send error:', err);
+        showAuthStatus('❌ Connection error sending code.', 'error');
+        document.getElementById('btnSendOtp').disabled = false;
+      }
+    }
+
+    async function verifyOtpCode() {
+      const codeInput = document.getElementById('authOtpCode').value.trim();
+      if (!codeInput) {
+        showAuthStatus('Please enter the 4-digit code.', 'error');
+        return;
+      }
+
+      document.getElementById('btnVerifyOtp').disabled = true;
+      showAuthStatus('Verifying 4-digit code...', 'loading');
+
+      const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
+        ? currentServerUrl 
+        : 'https://pugin-five.vercel.app';
+
+      try {
+        const response = await fetch(targetUrl + '/api/auth/otp-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: window.pendingEmail,
+            code: codeInput,
+            token: window.pendingOtpToken
+          })
+        });
+
+        const data = await parseResponseJson(response);
+        if (response.ok && data.ok) {
+          userEmail = data.email;
+          userSessionId = data.sessionId;
+          localStorage.setItem('v6_user_email', data.email);
+          localStorage.setItem('aisoft_user_email', data.email);
+          if (data.sessionId) {
+            localStorage.setItem('v6_session_id', data.sessionId);
+            localStorage.setItem('aisoft_session_id', data.sessionId);
+          }
+          if (data.authToken) {
+            localStorage.setItem('v6_auth_token', data.authToken);
+            localStorage.setItem('aisoft_auth_token', data.authToken);
+          }
+
+          showAuthStatus('✓ PC Verified & Activated!', 'success');
+          setTimeout(() => {
+            document.getElementById('authModal').style.display = 'none';
+            updateHeaderUserBadge();
+            checkSupportNotifications();
+            // Check trial status immediately after login
+            checkTrialStatusOnLoad();
+          }, 800);
+        } else {
+          showAuthStatus('❌ ' + (data.error || 'Invalid 4-digit code.'), 'error');
+          document.getElementById('btnVerifyOtp').disabled = false;
+        }
+      } catch (err) {
+        showAuthStatus('❌ Verification error.', 'error');
+        document.getElementById('btnVerifyOtp').disabled = false;
+      }
+    }
+
+    function signOutUser() {
+      localStorage.removeItem('v6_user_email');
+      localStorage.removeItem('v6_session_id');
+      localStorage.removeItem('v6_auth_token');
+      localStorage.removeItem('aisoft_user_email');
+      localStorage.removeItem('aisoft_session_id');
+      localStorage.removeItem('aisoft_auth_token');
+      userEmail = null;
+      userSessionId = null;
+      resetAuthForm();
+      resetTrialOverState();
+      document.getElementById('authModal').style.display = 'flex';
+    }
+
     const ROOMS_INTERIOR = [
       { v: "Living Room", e: "🛋️", d: "Lounge & sitting area" },
       { v: "Bedroom", e: "🛏️", d: "Private sleep retreat" },
@@ -1850,692 +2551,1008 @@
       { v: "soft-diffused", label: "Soft Diffused", d: "Gentle even shadows" }
     ];
 
-    const STEP_TITLES = [
-      "Step 1: Space Type",
-      "Step 2: Room & Building Type",
-      "Step 3: Design Style & Mood",
-      "Step 4: Color Palette & Accent",
-      "Step 5: Finishes & Materials",
-      "Step 6: Lighting Mood"
+    let userCustomized = false;
+    let isRenderSettingsOpen = false;
+    let currentStepIndex = 0;
+
+    function toggleRenderSettingsDropdown(forceState) {
+      if (typeof forceState === 'boolean') {
+        isRenderSettingsOpen = forceState;
+      } else {
+        isRenderSettingsOpen = !isRenderSettingsOpen;
+      }
+
+      const content = document.getElementById('renderSettingsDropdownContent');
+      const defaultNotice = document.getElementById('renderSettingsDefaultNotice');
+      const chevron = document.getElementById('renderSettingsChevron');
+      const btn = document.getElementById('renderSettingsToggleBtn');
+
+      if (isRenderSettingsOpen) {
+        if (content) content.style.display = 'flex';
+        if (defaultNotice) defaultNotice.style.display = 'none';
+        if (chevron) chevron.innerHTML = '▲ Close';
+        if (btn) btn.classList.add('active');
+      } else {
+        if (content) content.style.display = 'none';
+        if (defaultNotice) defaultNotice.style.display = 'flex';
+        if (chevron) chevron.innerHTML = '▼ Open';
+        if (btn) btn.classList.remove('active');
+      }
+    }
+
+    function markCustomized() {
+      userCustomized = true;
+      const badge = document.getElementById('customizedBadge');
+      if (badge) badge.style.display = 'inline-block';
+    }
+
+    const STEP_NAMES = [
+      "1. Space Type",
+      "2. Room & Type",
+      "3. Design Style",
+      "4. Color Palette",
+      "5. Finishes & Materials",
+      "6. Lighting Mood"
     ];
 
-    let currentStep = 0;
-    let isSplitComparing = false;
-    let isRendering = false;
-    let isVideoRendering = false;
-    let userEmail = localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || '';
-    let userSessionId = localStorage.getItem('v6_session_id') || localStorage.getItem('aisoft_session_id') || '';
+    function switchStep(idx) {
+      currentStepIndex = Math.max(0, Math.min(5, idx));
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === currentStepIndex));
+      document.querySelectorAll('.step-content').forEach((s, i) => s.style.display = i === currentStepIndex ? 'flex' : 'none');
+
+      const indicator = document.getElementById('stepIndicator');
+      if (indicator && STEP_NAMES[currentStepIndex]) {
+        indicator.innerText = `Step ${currentStepIndex + 1} of 6: ${STEP_NAMES[currentStepIndex].split('. ')[1]}`;
+      }
+
+      const prevBtn = document.getElementById('stepPrevBtn');
+      const nextBtn = document.getElementById('stepNextBtn');
+      if (prevBtn) {
+        prevBtn.disabled = currentStepIndex === 0;
+        prevBtn.style.opacity = currentStepIndex === 0 ? '0.35' : '1';
+      }
+      if (nextBtn) {
+        nextBtn.disabled = currentStepIndex === 5;
+        nextBtn.style.opacity = currentStepIndex === 5 ? '0.35' : '1';
+      }
+
+      const scrollBody = document.getElementById('stepScrollBody');
+      if (scrollBody) scrollBody.scrollTop = 0;
+    }
+
+    function nextStep() {
+      if (currentStepIndex < 5) switchStep(currentStepIndex + 1);
+    }
+
+    function prevStep() {
+      if (currentStepIndex > 0) switchStep(currentStepIndex - 1);
+    }
+
+    function selectSpace(type) {
+      markCustomized();
+      questionnaire.spaceType = type;
+      document.getElementById('space-interior').classList.toggle('selected', type === 'interior');
+      document.getElementById('space-exterior').classList.toggle('selected', type === 'exterior');
+      renderRoomGrid();
+    }
+
+    function renderRoomGrid() {
+      const isExt = questionnaire.spaceType === 'exterior';
+      document.getElementById('roomSectionTitle').innerText = isExt ? 'Building & Site Type' : 'Room & Space Type';
+      const rooms = isExt ? ROOMS_EXTERIOR : ROOMS_INTERIOR;
+      if (isExt && !ROOMS_EXTERIOR.find(r => r.v === questionnaire.roomType)) {
+        questionnaire.roomType = 'House';
+      } else if (!isExt && !ROOMS_INTERIOR.find(r => r.v === questionnaire.roomType)) {
+        questionnaire.roomType = 'Living Room';
+      }
+
+      const grid = document.getElementById('roomGrid');
+      grid.innerHTML = rooms.map(r => `
+        <div class="card-item ${questionnaire.roomType === r.v ? 'selected' : ''}" onclick="selectRoom('${r.v}')">
+          <span class="card-emoji">${r.e}</span>
+          <span class="card-label">${r.v}</span>
+          <span class="card-desc">${r.d}</span>
+        </div>
+      `).join('');
+    }
+
+    function selectRoom(v) { markCustomized(); questionnaire.roomType = v; renderRoomGrid(); }
+
+    function renderStyleGrid() {
+      document.getElementById('styleGrid').innerHTML = STYLES.map(s => `
+        <div class="card-item ${questionnaire.primaryStyle === s.v ? 'selected' : ''}" onclick="selectStyle('${s.v}')">
+          <span class="card-emoji">${s.e}</span>
+          <span class="card-label">${s.v}</span>
+          <span class="card-desc">${s.d}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('moodGrid').innerHTML = MOODS.map(m => `
+        <div class="card-item ${questionnaire.mood === m.v ? 'selected' : ''}" onclick="selectMood('${m.v}')">
+          <span class="card-emoji">${m.e}</span>
+          <span class="card-label">${m.label}</span>
+          <span class="card-desc">${m.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectStyle(v) { markCustomized(); questionnaire.primaryStyle = v; renderStyleGrid(); }
+    function selectMood(v) { markCustomized(); questionnaire.mood = v; renderStyleGrid(); }
+
+    function renderPaletteGrid() {
+      document.getElementById('paletteGrid').innerHTML = PALETTES.map(p => `
+        <div class="card-item ${questionnaire.colorPalette === p.v ? 'selected' : ''}" onclick="selectPalette('${p.v}')">
+          <div class="swatch-bar">
+            ${p.c.map(hex => `<div class="swatch-color" style="background:${hex};"></div>`).join('')}
+          </div>
+          <span class="card-label">${p.label}</span>
+          <span class="card-desc">${p.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectPalette(v) { markCustomized(); questionnaire.colorPalette = v; renderPaletteGrid(); }
+
+    function renderFinishGrids() {
+      document.getElementById('wallGrid').innerHTML = WALLS.map(w => `
+        <div class="card-item ${questionnaire.wallFinish === w.v ? 'selected' : ''}" onclick="selectWall('${w.v}')">
+          <div class="color-box" style="background:${w.color};"></div>
+          <span class="card-label">${w.label}</span>
+          <span class="card-desc">${w.d}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('floorGrid').innerHTML = FLOORS.map(f => `
+        <div class="card-item ${questionnaire.floorMaterial === f.v ? 'selected' : ''}" onclick="selectFloor('${f.v}')">
+          <div class="color-box" style="background:${f.color};"></div>
+          <span class="card-label">${f.label}</span>
+          <span class="card-desc">${f.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectWall(v) { markCustomized(); questionnaire.wallFinish = v; renderFinishGrids(); }
+    function selectFloor(v) { markCustomized(); questionnaire.floorMaterial = v; renderFinishGrids(); }
+
+    function renderFurnitureGrids() {
+      document.getElementById('woodGrid').innerHTML = WOODS.map(w => `
+        <div class="card-item ${questionnaire.woodTone === w.v ? 'selected' : ''}" onclick="selectWood('${w.v}')">
+          <div class="color-box" style="background:${w.color};"></div>
+          <span class="card-label">${w.label}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('metalGrid').innerHTML = METALS.map(m => `
+        <div class="card-item ${questionnaire.metalAccent === m.v ? 'selected' : ''}" onclick="selectMetal('${m.v}')">
+          <div class="color-box" style="background:${m.color};"></div>
+          <span class="card-label">${m.label}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('lightingGrid').innerHTML = LIGHTINGS.map(l => `
+        <div class="card-item ${questionnaire.lightingMood === l.v ? 'selected' : ''}" onclick="selectLighting('${l.v}')">
+          <span class="card-label">${l.label}</span>
+          <span class="card-desc">${l.d}</span>
+        </div>
+      `).join('');
+    }
+    function selectWood(v) { markCustomized(); questionnaire.woodTone = v; renderFurnitureGrids(); }
+    function selectMetal(v) { markCustomized(); questionnaire.metalAccent = v; renderFurnitureGrids(); }
+    function selectLighting(v) { markCustomized(); questionnaire.lightingMood = v; renderFurnitureGrids(); }
+
+    renderRoomGrid();
+    renderStyleGrid();
+    renderPaletteGrid();
+    renderFinishGrids();
+    renderFurnitureGrids();
+    checkAuthOnLoad();
+
+    async function optimizeImagePayload(dataUrl, maxW = 1536, maxH = 1536, quality = 0.95) {
+      if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image')) return dataUrl;
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxW || height > maxH) {
+            if (width > height) {
+              height = Math.round((height * maxW) / width);
+              width = maxW;
+            } else {
+              width = Math.round((width * maxH) / height);
+              height = maxH;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
+    }
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.style.display = 'block';
+      el.className = 'status-' + type;
+      el.innerHTML = msg;
+    }
+
+    function showTrialOverState() {
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      document.getElementById('aiLoading').style.display = 'none';
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
+      
+      const trialState = document.getElementById('aiTrialOver');
+      if (trialState) trialState.style.display = 'block';
+
+      const label = document.getElementById('renderBtnLabel');
+      if (label) label.innerText = 'Activate Pro Plan';
+
+      const renderBtn = document.getElementById('renderBtn');
+      if (renderBtn) {
+        renderBtn.disabled = false;
+        renderBtn.onclick = openProPlanCheckout;
+      }
+
+      showStatus('⚡ Trial Limits are over to render more. Activate Pro Plan to continue.', 'error');
+      showTrialOverModal();
+    }
+
+    function resetTrialOverState() {
+      const trialState = document.getElementById('aiTrialOver');
+      if (trialState) trialState.style.display = 'none';
+
+      const label = document.getElementById('renderBtnLabel');
+      if (label) label.innerText = 'Create Render';
+
+      const renderBtn = document.getElementById('renderBtn');
+      if (renderBtn) {
+        renderBtn.disabled = false;
+        renderBtn.onclick = triggerAIRender;
+      }
+
+      const aiPlaceholder = document.getElementById('aiPlaceholder');
+      const aiImg = document.getElementById('aiImg');
+      const aiVideo = document.getElementById('aiVideo');
+      if (aiPlaceholder && (!aiImg || aiImg.style.display === 'none') && (!aiVideo || aiVideo.style.display === 'none')) {
+        aiPlaceholder.style.display = 'block';
+      }
+    }
+
     let capturedViewportImageData = null;
-    let lastRenderUrl = null;
     let viewportCaptureResolve = null;
 
-    // Questionnaire state
-    const questionnaire = {
-      spaceType: 'interior',
-      roomType: 'Living Room',
-      primaryStyle: 'Modern',
-      mood: 'cozy',
-      colorPalette: 'warm-neutrals',
-      accentColor: '#8B5CF6',
-      wallFinish: 'white',
-      floorMaterial: 'light-hardwood',
-      woodTone: 'medium-oak',
-      metalAccent: 'brushed-gold',
-      lightingMood: 'bright-natural'
-    };
+    function captureLiveViewport() {
+      return new Promise((resolve) => {
+        viewportCaptureResolve = resolve;
+        if (window.sketchup) {
+          sketchup.capture_viewport();
+        } else {
+          // Web preview fallback
+          setTimeout(() => {
+            onViewportCaptured({
+              success: true,
+              image: '/master_prompt_render.png',
+              width: 1920,
+              height: 1080
+            });
+          }, 100);
+        }
 
-    // ==========================================================================
-    // STEP NAVIGATION
-    // ==========================================================================
-    function switchStep(idx) {
-      currentStep = idx;
+        // Safety timeout to avoid hanging if SketchUp is slow
+        setTimeout(() => {
+          if (viewportCaptureResolve) {
+            console.warn("Viewport capture timed out, using latest image.");
+            viewportCaptureResolve(capturedViewportImageData);
+            viewportCaptureResolve = null;
+          }
+        }, 4000);
+      });
+    }
+
+    function requestViewportCapture() {
+      showStatus('📸 Capturing latest SketchUp view...', 'loading');
+      captureLiveViewport();
+    }
+
+    function onViewportCaptured(result) {
+      if (!result || !result.success) {
+        const err = (result && result.error) ? result.error : 'Failed to capture SketchUp viewport.';
+        showStatus('❌ Screen Capture Failed: ' + err, 'error');
+        if (viewportCaptureResolve) {
+          viewportCaptureResolve(null);
+          viewportCaptureResolve = null;
+        }
+        return;
+      }
+
+      capturedViewportImageData = result.image;
+
+      const vpImg = document.getElementById('viewportImg');
+      if (vpImg) {
+        vpImg.src = result.image;
+        vpImg.style.display = 'block';
+      }
+      const placeholder = document.getElementById('viewportPlaceholder');
+      if (placeholder) placeholder.style.display = 'none';
+
+      if (result.width && result.height) {
+        const dimBadge = document.getElementById('dimBadge');
+        if (dimBadge) dimBadge.innerText = result.width + 'x' + result.height;
+      }
+
+      showStatus('📐 Viewport updated! Ready to render.', 'success');
+
+      if (viewportCaptureResolve) {
+        viewportCaptureResolve(result.image);
+        viewportCaptureResolve = null;
+      }
+    }
+
+    function triggerRender() {
+      triggerAIRender();
+    }
+
+    async function triggerAIRender() {
+      if (!userEmail) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+      }
+
+      const renderBtn = document.getElementById('renderBtn');
+      renderBtn.disabled = true;
+
+      // 1. ALWAYS CAPTURE FRESH LIVE VIEWPORT AT THE MOMENT OF CLICKING RENDER
+      showStatus('📸 Capturing active SketchUp viewport...', 'loading');
+      const liveImage = await captureLiveViewport();
+
+      if (!liveImage && !capturedViewportImageData) {
+        showStatus('❌ Could not capture current SketchUp viewport. Please try again.', 'error');
+        renderBtn.disabled = false;
+        return;
+      }
+
+      const imageToRender = liveImage || capturedViewportImageData;
+
+      showStatus('🔍 Checking render eligibility...', 'loading');
+
+      const localKey = 'v6_render_count_' + userEmail.toLowerCase().trim();
+      const fallbackKey = 'aisoft_render_count_' + userEmail.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || localStorage.getItem(fallbackKey) || '0', 10);
+
+      // === PRE-FLIGHT TRIAL CHECK ===
+      // Check trial status BEFORE showing loading spinner or doing any work
+      currentServerUrl = getLiveServerUrl();
+      try {
+        const trialCheckUrl = currentServerUrl + '/api/trial-check?email=' + encodeURIComponent(userEmail) + '&clientCount=' + localCount;
+        const trialRes = await fetch(trialCheckUrl);
+        const trialData = await trialRes.json();
+        
+        if (trialData && trialData.allowed === false) {
+          console.log('[TRIAL PRE-CHECK] Blocked:', trialData);
+          showTrialOverState();
+          return;
+        }
+      } catch (preCheckErr) {
+        console.warn('Pre-flight trial check failed, proceeding to render:', preCheckErr);
+      }
+
+      showStatus('📸 Processing viewport & materials...', 'loading');
+
+      document.getElementById('aiPlaceholder').style.display = 'none';
+      document.getElementById('aiTrialOver').style.display = 'none';
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
+      document.getElementById('loadingPercentage').innerText = '0%';
+      document.getElementById('renderProgressBar').style.width = '0%';
+      document.getElementById('loadingTitle').innerHTML = '<b>Generating Render...</b>';
+      document.getElementById('loadingSub').innerHTML = 'Processing PBR lighting & materials';
+      document.getElementById('aiLoading').style.display = 'block';
+      document.getElementById('downloadLink').style.display = 'none';
+      document.getElementById('downloadVideoLink').style.display = 'none';
+      document.getElementById('videoBtn').style.display = 'none';
+
+      questionnaire.accentColor = document.getElementById('accentColor').value;
+
+      const optimizedImage = await optimizeImagePayload(imageToRender);
+
+      let progressVal = 0;
+      const progressTimer = setInterval(() => {
+        if (progressVal < 92) {
+          progressVal += 2;
+          document.getElementById('loadingPercentage').innerText = progressVal + '%';
+          document.getElementById('renderProgressBar').style.width = progressVal + '%';
+        }
+      }, 500);
+
+      try {
+        const apiUrl = currentServerUrl + '/api/replicate';
+        const payloadQuestionnaire = {
+          ...questionnaire,
+          userCustomized: !!userCustomized,
+          primaryStyle: userCustomized ? questionnaire.primaryStyle : "auto"
+        };
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client': 'sketchup',
+            'x-user-email': userEmail || '',
+            'x-session-id': userSessionId || ''
+          },
+          body: JSON.stringify({
+            image: optimizedImage,
+            questionnaire: payloadQuestionnaire,
+            model: document.getElementById('modelSelect').value,
+            userEmail: userEmail,
+            sessionId: userSessionId
+          })
+        });
+
+        clearInterval(progressTimer);
+
+        const data = await parseResponseJson(response);
+
+        if (response.ok && (data.output || data.predictionId)) {
+          let imgUrl = null;
+
+          if (data.output && data.output.length > 0) {
+            document.getElementById('loadingPercentage').innerText = '100%';
+            document.getElementById('renderProgressBar').style.width = '100%';
+            imgUrl = data.output[0];
+          } else if (data.predictionId) {
+            const predictionId = data.predictionId;
+            let elapsed = 0;
+
+            // Advance progress rapidly up to 95% over ~20 seconds
+            while (true) {
+              await new Promise(r => setTimeout(r, 2000));
+              elapsed += 2;
+              
+              let progress = Math.min(95, Math.round((elapsed / 45) * 100));
+              document.getElementById('loadingPercentage').innerText = progress + '%';
+              document.getElementById('renderProgressBar').style.width = progress + '%';
+              
+              showStatus(`✨ Rendering Photorealistic Image...`, 'loading');
+              if (elapsed > 30) {
+                document.getElementById('loadingSub').innerHTML = `Waking up rendering engine (first boot can take 3-4 mins)...`;
+              } else {
+                document.getElementById('loadingSub').innerHTML = `Refining details and lighting...`;
+              }
+
+              try {
+                const pollUrl = currentServerUrl + '/api/replicate?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
+                const pollRes = await fetch(pollUrl);
+                const pollData = await parseResponseJson(pollRes);
+
+                if (pollData.done) {
+                  document.getElementById('loadingPercentage').innerText = '100%';
+                  document.getElementById('renderProgressBar').style.width = '100%';
+                  if (pollData.status === 'succeeded' && pollData.output && pollData.output.length > 0) {
+                    imgUrl = pollData.output[0];
+                    break;
+                  } else {
+                    throw new Error(pollData.error || 'Rendering job failed.');
+                  }
+                }
+              } catch (pollErr) {
+                if (pollErr.message && !pollErr.message.includes('Failed to fetch')) {
+                  throw pollErr;
+                }
+              }
+
+              if (elapsed > 400) {
+                throw new Error('Rendering timed out after 400 seconds. Please try again.');
+              }
+            }
+          }
+
+          if (imgUrl) {
+            lastRenderUrl = imgUrl;
+            // Record render increment in client localStorage
+            const currentLocal = parseInt(localStorage.getItem(localKey) || '0', 10);
+            const serverCount = (typeof data.count === 'number') ? data.count : (currentLocal + 1);
+            localStorage.setItem(localKey, serverCount.toString());
+            saveToPastRenders(imgUrl, 'image');
+
+            showStatus('✓ Render complete!', 'success');
+            document.getElementById('renderBtn').disabled = false;
+            
+            document.getElementById('aiLoading').style.display = 'none';
+            const aiImg = document.getElementById('aiImg');
+            aiImg.src = imgUrl;
+            
+            switchPreviewMode('image');
+
+            const dlBtn = document.getElementById('downloadLink');
+            dlBtn.href = imgUrl;
+            dlBtn.style.display = 'inline-block';
+
+            document.getElementById('videoBtn').style.display = 'inline-block';
+          }
+        } else {
+          const errMsg = data.error || 'Server error occurred during rendering.';
+          
+          if (data.code === 'payment_required' || response.status === 403) {
+            // Update local count to at least 3 when server returns 403
+            localStorage.setItem(localKey, '3');
+            showTrialOverState();
+          } else {
+            showStatus('❌ ' + errMsg, 'error');
+            document.getElementById('renderBtn').disabled = false;
+            document.getElementById('aiLoading').style.display = 'none';
+            document.getElementById('aiPlaceholder').style.display = 'block';
+
+            if (data.code === 'session_invalid') {
+              alert("⚠️ " + errMsg);
+              signOutUser();
+            }
+          }
+        }
+      } catch (err) {
+        showStatus('❌ ' + (err.message || 'Connection Error'), 'error');
+        document.getElementById('renderBtn').disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        document.getElementById('aiPlaceholder').style.display = 'block';
+      }
+    }
+
+    function switchPreviewMode(mode) {
+      const aiImg = document.getElementById('aiImg');
+      const aiVideo = document.getElementById('aiVideo');
+      const btnImg = document.getElementById('btnShowImg');
+      const btnVid = document.getElementById('btnShowVid');
+
+      document.getElementById('aiPlaceholder').style.display = 'none';
+
+      if (mode === 'video' && aiVideo && (aiVideo.src || aiVideo.currentSrc)) {
+        aiImg.style.display = 'none';
+        aiVideo.style.display = 'block';
+        if (btnImg) btnImg.classList.remove('active');
+        if (btnVid) btnVid.classList.add('active');
+        aiVideo.muted = true;
+        const playPromise = aiVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(e => {
+            console.log("Autoplay paused:", e);
+          });
+        }
+      } else {
+        if (aiVideo) {
+          try { aiVideo.pause(); } catch(e) {}
+          aiVideo.style.display = 'none';
+        }
+        aiImg.style.display = 'block';
+        if (btnVid) btnVid.classList.remove('active');
+        if (btnImg) btnImg.classList.add('active');
+      }
+    }
+
+    async function triggerVideoWalkthrough() {
+      if (!userEmail) {
+        document.getElementById('authModal').style.display = 'flex';
+        return;
+      }
+      if (!lastRenderUrl) {
+        alert('Please render an image first!');
+        return;
+      }
+
+      const videoBtn = document.getElementById('videoBtn');
+      videoBtn.disabled = true;
+
+      document.getElementById('aiImg').style.display = 'none';
+      document.getElementById('aiVideo').style.display = 'none';
+      document.getElementById('loadingTitle').innerHTML = '<b>Creating 3D Video Walkthrough...</b>';
+      document.getElementById('loadingSub').innerHTML = 'Starting 30 FPS rendering engine...';
+      document.getElementById('aiLoading').style.display = 'block';
+      showStatus('🎬 Starting 3D video generation...', 'loading');
+
+      try {
+        const optimizedVideoImage = await optimizeImagePayload(lastRenderUrl, 1280, 1280, 0.90);
+        const videoApiUrl = currentServerUrl + '/api/replicate/video';
+        const response = await fetch(videoApiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-client': 'sketchup',
+            'x-user-email': userEmail || '',
+            'x-session-id': userSessionId || ''
+          },
+          body: JSON.stringify({
+            image: optimizedVideoImage,
+            prompt: "Smooth cinematic 3D architectural camera pan walkthrough of " + questionnaire.roomType + ", steady motion",
+            userEmail: userEmail,
+            sessionId: userSessionId
+          })
+        });
+
+        const data = await parseResponseJson(response);
+
+        if (!response.ok || (!data.predictionId && !data.videoUrl)) {
+          showStatus('❌ ' + (data.error || 'Server error'), 'error');
+          videoBtn.disabled = false;
+          document.getElementById('aiLoading').style.display = 'none';
+          switchPreviewMode('image');
+
+          if (data.code === 'session_invalid') {
+            alert("⚠️ " + (data.error || "Logged in on another computer. You have been logged out."));
+            signOutUser();
+          } else if (data.code === 'payment_required') {
+            showTrialOverModal();
+          }
+          return;
+        }
+
+        // Case 1: Direct videoUrl returned
+        let finalVideoUrl = data.videoUrl;
+
+        // Case 2: Asynchronous prediction ID returned -> Poll without timeout!
+        if (!finalVideoUrl && data.predictionId) {
+          const predictionId = data.predictionId;
+          let elapsedSeconds = 0;
+
+          while (true) {
+            await new Promise(r => setTimeout(r, 2500));
+            elapsedSeconds += 2.5;
+
+            showStatus(`🎬 Rendering 3D walkthrough video clip (${Math.round(elapsedSeconds)}s)...`, 'loading');
+            document.getElementById('loadingSub').innerHTML = `Processing 3D raytracing & camera pan (${Math.round(elapsedSeconds)}s)`;
+
+            const pollUrl = currentServerUrl + '/api/replicate/video?id=' + encodeURIComponent(predictionId) + '&userEmail=' + encodeURIComponent(userEmail);
+            try {
+              const pollRes = await fetch(pollUrl);
+              const pollData = await parseResponseJson(pollRes);
+
+              if (pollData.done) {
+                if (pollData.status === 'succeeded' && pollData.videoUrl) {
+                  finalVideoUrl = pollData.videoUrl;
+                  break;
+                } else {
+                  throw new Error(pollData.error || 'Video rendering failed');
+                }
+              }
+            } catch (pollErr) {
+              if (pollErr.message && !pollErr.message.includes('Failed to fetch')) {
+                throw pollErr;
+              }
+            }
+
+            if (elapsedSeconds > 120) {
+              throw new Error('Video generation timed out after 2 minutes.');
+            }
+          }
+        }
+
+        if (finalVideoUrl) {
+          showStatus('✓ 3D Video Walkthrough Complete!', 'success');
+          videoBtn.disabled = false;
+
+          document.getElementById('aiLoading').style.display = 'none';
+          const videoEl = document.getElementById('aiVideo');
+          
+          if (lastRenderUrl) {
+            videoEl.poster = lastRenderUrl;
+          }
+          videoEl.muted = true;
+          videoEl.setAttribute('playsinline', '');
+          videoEl.src = finalVideoUrl;
+          videoEl.load();
+
+          document.getElementById('viewModeToggle').style.display = 'flex';
+          switchPreviewMode('video');
+
+          const playPromise = videoEl.play();
+          if (playPromise !== undefined) {
+            playPromise.catch(e => {
+              console.log("Autoplay deferred, user can tap to play:", e);
+            });
+          }
+
+          const dlVidBtn = document.getElementById('downloadVideoLink');
+          dlVidBtn.href = finalVideoUrl;
+          dlVidBtn.style.display = 'inline-block';
+
+          // Save video to past renders history
+          saveToPastRenders(finalVideoUrl, 'video', lastRenderUrl);
+        }
+      } catch (err) {
+        showStatus('❌ ' + (err.message || 'Connection Error creating video walkthrough.'), 'error');
+        videoBtn.disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+        switchPreviewMode('image');
+      }
+    }
+
+    /* ─── PAST RENDERS GALLERY & PERSISTENT STORAGE MANAGER ─────────────────────── */
+    const DB_NAME = 'v6_renders_db';
+    const STORE_NAME = 'renders';
+
+    function openRendersDB() {
+      return new Promise((resolve) => {
+        if (!window.indexedDB) return resolve(null);
+        try {
+          const req = indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => resolve(null);
+        } catch {
+          resolve(null);
+        }
+      });
+    }
+
+    async function storeInDB(item) {
+      try {
+        const db = await openRendersDB();
+        if (!db) return;
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(item);
+      } catch (err) {
+        console.warn('IndexedDB write warning:', err);
+      }
+    }
+
+    async function getFromDB(id) {
+      try {
+        const db = await openRendersDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch {
+        return null;
+      }
+    }
+
+    function createThumbnail(dataUrl, maxW = 240, maxH = 160, quality = 0.72) {
+      if (!dataUrl || typeof dataUrl !== 'string') return Promise.resolve('');
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            if (w / h > maxW / maxH) {
+              h = Math.round((h * maxW) / w);
+              w = maxW;
+            } else {
+              w = Math.round((w * maxH) / h);
+              h = maxH;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(w, 1);
+          canvas.height = Math.max(h, 1);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(dataUrl.length < 50000 ? dataUrl : '');
+        img.src = dataUrl;
+      });
+    }
+
+    function getPastRenders() {
+      try {
+        const raw = localStorage.getItem('v6_past_renders_v1') || localStorage.getItem('aisoft_past_renders_v1');
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    async function saveToPastRenders(url, type, poster) {
+      if (!url) return;
+      const itemId = Date.now().toString();
+      const nowIso = new Date().toISOString();
+
+      try {
+        // 1. Generate lightweight compressed thumbnail
+        const thumb = (type === 'image') 
+          ? await createThumbnail(url, 240, 160, 0.72) 
+          : (poster ? await createThumbnail(poster, 240, 160, 0.72) : '');
+
+        // 2. Save full payload to IndexedDB
+        await storeInDB({
+          id: itemId,
+          url: url,
+          type: type || 'image',
+          poster: thumb || poster || '',
+          timestamp: nowIso
+        });
+
+        // 3. Save lightweight thumbnail entry in localStorage
+        const list = getPastRenders();
+        const filtered = list.filter(item => item.id !== itemId && item.url !== url);
+        
+        filtered.unshift({
+          id: itemId,
+          url: url.startsWith('data:') ? '' : url, // keep full url if remote, or empty if base64 (loaded from IDB)
+          thumb: thumb || poster || (url.startsWith('http') ? url : ''),
+          type: type || 'image',
+          timestamp: nowIso
+        });
+
+        const capped = filtered.slice(0, 30);
+        try {
+          localStorage.setItem('v6_past_renders_v1', JSON.stringify(capped));
+        } catch (storageErr) {
+          // If storage quota reached, prune to 10 entries and retry
+          const pruned = capped.slice(0, 10);
+          localStorage.setItem('v6_past_renders_v1', JSON.stringify(pruned));
+        }
+
+        renderPastRendersGallery();
+      } catch (e) {
+        console.warn('Failed to save to past renders:', e);
+      }
+    }
+
+    function clearPastRenders() {
+      if (confirm('Clear all past renders history from this device?')) {
+        localStorage.removeItem('v6_past_renders_v1');
+        localStorage.removeItem('aisoft_past_renders_v1');
+        try {
+          if (window.indexedDB) {
+            indexedDB.deleteDatabase(DB_NAME);
+            indexedDB.deleteDatabase('aisoft_renders_db');
+          }
+        } catch {}
+        renderPastRendersGallery();
+      }
+    }
+
+    async function previewPastRender(itemObj) {
+      if (!itemObj) return;
+      let fullUrl = itemObj.url;
+
+      // If URL was stored in IndexedDB (base64)
+      if (!fullUrl && itemObj.id) {
+        const record = await getFromDB(itemObj.id);
+        if (record && record.url) {
+          fullUrl = record.url;
+        }
+      }
+
+      if (!fullUrl) fullUrl = itemObj.thumb;
+      if (!fullUrl) return;
+
+      if (itemObj.type === 'video') {
+        const videoEl = document.getElementById('aiVideo');
+        videoEl.src = fullUrl;
+        videoEl.load();
+        document.getElementById('viewModeToggle').style.display = 'flex';
+        switchPreviewMode('video');
+        document.getElementById('downloadVideoLink').href = fullUrl;
+        document.getElementById('downloadVideoLink').style.display = 'inline-block';
+      } else {
+        const aiImg = document.getElementById('aiImg');
+        aiImg.src = fullUrl;
+        lastRenderUrl = fullUrl;
+        document.getElementById('viewModeToggle').style.display = 'flex';
+        switchPreviewMode('image');
+        document.getElementById('downloadLink').href = fullUrl;
+        document.getElementById('downloadLink').style.display = 'inline-block';
+        document.getElementById('videoBtn').style.display = 'inline-block';
+      }
+      showStatus('Loaded past render from gallery', 'success');
+    }
+
+    function renderPastRendersGallery() {
+      const container = document.getElementById('pastRendersCarousel');
+      const countEl = document.getElementById('pastRendersCount');
+      if (!container) return;
+
+      const list = getPastRenders();
+      if (countEl) {
+        countEl.innerText = `${list.length} ${list.length === 1 ? 'render' : 'renders'}`;
+      }
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div id="pastRendersEmpty" style="padding:14px; width:100%; text-align:center; color:#71717a; font-size:11px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:10px;">
+            No past renders stored yet. Render your SketchUp screen to start your gallery!
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      list.forEach((item, index) => {
+        const isVid = item.type === 'video';
+        const displayThumb = item.thumb || item.poster || item.url;
+        const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
+
+        html += `
+          <div class="past-renders-card" onclick="previewPastRender(${itemJson})" title="Click to view render #${list.length - index}">
+            ${isVid ? `
+              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:2;">
+                <span style="font-size:18px;">▶️</span>
+              </div>
+            ` : ''}
+            <img src="${displayThumb}" alt="Past Render" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'120\\' height=\\'86\\' fill=\\'%2318181b\\'><rect width=\\'120\\' height=\\'86\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%2371717a\\' font-size=\\'10\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>Render</text></svg>'">
+            <span class="card-badge">${isVid ? '🎬 Video' : '🖼️ ' + (timeStr || 'Render')}</span>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Initialize gallery on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', renderPastRendersGallery);
+    } else {
+      renderPastRendersGallery();
+    }
+  
+  </script>
+
+  <!-- POST-INITIALIZATION ADAPTER TO SYNC /NEW DOCK & CONTROLS -->
+  <script>
+    // Sync the vertical step dock buttons with original switchStep
+    const origSwitchStep = window.switchStep;
+    window.switchStep = function(idx) {
+      if (typeof origSwitchStep === 'function') {
+        origSwitchStep(idx);
+      }
       for (let i = 0; i < 6; i++) {
         const sec = document.getElementById('step-' + i);
         const btn = document.getElementById('dockBtn-' + i);
         if (sec) sec.classList.toggle('active', i === idx);
         if (btn) btn.classList.toggle('active', i === idx);
       }
-      document.getElementById('stepIndicator').textContent = STEP_TITLES[idx];
-      document.getElementById('stepPrevBtn').disabled = (idx === 0);
-      document.getElementById('stepNextBtn').disabled = (idx === 5);
-      document.getElementById('stepScrollBody').scrollTop = 0;
-    }
+    };
 
-    function nextStep() {
-      if (currentStep < 5) switchStep(currentStep + 1);
-    }
-    function prevStep() {
-      if (currentStep > 0) switchStep(currentStep - 1);
-    }
+    // Hook render start to trigger GPU simulation
+    const origTriggerAIRender = window.triggerAIRender;
+    window.triggerAIRender = async function() {
+      const liveImage = capturedViewportImageData || document.getElementById('viewportImg').src;
+      startGpuProgressiveSimulation(liveImage);
+      if (typeof origTriggerAIRender === 'function') {
+        await origTriggerAIRender();
+      }
+    };
 
-    function selectSpace(type) {
-      questionnaire.spaceType = type;
-      document.getElementById('space-interior').classList.toggle('active', type === 'interior');
-      document.getElementById('space-exterior').classList.toggle('active', type === 'exterior');
-      questionnaire.roomType = type === 'exterior' ? 'House' : 'Living Room';
-      renderRoomGrid();
-    }
+    // Hook onViewportCaptured to update split slider images
+    const origOnViewportCaptured = window.onViewportCaptured;
+    window.onViewportCaptured = function(result) {
+      if (typeof origOnViewportCaptured === 'function') {
+        origOnViewportCaptured(result);
+      }
+      if (result && result.image) {
+        const b = document.getElementById('splitImgBefore');
+        if (b) b.src = result.image;
+      }
+    };
 
-    function renderRoomGrid() {
-      const isExt = questionnaire.spaceType === 'exterior';
-      const items = isExt ? ROOMS_EXTERIOR : ROOMS_INTERIOR;
-      document.getElementById('roomSectionTitle').textContent = isExt ? 'Building & Site Type' : 'Room & Space Type';
-      const container = document.getElementById('roomGrid');
-      container.innerHTML = '';
-      items.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'opt-card' + (questionnaire.roomType === r.v ? ' active' : '');
-        div.innerHTML = `<span class="opt-card-emoji">${r.e}</span><span class="opt-card-title">${r.v}</span><span class="opt-card-sub">${r.d}</span>`;
-        div.onclick = () => {
-          questionnaire.roomType = r.v;
-          renderRoomGrid();
-        };
-        container.appendChild(div);
+    // Update split slider after image when render finishes
+    const aiImgEl = document.getElementById('aiImg');
+    if (aiImgEl) {
+      const observer = new MutationObserver(() => {
+        const afterImg = document.getElementById('splitImgAfter');
+        const folderThumb1 = document.getElementById('folderThumb1');
+        if (afterImg && aiImgEl.src) afterImg.src = aiImgEl.src;
+        if (folderThumb1 && aiImgEl.src) folderThumb1.src = aiImgEl.src;
       });
+      observer.observe(aiImgEl, { attributes: true, attributeFilter: ['src'] });
     }
-
-    function renderStyleGrid() {
-      const container = document.getElementById('styleGrid');
-      container.innerHTML = '';
-      STYLES.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'opt-card' + (questionnaire.primaryStyle === s.v ? ' active' : '');
-        div.innerHTML = `<span class="opt-card-emoji">${s.e}</span><span class="opt-card-title">${s.v}</span><span class="opt-card-sub">${s.d}</span>`;
-        div.onclick = () => {
-          questionnaire.primaryStyle = s.v;
-          renderStyleGrid();
-        };
-        container.appendChild(div);
-      });
-
-      const moodContainer = document.getElementById('moodGrid');
-      moodContainer.innerHTML = '';
-      MOODS.forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'opt-card' + (questionnaire.mood === m.v ? ' active' : '');
-        div.innerHTML = `<span class="opt-card-emoji">${m.e}</span><span class="opt-card-title">${m.label}</span><span class="opt-card-sub">${m.d}</span>`;
-        div.onclick = () => {
-          questionnaire.mood = m.v;
-          renderStyleGrid();
-        };
-        moodContainer.appendChild(div);
-      });
-    }
-
-    function renderPaletteGrid() {
-      const container = document.getElementById('paletteGrid');
-      container.innerHTML = '';
-      PALETTES.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'opt-card' + (questionnaire.colorPalette === p.v ? ' active' : '');
-        const swatchesHtml = p.c.map(hex => `<div class="swatch-segment" style="background-color: ${hex};"></div>`).join('');
-        div.innerHTML = `<div class="color-swatch-bar">${swatchesHtml}</div><span class="opt-card-title">${p.label}</span><span class="opt-card-sub">${p.d}</span>`;
-        div.onclick = () => {
-          questionnaire.colorPalette = p.v;
-          renderPaletteGrid();
-        };
-        container.appendChild(div);
-      });
-    }
-
-    function renderFinishGrids() {
-      const wallCont = document.getElementById('wallGrid');
-      wallCont.innerHTML = '';
-      WALLS.forEach(w => {
-        const div = document.createElement('div');
-        div.className = 'opt-card material-opt-card' + (questionnaire.wallFinish === w.v ? ' active' : '');
-        div.innerHTML = `<div class="material-circle" style="background-color: ${w.color};"></div><div><div class="opt-card-title">${w.label}</div><div class="opt-card-sub">${w.d}</div></div>`;
-        div.onclick = () => {
-          questionnaire.wallFinish = w.v;
-          renderFinishGrids();
-        };
-        wallCont.appendChild(div);
-      });
-
-      const floorCont = document.getElementById('floorGrid');
-      floorCont.innerHTML = '';
-      FLOORS.forEach(f => {
-        const div = document.createElement('div');
-        div.className = 'opt-card material-opt-card' + (questionnaire.floorMaterial === f.v ? ' active' : '');
-        div.innerHTML = `<div class="material-circle" style="background-color: ${f.color};"></div><div><div class="opt-card-title">${f.label}</div><div class="opt-card-sub">${f.d}</div></div>`;
-        div.onclick = () => {
-          questionnaire.floorMaterial = f.v;
-          renderFinishGrids();
-        };
-        floorCont.appendChild(div);
-      });
-    }
-
-    function renderFurnitureGrids() {
-      const woodCont = document.getElementById('woodGrid');
-      woodCont.innerHTML = '';
-      WOODS.forEach(w => {
-        const div = document.createElement('div');
-        div.className = 'opt-card material-opt-card' + (questionnaire.woodTone === w.v ? ' active' : '');
-        div.innerHTML = `<div class="material-circle" style="background-color: ${w.color};"></div><span class="opt-card-title">${w.label}</span>`;
-        div.onclick = () => {
-          questionnaire.woodTone = w.v;
-          renderFurnitureGrids();
-        };
-        woodCont.appendChild(div);
-      });
-
-      const metalCont = document.getElementById('metalGrid');
-      metalCont.innerHTML = '';
-      METALS.forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'opt-card material-opt-card' + (questionnaire.metalAccent === m.v ? ' active' : '');
-        div.innerHTML = `<div class="material-circle" style="background-color: ${m.color};"></div><span class="opt-card-title">${m.label}</span>`;
-        div.onclick = () => {
-          questionnaire.metalAccent = m.v;
-          renderFurnitureGrids();
-        };
-        metalCont.appendChild(div);
-      });
-
-      const lightCont = document.getElementById('lightingGrid');
-      lightCont.innerHTML = '';
-      LIGHTINGS.forEach(l => {
-        const div = document.createElement('div');
-        div.className = 'opt-card' + (questionnaire.lightingMood === l.v ? ' active' : '');
-        div.innerHTML = `<span class="opt-card-title">${l.label}</span><span class="opt-card-sub">${l.d}</span>`;
-        div.onclick = () => {
-          questionnaire.lightingMood = l.v;
-          renderFurnitureGrids();
-        };
-        lightCont.appendChild(div);
-      });
-    }
-
-    // ==========================================================================
-    // SKETCHUP BRIDGE & VIEWPORT CAPTURE
-    // ==========================================================================
-    function captureLiveViewport() {
-      return new Promise((resolve) => {
-        viewportCaptureResolve = resolve;
-        if (window.sketchup && typeof window.sketchup.capture_viewport === 'function') {
-          window.sketchup.capture_viewport();
-          setTimeout(() => {
-            if (viewportCaptureResolve) {
-              viewportCaptureResolve(capturedViewportImageData || '/master_prompt_render.png');
-              viewportCaptureResolve = null;
-            }
-          }, 4000);
-        } else {
-          // Browser standalone fallback
-          const fallback = capturedViewportImageData || '/master_prompt_render.png';
-          resolve(fallback);
-        }
-      });
-    }
-
-    function onViewportCaptured(result) {
-      if (typeof result === 'string') {
-        try { result = JSON.parse(result); } catch(e) {}
-      }
-      if (result && result.success && result.image) {
-        capturedViewportImageData = result.image;
-        document.getElementById('viewportImg').src = result.image;
-        document.getElementById('splitImgBefore').src = result.image;
-        if (result.width && result.height) {
-          document.getElementById('dimBadge').textContent = result.width + 'x' + result.height;
-        }
-      }
-      if (viewportCaptureResolve) {
-        viewportCaptureResolve(capturedViewportImageData || '/master_prompt_render.png');
-        viewportCaptureResolve = null;
-      }
-    }
-
-    function requestViewportCapture() {
-      captureLiveViewport();
-    }
-
-    // ==========================================================================
-    // SPLIT COMPARE SLIDER CONTROLLER
-    // ==========================================================================
-    function toggleSplitSliderView() {
-      isSplitComparing = !isSplitComparing;
-      document.getElementById('dualPreviewGrid').style.display = isSplitComparing ? 'none' : 'grid';
-      document.getElementById('splitSliderContainer').classList.toggle('active', isSplitComparing);
-      document.getElementById('btnToggleSplit').classList.toggle('active', isSplitComparing);
-      document.getElementById('splitToggleText').textContent = isSplitComparing ? 'Side-by-Side View' : 'Split Compare Slider';
-    }
-
-    function updateSplitSlider(val) {
-      document.getElementById('splitOverlayWrapper').style.clipPath = `polygon(0 0, ${val}% 0, ${val}% 100%, 0 100%)`;
-      document.getElementById('splitDividerLine').style.left = val + '%';
-    }
-
-    // ==========================================================================
-    // PROGRESSIVE GPU BLUEPRINT & BUCKET RENDERING SIMULATION
-    // ==========================================================================
-    const TOTAL_TILES = 16;
-    const TILE_SPIRAL_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
-
-    function startGpuProgressiveSimulation(targetImageUrl) {
-      const gpuLayer = document.getElementById('gpuRenderLayer');
-      const gpuImg = document.getElementById('gpuTargetImg');
-      const cadOverlay = document.getElementById('cadOverlay');
-      const tilesGrid = document.getElementById('gpuTilesGrid');
-      const statusText = document.getElementById('gpuStatusText');
-      const sppVal = document.getElementById('gpuSppVal');
-      const raysVal = document.getElementById('gpuRaysVal');
-      const pctVal = document.getElementById('gpuPctVal');
-
-      gpuImg.src = targetImageUrl;
-      gpuImg.className = 'gpu-target-img stage-cad';
-      cadOverlay.style.display = 'flex';
-      tilesGrid.style.display = 'none';
-      tilesGrid.innerHTML = '';
-      gpuLayer.style.display = 'flex';
-
-      // Build 16 tiles
-      for (let i = 0; i < TOTAL_TILES; i++) {
-        const tile = document.createElement('div');
-        tile.className = 'gpu-tile-cell unrendered';
-        tile.id = 'gpu-tile-' + i;
-        tilesGrid.appendChild(tile);
-      }
-
-      // Step 1: CAD Blueprint (0s -> 1.4s)
-      statusText.textContent = 'Pass 1/64: Initializing CUDA Cores & BVH Hierarchy...';
-      sppVal.textContent = '16';
-      raysVal.textContent = '1.8M';
-      pctVal.textContent = '4%';
-
-      setTimeout(() => {
-        statusText.textContent = 'Pass 8/64: Raycasting Primary Geometry Intersections...';
-        sppVal.textContent = '64';
-        raysVal.textContent = '8.4M';
-        pctVal.textContent = '18%';
-      }, 800);
-
-      // Step 2: Noise Pass (1.6s)
-      setTimeout(() => {
-        cadOverlay.style.display = 'none';
-        tilesGrid.style.display = 'grid';
-        gpuImg.className = 'gpu-target-img stage-noise';
-        statusText.textContent = 'Pass 20/64: Monte-Carlo Path Tracing (Coarse Preview)...';
-        sppVal.textContent = '128';
-        raysVal.textContent = '18.2M';
-        pctVal.textContent = '28%';
-
-        for (let i = 0; i < TOTAL_TILES; i++) {
-          const t = document.getElementById('gpu-tile-' + i);
-          if (t) t.className = 'gpu-tile-cell coarse';
-        }
-      }, 1600);
-
-      // Step 3: Progressive Bucket Sweep (2.4s -> 5.4s)
-      setTimeout(() => {
-        statusText.textContent = 'Pass 32/64: Multi-Threaded GPU Bucket Raytracing...';
-        
-        TILE_SPIRAL_ORDER.forEach((tIdx, seq) => {
-          const pairedIdx = TILE_SPIRAL_ORDER[(seq + 8) % TOTAL_TILES];
-          setTimeout(() => {
-            const tileA = document.getElementById('gpu-tile-' + tIdx);
-            const tileB = document.getElementById('gpu-tile-' + pairedIdx);
-
-            if (tileA) {
-              tileA.className = 'gpu-tile-cell semi';
-              tileA.innerHTML = `<div class="gpu-active-bucket"><span class="bucket-coord-text">[${(tIdx%4)+1},${Math.floor(tIdx/4)+1}]</span><span class="bucket-coord-text font-mono">512 SPP</span></div>`;
-            }
-            if (tileB) {
-              tileB.className = 'gpu-tile-cell semi';
-              tileB.innerHTML = `<div class="gpu-active-bucket"><span class="bucket-coord-text">[${(pairedIdx%4)+1},${Math.floor(pairedIdx/4)+1}]</span><span class="bucket-coord-text font-mono">512 SPP</span></div>`;
-            }
-
-            setTimeout(() => {
-              if (tileA) { tileA.className = 'gpu-tile-cell clear'; tileA.innerHTML = ''; }
-              if (tileB) { tileB.className = 'gpu-tile-cell clear'; tileB.innerHTML = ''; }
-            }, 180);
-
-            const progress = Math.round(28 + ((seq + 1) / TOTAL_TILES) * 58);
-            pctVal.textContent = progress + '%';
-            sppVal.textContent = 128 + seq * 56;
-            raysVal.textContent = (22.0 + seq * 2.8).toFixed(1) + 'M';
-          }, seq * 170);
-        });
-      }, 2400);
-
-      // Step 4: OptiX Denoise & Finish (5.6s)
-      setTimeout(() => {
-        gpuImg.className = 'gpu-target-img stage-clear';
-        statusText.textContent = 'Pass 64/64: OptiX AI Neural Denoising & 4K Polish...';
-        sppVal.textContent = '1024';
-        raysVal.textContent = '68.4M';
-        pctVal.textContent = '96%';
-      }, 5600);
-
-      // Step 5: Complete & Trigger Flight Animation (6.4s)
-      setTimeout(() => {
-        pctVal.textContent = '100%';
-        gpuLayer.style.display = 'none';
-        triggerFlightToFolder(targetImageUrl);
-      }, 6400);
-    }
-
-    function triggerFlightToFolder(imgUrl) {
-      const anchor = document.getElementById('flyingSnapshotAnchor');
-      anchor.innerHTML = `<div class="flying-snapshot"><img src="${imgUrl}" alt="Fly"></div>`;
-      setTimeout(() => {
-        anchor.innerHTML = '';
-      }, 1200);
-    }
-
-    // ==========================================================================
-    // CORE RENDER TRIGGER & API BRIDGE
-    // ==========================================================================
-    async function triggerAIRender() {
-      if (isRendering) return;
-
-      if (!userEmail) {
-        document.getElementById('authModal').style.display = 'flex';
-        return;
-      }
-
-      isRendering = true;
-      const btn = document.getElementById('renderBtn');
-      const btnLabel = document.getElementById('renderBtnLabel');
-      btn.disabled = true;
-      btnLabel.textContent = 'Rendering...';
-
-      try {
-        const viewportImgData = await captureLiveViewport();
-        
-        // Start simulation immediately on right canvas
-        startGpuProgressiveSimulation(viewportImgData);
-
-        const serverUrl = document.getElementById('serverUrl').value || window.location.origin;
-        
-        // Prepare questionnaire payload
-        const payload = {
-          image: viewportImgData,
-          questionnaire: questionnaire,
-          userEmail: userEmail,
-          sessionId: userSessionId,
-          model: 'google/nano-banana-pro'
-        };
-
-        const response = await fetch(serverUrl + '/api/replicate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await response.json();
-
-        if (response.status === 403 || data.trialOver) {
-          document.getElementById('trialOverModal').style.display = 'flex';
-          document.getElementById('gpuRenderLayer').style.display = 'none';
-          isRendering = false;
-          btn.disabled = false;
-          btnLabel.textContent = 'Create Render';
-          return;
-        }
-
-        if (data && data.output) {
-          const finalUrl = Array.isArray(data.output) ? data.output[0] : data.output;
-          applyCompletedRender(finalUrl);
-        } else if (data && data.id) {
-          // Poll for completion
-          pollRenderResult(serverUrl, data.id);
-        } else {
-          // Local fallback simulation if server is offline
-          setTimeout(() => {
-            applyCompletedRender(viewportImgData);
-          }, 6500);
-        }
-      } catch (err) {
-        console.warn('API error, completing progressive simulation locally:', err);
-        setTimeout(() => {
-          applyCompletedRender('/master_prompt_render.png');
-        }, 6500);
-      }
-    }
-
-    async function pollRenderResult(serverUrl, id) {
-      let attempts = 0;
-      const interval = setInterval(async () => {
-        attempts++;
-        try {
-          const res = await fetch(`${serverUrl}/api/replicate?id=${encodeURIComponent(id)}&userEmail=${encodeURIComponent(userEmail)}`);
-          const d = await res.json();
-          if (d.done && d.output) {
-            clearInterval(interval);
-            const finalUrl = Array.isArray(d.output) ? d.output[0] : d.output;
-            applyCompletedRender(finalUrl);
-          }
-        } catch(e) {}
-        if (attempts > 60) clearInterval(interval);
-      }, 2000);
-    }
-
-    function applyCompletedRender(url) {
-      lastRenderUrl = url;
-      document.getElementById('aiImg').src = url;
-      document.getElementById('splitImgAfter').src = url;
-      document.getElementById('downloadLink').href = url;
-      document.getElementById('downloadLink').style.display = 'inline-flex';
-      document.getElementById('viewModeToggle').style.display = 'flex';
-      document.getElementById('actionRowBottom').style.display = 'flex';
-      
-      // Update interactive folder thumbs
-      document.getElementById('folderThumb1').src = url;
-      saveToPastRenders(url, 'image');
-
-      isRendering = false;
-      const btn = document.getElementById('renderBtn');
-      const btnLabel = document.getElementById('renderBtnLabel');
-      btn.disabled = false;
-      btnLabel.textContent = 'Create Render';
-    }
-
-    // ==========================================================================
-    // 3D VIDEO WALKTHROUGH PIPELINE
-    // ==========================================================================
-    async function triggerVideoWalkthrough() {
-      if (isVideoRendering) return;
-      isVideoRendering = true;
-      const vBtn = document.getElementById('videoBtn');
-      vBtn.innerHTML = '<span>🎬 Rendering 3D Video (60 FPS)...</span>';
-      vBtn.disabled = true;
-
-      try {
-        const serverUrl = document.getElementById('serverUrl').value || window.location.origin;
-        const res = await fetch(serverUrl + '/api/replicate/video', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: lastRenderUrl || document.getElementById('aiImg').src,
-            userEmail: userEmail,
-            sessionId: userSessionId
-          })
-        });
-        const data = await res.json();
-        if (data.output) {
-          applyCompletedVideo(data.output);
-        } else {
-          // Demo fallback
-          setTimeout(() => {
-            applyCompletedVideo('https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4');
-          }, 4000);
-        }
-      } catch (err) {
-        setTimeout(() => {
-          applyCompletedVideo('https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4');
-        }, 4000);
-      }
-    }
-
-    function applyCompletedVideo(videoUrl) {
-      const vidEl = document.getElementById('aiVideo');
-      vidEl.src = videoUrl;
-      document.getElementById('downloadVideoLink').href = videoUrl;
-      document.getElementById('downloadVideoLink').style.display = 'inline-flex';
-      switchPreviewMode('video');
-
-      isVideoRendering = false;
-      const vBtn = document.getElementById('videoBtn');
-      vBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 8 6 4-6 4Z"/></svg><span>🎬 Generate 3D Video Walkthrough</span>';
-      vBtn.disabled = false;
-    }
-
-    function switchPreviewMode(mode) {
-      const imgEl = document.getElementById('aiImg');
-      const vidEl = document.getElementById('aiVideo');
-      const btnImg = document.getElementById('btnShowImg');
-      const btnVid = document.getElementById('btnShowVid');
-
-      if (mode === 'video') {
-        imgEl.style.display = 'none';
-        vidEl.style.display = 'block';
-        btnImg.classList.remove('active');
-        btnVid.classList.add('active');
-        document.getElementById('outputCardTitle').textContent = '2. 3D Video Walkthrough';
-      } else {
-        vidEl.style.display = 'none';
-        imgEl.style.display = 'block';
-        btnVid.classList.remove('active');
-        btnImg.classList.add('active');
-        document.getElementById('outputCardTitle').textContent = '2. Render Output';
-      }
-    }
-
-    // ==========================================================================
-    // GALLERY & STORAGE MANAGER
-    // ==========================================================================
-    function saveToPastRenders(url, type) {
-      try {
-        let list = JSON.parse(localStorage.getItem('v6_past_renders_v1') || '[]');
-        list.unshift({ id: Date.now(), url: url, type: type, timestamp: new Date().toLocaleTimeString() });
-        list = list.slice(0, 30);
-        localStorage.setItem('v6_past_renders_v1', JSON.stringify(list));
-        renderPastRendersGallery();
-      } catch (e) {}
-    }
-
-    function renderPastRendersGallery() {
-      const list = JSON.parse(localStorage.getItem('v6_past_renders_v1') || '[]');
-      const container = document.getElementById('pastRendersCarousel');
-      document.getElementById('folderCountBadge').textContent = list.length;
-      document.getElementById('modalCountBadge').textContent = list.length + ' renders';
-
-      if (list.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #71717a; padding: 30px 0;">No saved renders yet. Click Create Render to generate!</div>';
-        return;
-      }
-
-      container.innerHTML = '';
-      list.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'gallery-grid-item';
-        card.innerHTML = `<img src="${item.url}" class="gallery-item-thumb" alt="Render"><div class="gallery-item-info"><span>${item.type === 'video' ? '🎬 Video' : '🖼️ 4K Render'}</span><span>${item.timestamp}</span></div>`;
-        card.onclick = () => {
-          document.getElementById('aiImg').src = item.url;
-          document.getElementById('splitImgAfter').src = item.url;
-          toggleGalleryModal(false);
-        };
-        container.appendChild(card);
-      });
-    }
-
-    function clearPastRenders() {
-      localStorage.removeItem('v6_past_renders_v1');
-      renderPastRendersGallery();
-    }
-
-    function toggleGalleryModal(show) {
-      document.getElementById('galleryModal').classList.toggle('active', show);
-    }
-
-    // ==========================================================================
-    // AUTHENTICATION & SUPPORT
-    // ==========================================================================
-    function checkAuthOnLoad() {
-      if (userEmail) {
-        document.getElementById('userAccountBadge').style.display = 'inline-flex';
-        document.getElementById('userAccountEmail').textContent = '👤 ' + userEmail;
-      }
-    }
-
-    async function sendOtpCode() {
-      const email = document.getElementById('authEmail').value.trim();
-      if (!email || !email.includes('@')) return;
-      document.getElementById('authStep1').style.display = 'none';
-      document.getElementById('authStep2').style.display = 'block';
-      window.pendingEmail = email;
-    }
-
-    async function verifyOtpCode() {
-      const code = document.getElementById('authOtpCode').value.trim();
-      if (!code) return;
-      userEmail = window.pendingEmail || 'architect@studio.com';
-      userSessionId = 'sess_' + Date.now();
-      localStorage.setItem('v6_user_email', userEmail);
-      localStorage.setItem('v6_session_id', userSessionId);
-      document.getElementById('authModal').style.display = 'none';
-      checkAuthOnLoad();
-    }
-
-    function resetAuthForm() {
-      document.getElementById('authStep2').style.display = 'none';
-      document.getElementById('authStep1').style.display = 'block';
-    }
-
-    function signOutUser() {
-      localStorage.removeItem('v6_user_email');
-      localStorage.removeItem('v6_session_id');
-      userEmail = '';
-      userSessionId = '';
-      document.getElementById('userAccountBadge').style.display = 'none';
-      document.getElementById('authModal').style.display = 'flex';
-      resetAuthForm();
-    }
-
-    function toggleSupportModal(show) {
-      document.getElementById('supportModal').style.display = show ? 'flex' : 'none';
-    }
-
-    async function submitSupportRequest() {
-      const msg = document.getElementById('supportMessage').value.trim();
-      if (!msg) return;
-      const chat = document.getElementById('supportChatContainer');
-      const div = document.createElement('div');
-      div.style.cssText = 'background: #18181b; padding: 8px 12px; border-radius: 8px; align-self: flex-end; max-width: 80%;';
-      div.textContent = msg;
-      chat.appendChild(div);
-      document.getElementById('supportMessage').value = '';
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    function openProPlanCheckout(btn) {
-      window.open('https://buy.stripe.com', '_blank');
-    }
-
-    // ==========================================================================
-    // INITIALIZATION ON DOM READY
-    // ==========================================================================
-    document.addEventListener('DOMContentLoaded', () => {
-      renderRoomGrid();
-      renderStyleGrid();
-      renderPaletteGrid();
-      renderFinishGrids();
-      renderFurnitureGrids();
-      renderPastRendersGallery();
-      checkAuthOnLoad();
-
-      // Check URL search params for quick test overrides
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('viewport')) {
-        document.getElementById('viewportImg').src = params.get('viewport');
-        document.getElementById('splitImgBefore').src = params.get('viewport');
-      }
-      if (params.get('render')) {
-        applyCompletedRender(params.get('render'));
-      }
-    });
   </script>
 </body>
 </html>
