@@ -1,8 +1,8 @@
-import { GLSLHills } from "@/components/ui/glsl-hills";
-("use client");
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { GLSLHills } from "@/components/ui/glsl-hills";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
