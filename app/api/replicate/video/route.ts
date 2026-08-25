@@ -142,18 +142,16 @@ export async function POST(request: Request) {
 
     const paid = await isUserPaid(normEmail);
 
-    // 1 Video Walkthrough Trial Limit Check for Unpaid Users
+    // 3D Video Walkthrough is exclusive to Paid Pro Plan Members
     if (!paid) {
-      const currentVideoCount = await getVideoCount(normEmail);
-      if (currentVideoCount >= TRIAL_VIDEO_LIMIT) {
-        return NextResponse.json(
-          {
-            error: "Trial Limits are over to render more",
-            code: "payment_required",
-          },
-          { status: 403 }
-        );
-      }
+      return NextResponse.json(
+        {
+          error:
+            "3D Video Walkthrough is a V6 Render Pro feature. Please activate Pro Plan to generate cinematic video walkthroughs.",
+          code: "payment_required",
+        },
+        { status: 403 }
+      );
     }
 
     const imageUrl: string = req.image;
