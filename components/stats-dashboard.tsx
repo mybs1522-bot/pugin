@@ -44,10 +44,10 @@ export function StatsDashboard() {
   return (
     <div ref={containerRef} className="flex justify-center">
       <MarketingDashboard
-        title="Fastest Growing AI Rendering Engine"
+        title="Loved by 32,000+ SketchUp Designers in 90+ Countries"
         team={{
           memberCount: userCount,
-          label: "Downloads",
+          label: "Active Users",
           members: [
             {
               id: "1",
@@ -72,8 +72,8 @@ export function StatsDashboard() {
           ],
         }}
         cta={{
-          text: "Join thousands of designers using AI to redesign spaces",
-          buttonText: "Get Started",
+          text: "Save 10+ hours on every project with 9.3s AI SketchUp rendering",
+          buttonText: "Start 14-Day Free Trial",
           onButtonClick: () => router.push("/render"),
         }}
       />

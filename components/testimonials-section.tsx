@@ -5,63 +5,63 @@ import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 
 const testimonials = [
   {
-    text: "I used to spend 3–4 hours per render on my workstation. Now I get photorealistic outputs in under a minute — from my laptop on a job site. It's completely changed how I present to clients.",
+    text: "By far the best tool in terms of speed and accuracy-to-geometry. It preserves my SketchUp walls, cabinetry, and openings with zero drift, while delivering V-Ray level realism in under 10 seconds.",
     image:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80",
-    name: "Priya Sharma",
-    role: "Senior Interior Designer, Mumbai",
+    name: "Luke Vercia",
+    role: "Architectural Visualization Artist",
   },
   {
-    text: "We were about to invest $6,000 in a new GPU workstation just for rendering. This tool saved us that entire budget. The results are indistinguishable from what our old setup produced.",
+    text: "We were about to invest $6,000 in a new GPU workstation just for rendering. V6 Render saved us that entire budget. It delivers breathtaking 4K outputs on a standard MacBook Air.",
     image:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80",
     name: "James Caldwell",
     role: "Principal Architect, London",
   },
   {
-    text: "Clients can now see multiple style options in the same meeting. Before, I'd have to go back to the office and wait overnight. This tool makes live design exploration possible.",
+    text: "Clients can now see multiple material palettes and lighting moods live in the same meeting. No more overnight render queues or tedious Photoshop post-processing.",
     image:
       "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80",
     name: "Sofia Moreno",
     role: "Residential Designer, Barcelona",
   },
   {
-    text: "The photorealistic quality surprised me. Materials, shadows, lighting — it looks like a professional Lumion or V-Ray render. No GPU, no plugins, no headaches.",
+    text: "I used to wait 30–45 minutes per test render in Lumion. Now I get physically believable lighting, reflections, and wood textures in 9.3 seconds right inside SketchUp.",
     image:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=80",
     name: "Tariq Al-Farsi",
     role: "Architectural Visualizer, Dubai",
   },
   {
-    text: "I run a solo design studio. I can't afford a $5K render PC. This lets me compete with larger firms on presentation quality — and my clients have no idea I'm using a MacBook Air.",
+    text: "The 100% design preservation is what sold us. Other AI tools redesign the room; V6 Render actually upgrades our real 3D geometry into photorealistic photographs.",
     image:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&q=80",
     name: "Hannah Kowalski",
     role: "Freelance Interior Designer, Warsaw",
   },
   {
-    text: "We integrated this into our concept approval workflow. Clients approve designs 40% faster because they can actually visualise the final space, not just look at floor plans.",
+    text: "Client approvals are 40% faster because they can visualize the real space instantly, and we've cut rendering outsourcing costs by over $2,000 every single month.",
     image:
       "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80",
     name: "Luca Ferretti",
     role: "Design Director, Milan",
   },
   {
-    text: "As an architect, accurate material representation is everything. I was sceptical but the wood grain, tile reflections, and fabric textures are genuinely impressive. My team uses it daily.",
+    text: "Accurate material representation is everything in architecture. The tile reflections, PBR metals, and soft shadow falloffs look like an actual photo shoot.",
     image:
       "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=80&q=80",
     name: "Aisha Okonkwo",
     role: "Architect & Educator, Lagos",
   },
   {
-    text: "The 20+ design styles save me so much time scoping a project. I show clients Scandinavian vs. Industrial vs. Coastal in minutes. That used to take a full day of work.",
+    text: "The 1-click video walkthroughs blow our clients away. Being able to deliver 3D animated walkthroughs same-day gives us an unfair advantage over other studios.",
     image:
       "https://images.unsplash.com/photo-1463453091185-61582044d556?w=80&q=80",
     name: "Ethan Brooks",
     role: "Commercial Interior Designer, NYC",
   },
   {
-    text: "We switched from outsourcing renders at $150 per image to doing it in-house with this tool. We're saving over $2,000 a month and turnaround is same-day now.",
+    text: "We switched from outsourcing renders at $150 per image to doing everything in-house with V6 Render. Instant turnaround, zero headaches.",
     image:
       "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80",
     name: "Mei-Lin Chen",

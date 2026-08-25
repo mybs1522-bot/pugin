@@ -12,10 +12,11 @@ const YEARLY_PRICE = 15;
 const YEARLY_ORIGINAL = 30;
 
 const FEATURES = [
-  { label: "Unlimited Renders", highlight: true },
-  { label: "Photorealistic AI output — DSLR quality" },
-  { label: "20+ interior & exterior design styles" },
-  { label: "No GPU required · runs locally on your device" },
+  { label: "Unlimited 4K Renders & 3D Video Walkthroughs", highlight: true },
+  { label: "100% Geometry & Camera Perspective Lock (Zero Drift)" },
+  { label: "Native SketchUp .rbz Extension (Windows & Mac)" },
+  { label: "High-Speed Cloud AI · Zero GPU or High RAM Needed" },
+  { label: "Physical PBR Lighting, Materials & Realistic Reflections" },
 ];
 
 const TRANSITION = {

@@ -200,12 +200,18 @@ MagneticButton.displayName = "MagneticButton";
 
 const MarqueeItem = () => (
   <div className="flex items-center space-x-12 px-6">
-    <span>SketchUp AI Plugin</span> <span className="text-primary/60">✦</span>
-    <span>Photorealistic Images & 3D Videos</span>{" "}
+    <span>V6 RENDER FOR SKETCHUP</span>{" "}
+    <span className="text-primary/60">✦</span>
+    <span>UNDER 10-SECOND RENDERS</span>{" "}
     <span className="text-secondary/60">✦</span>
-    <span>No GPU Required</span> <span className="text-primary/60">✦</span>
-    <span>No High RAM Needed</span> <span className="text-secondary/60">✦</span>
-    <span>100% Geometry Lock</span> <span className="text-primary/60">✦</span>
+    <span>ZERO GPU OR HIGH RAM NEEDED</span>{" "}
+    <span className="text-primary/60">✦</span>
+    <span>100% ACCURATE GEOMETRY LOCK</span>{" "}
+    <span className="text-secondary/60">✦</span>
+    <span>4K STILLS & 3D WALKTHROUGHS</span>{" "}
+    <span className="text-primary/60">✦</span>
+    <span>TRUSTED IN 90+ COUNTRIES</span>{" "}
+    <span className="text-secondary/60">✦</span>
   </div>
 );
 
@@ -321,7 +327,7 @@ export function CinematicFooter({
             ref={giantTextRef}
             className="footer-giant-bg-text pointer-events-none absolute -bottom-[5vh] left-1/2 z-0 -translate-x-1/2 whitespace-nowrap select-none"
           >
-            STUDIO
+            V6 RENDER
           </div>
 
           {/* Marquee */}
@@ -335,10 +341,10 @@ export function CinematicFooter({
           {/* Main content */}
           <div className="relative z-10 mt-36 flex w-full flex-1 flex-col items-center justify-center px-6 pb-20 lg:px-16 lg:pb-28 xl:px-24">
             <div className="footer-glass-pill mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs lg:px-5 lg:py-2 lg:text-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <span className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
               <span className="text-muted-foreground font-medium">
-                SketchUp Plugin · Render Images & Videos · No GPU or High RAM
-                Needed
+                The AI Rendering Extension for SketchUp · 100% Geometry
+                Preservation · Zero GPU Needed
               </span>
             </div>
 
@@ -346,12 +352,12 @@ export function CinematicFooter({
               ref={headingRef}
               className="footer-text-glow mb-4 text-center text-3xl font-black tracking-tight md:text-5xl lg:text-6xl xl:text-7xl"
             >
-              Render SketchUp Images & 3D Videos seamlessly. <br />
-              No GPU or High RAM required.
+              Lightning-fast SketchUp rendering software you&apos;ll love.
             </h2>
-            <p className="text-muted-foreground mb-12 text-center text-sm md:text-base lg:text-lg">
-              One-click SketchUp .rbz plugin · Seamless cloud rendering · Runs
-              on any laptop or desktop
+            <p className="text-muted-foreground mb-12 max-w-3xl text-center text-sm leading-relaxed md:text-base lg:text-lg">
+              Generate photorealistic 4K renders and smooth 3D video
+              walkthroughs from any SketchUp view in under 10 seconds. No
+              expensive GPUs, no complex V-Ray settings, zero learning curve.
             </p>
 
             {/* Live demo */}

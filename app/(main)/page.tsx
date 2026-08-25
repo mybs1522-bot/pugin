@@ -60,59 +60,59 @@ const FundingAnnouncement = dynamic(
 const features = [
   {
     icon: Wand2,
-    title: "SketchUp Viewport Lock",
+    title: "100% Accurate AI Rendering",
     description:
-      "Renders directly from your active SketchUp viewport, preserving 100% of your geometry, walls, doors, and furniture.",
+      "Unlike generic AI tools that hallucinate and alter your design, V6 Render preserves your SketchUp model's geometry, textures, and camera perspective with zero drift.",
   },
   {
     icon: Camera,
-    title: "Photorealistic Images & 3D Videos",
+    title: "4K Photorealism & 3D Video Walkthroughs",
     description:
-      "Generate high-resolution 4K interior & exterior images plus smooth cinematic 3D video walkthroughs.",
+      "Generate ultra-sharp 4K interior and exterior architectural photographs, plus smooth cinematic 3D walkthrough videos in seconds.",
   },
   {
     icon: Zap,
-    title: "No GPU & No High RAM Needed",
+    title: "No GPU, No High RAM, No Learning Curve",
     description:
-      "Zero expensive graphics card or high RAM required. Cloud TPUs handle all heavy rendering seamlessly on any computer.",
+      "Say goodbye to $5,000 GPU workstations and complex V-Ray or Lumion render settings. High-speed cloud AI handles all heavy processing on any laptop or desktop.",
   },
   {
     icon: Layers,
-    title: "100% Design Fidelity",
+    title: "Effortless Client Feedback Loops",
     description:
-      "Locks room layout, staircases, glass block partitions, and cabinetry with zero AI hallucinations.",
+      "Explore dozens of material finishes, styles, and lighting moods live in client meetings. Cut revision turnaround from days down to seconds.",
   },
   {
     icon: Download,
-    title: "One-Click RBZ Plugin Setup",
+    title: "10-Second Native .rbz Plugin Setup",
     description:
-      "Download the official .rbz plugin archive and install directly inside SketchUp in under 10 seconds.",
+      "Download the lightweight v6_render.rbz file and launch directly inside SketchUp with zero complex installations or configuration required.",
   },
   {
     icon: Shield,
-    title: "Fast & Ephemeral",
+    title: "Lightning-Fast 9.3s Renders",
     description:
-      "Renders finish in seconds with automatic gallery saving and high-resolution direct downloads.",
+      "Renders finish in under 10 seconds with automatic high-resolution gallery saving and instant one-click direct downloads.",
   },
 ];
 
 const steps = [
   {
     number: "01",
-    title: "Install SketchUp Plugin",
-    body: "Download the official v6_render.rbz file and install it inside SketchUp in 10 seconds.",
+    title: "Install the SketchUp Plugin",
+    body: "Download the official v6_render.rbz file and install it inside SketchUp Extension Manager in under 10 seconds.",
     icon: ImageIcon,
   },
   {
     number: "02",
-    title: "Capture Any Viewport",
-    body: "Click Render Viewport directly inside SketchUp without needing expensive GPUs or high RAM setups.",
+    title: "Capture Any Viewport Angle",
+    body: "Click Render inside SketchUp to capture your active view with 100% geometry and camera fidelity.",
     icon: Layers,
   },
   {
     number: "03",
-    title: "Images & 3D Videos",
-    body: "Get crisp 4K interior/exterior photos and smooth 3D video walkthroughs delivered seamlessly.",
+    title: "Generate 4K Stills & 3D Videos",
+    body: "Receive photorealistic 4K architectural visuals and smooth 3D video walkthroughs delivered in under 10 seconds.",
     icon: Zap,
   },
 ];
@@ -128,8 +128,8 @@ export default function HomePage() {
               <div className="bg-background flex h-7 w-7 items-center justify-center rounded-lg border">
                 <Palette className="h-3.5 w-3.5" />
               </div>
-              <span className="text-sm font-semibold">
-                SketchUp AI Renderer
+              <span className="text-sm font-bold tracking-tight">
+                V6 Render
               </span>
             </Link>
             <div className="text-muted-foreground hidden items-center gap-6 text-sm sm:flex">
@@ -143,13 +143,13 @@ export default function HomePage() {
                 href="#how-it-works"
                 className="hover:text-foreground transition-colors"
               >
-                How it works
+                How It Works
               </Link>
               <Link
-                href="#download"
+                href="#pricing"
                 className="hover:text-foreground transition-colors"
               >
-                Download Plugin
+                Pricing & Trial
               </Link>
             </div>
             <div className="flex items-center gap-2">
@@ -169,13 +169,54 @@ export default function HomePage() {
         <CinematicFooter windowsHref="#" macHref="#" />
 
         <div className="mx-auto w-full max-w-7xl space-y-20 px-6 py-16 pb-24 lg:space-y-28 lg:px-12 lg:py-24 xl:px-16">
-          {/* ── Funding announcement ───────────────────────── */}
-          <FundingAnnouncement />
+          {/* ── Funding announcement (Pricing Offer) ───────────── */}
+          <div id="pricing">
+            <FundingAnnouncement />
+          </div>
 
           {/* ── Before / After cards ─────────────────────────── */}
           <div className="flex justify-center py-4">
             <BeforeAfterCards />
           </div>
+
+          {/* ── Features Grid Section ────────────────────────── */}
+          <section id="features" className="space-y-10">
+            <div className="text-center">
+              <div className="border-primary/30 bg-primary/10 text-primary mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-semibold tracking-widest uppercase">
+                <Sparkles className="h-3.5 w-3.5" /> Built for Architects &
+                Designers
+              </div>
+              <h2 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                The Smarter Way to Render in SketchUp
+              </h2>
+              <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-sm leading-relaxed lg:text-base">
+                Eliminate hours of manual lighting setups, complex render
+                settings, and long wait times. Get instant, physically accurate
+                PBR photorealism directly from your SketchUp viewport.
+              </p>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {features.map((f, i) => (
+                <Card
+                  key={i}
+                  className="border-border/60 bg-card/60 hover:border-foreground/30 relative overflow-hidden backdrop-blur-sm transition-all hover:shadow-lg"
+                >
+                  <CardContent className="flex flex-col gap-3.5 p-6">
+                    <div className="bg-primary/10 text-primary border-primary/20 flex h-11 w-11 items-center justify-center rounded-xl border">
+                      <f.icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-foreground text-lg font-bold tracking-tight">
+                      {f.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {f.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
 
           {/* ── How it works ─────────────────────────────────── */}
           <section
@@ -183,12 +224,12 @@ export default function HomePage() {
             className="bg-background rounded-2xl border px-6 py-12 sm:px-12 lg:px-20 lg:py-20"
           >
             <div className="mb-10 text-center lg:mb-16">
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                How it works
+              <h2 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                Complete Workflow in 3 Simple Steps
               </h2>
               <p className="text-muted-foreground mt-2 text-sm lg:mt-4 lg:text-base">
-                Three steps from SketchUp viewport to photorealistic images & 3D
-                videos.
+                From raw SketchUp viewport to photorealistic 4K presentations in
+                under 10 seconds.
               </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-3 lg:gap-14">
@@ -207,7 +248,7 @@ export default function HomePage() {
                     <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
                       {s.number}
                     </p>
-                    <p className="mt-1 font-medium lg:mt-2 lg:text-xl">
+                    <p className="mt-1 font-bold lg:mt-2 lg:text-xl">
                       {s.title}
                     </p>
                     <p className="text-muted-foreground mt-1.5 text-sm leading-6 lg:mt-3 lg:text-base lg:leading-7">
@@ -232,8 +273,8 @@ export default function HomePage() {
 
       {/* ── Site footer ─────────────────────────────────────── */}
       <Footer
-        brandName="SketchUp AI Renderer"
-        brandDescription="Seamlessly render photorealistic interior & exterior images and 3D video walkthroughs directly inside SketchUp. No expensive graphics card or high RAM required."
+        brandName="V6 Render"
+        brandDescription="Lightning-fast SketchUp rendering software for architects and interior designers. Generate photorealistic 4K images and 3D video walkthroughs in under 10 seconds with zero GPU requirements."
         socialLinks={[
           {
             icon: <Twitter className="h-6 w-6" />,

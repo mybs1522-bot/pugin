@@ -57,35 +57,30 @@ export function FundingAnnouncement() {
           {/* Badge */}
           <div className="border-primary/30 bg-primary/10 text-primary inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-semibold">
             <Zap className="h-4 w-4" />
-            SketchUp Plugin — Render Images & Videos without GPU or High RAM
+            14-Day Free Trial · 50% Launch Discount · Zero GPU Needed
           </div>
 
           {/* Headline */}
           <div className="flex flex-col gap-3">
             <h2 className="text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-5xl">
-              We just raised <span className="text-primary">$10M</span> —<br />
-              and we&apos;re passing it on to you.
+              Pro Architectural Rendering <br />
+              <span className="text-primary">at a fraction of the cost.</span>
             </h2>
             <p className="text-muted-foreground text-base leading-relaxed lg:text-lg">
-              For the next{" "}
+              Stop paying thousands for expensive RTX workstations and complex
+              V-Ray or Lumion licenses. For the next{" "}
               <span className="text-foreground font-semibold">
                 15 days only
               </span>
-              , we&apos;re cutting prices — monthly from{" "}
-              <span className="text-muted-foreground font-semibold line-through">
-                $40
-              </span>{" "}
-              to <span className="text-primary font-semibold">$20</span>, and
-              yearly from{" "}
-              <span className="text-muted-foreground font-semibold line-through">
-                $30
-              </span>{" "}
-              to <span className="text-primary font-semibold">$15</span>/mo.
-              Lock in now and this price is{" "}
+              , lock in unlimited cloud rendering for{" "}
+              <span className="text-primary font-semibold">$15/mo</span> (billed
+              yearly) or{" "}
+              <span className="text-primary font-semibold">$20/mo</span>{" "}
+              monthly. Lock in now and this discounted rate is{" "}
               <span className="text-foreground font-semibold">
                 yours forever
-              </span>{" "}
-              — no matter what we charge new users later.
+              </span>
+              .
             </p>
           </div>
 
@@ -236,10 +231,10 @@ export function FundingAnnouncement() {
           {/* Side stats card */}
           <div className="border-border bg-background/80 absolute top-4 right-4 flex min-w-[110px] flex-col gap-4 rounded-xl border p-4 shadow-lg backdrop-blur-md">
             {[
-              { value: "12K+", label: "Designers" },
-              { value: "58K", label: "Renders/mo" },
-              { value: "20+", label: "AI Styles" },
-              { value: "18 s", label: "Avg render" },
+              { value: "90+", label: "Countries" },
+              { value: "7.5M+", label: "Renders Done" },
+              { value: "9.3s", label: "Avg Speed" },
+              { value: "4.9 ★", label: "User Rating" },
             ].map((stat) => (
               <div key={stat.label}>
                 <p className="text-lg leading-none font-bold">{stat.value}</p>
