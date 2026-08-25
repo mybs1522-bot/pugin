@@ -197,7 +197,7 @@ export function GlassCheckoutCard({
             <div className="flex items-center justify-between gap-2">
               <div className="flex min-w-0 items-center gap-2.5">
                 <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
-                  Download Plugin Now
+                  Download Free Plugin
                 </h3>
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
                   <Image
