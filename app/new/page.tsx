@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
   Download,
@@ -11,9 +11,25 @@ import {
   ChevronLeft,
   RefreshCw,
   Split,
+  Columns2,
   ChevronsLeftRight,
+  Film,
+  Building2,
+  DoorOpen,
+  Brush,
+  Droplets,
+  PaintBucket,
+  Lightbulb,
+  Cpu,
+  Crosshair,
+  Scan,
+  Box,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  InteractiveFolderGallery,
+  GalleryPhoto,
+} from "@/components/ui/interactive-folder-gallery";
 
 // EXACT PLUGIN DATA STRUCTURES
 const ROOMS_INTERIOR = [
@@ -192,72 +208,105 @@ const LIGHTINGS = [
   { v: "soft-diffused", label: "Soft Diffused", d: "Gentle even shadows" },
 ];
 
-const STEP_TABS = [
-  { label: "Space", short: "1. Space" },
-  { label: "Room", short: "2. Room" },
-  { label: "Style", short: "3. Style" },
-  { label: "Palette", short: "4. Color" },
-  { label: "Finishes", short: "5. Finish" },
-  { label: "Lighting", short: "6. Light" },
+// PREMIUM STEP DOCK ITEMS WITH ICONS & TOOLTIPS
+const STEP_ITEMS = [
+  {
+    step: 0,
+    title: "Step 1: Space Type",
+    subtitle: "Interior vs Exterior Architecture",
+    icon: Building2,
+  },
+  {
+    step: 1,
+    title: "Step 2: Room & Building Type",
+    subtitle: "Living Room, Bedroom, Villa, Facade...",
+    icon: DoorOpen,
+  },
+  {
+    step: 2,
+    title: "Step 3: Design Style & Mood",
+    subtitle: "Minimalist, Modern, Scandinavian, Cozy...",
+    icon: Brush,
+  },
+  {
+    step: 3,
+    title: "Step 4: Color Palette & Accent",
+    subtitle: "Warm Neutrals, Earthy, Monochrome...",
+    icon: Droplets,
+  },
+  {
+    step: 4,
+    title: "Step 5: Finishes & Materials",
+    subtitle: "Plaster, Hardwood, Marble, Tile...",
+    icon: Box,
+  },
+  {
+    step: 5,
+    title: "Step 6: Lighting Mood",
+    subtitle: "Bright Daylight, Warm Ambient, Spotlit...",
+    icon: Lightbulb,
+  },
 ];
 
-// Sample showcase scenes
-const SAMPLE_GALLERY = [
-  {
-    id: "sample-1",
-    title: "Minimalist Villa Living Room",
-    category: "Interior",
-    spaceType: "interior",
-    roomType: "Living Room",
-    primaryStyle: "Modern",
-    mood: "serene",
-    colorPalette: "warm-neutrals",
-    wallFinish: "beige",
-    floorMaterial: "light-hardwood",
-    lightingMood: "bright-natural",
-    beforeImg:
-      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
-    afterImg:
-      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    id: "sample-2",
-    title: "Cantilevered Forest House",
-    category: "Exterior",
-    spaceType: "exterior",
-    roomType: "House",
-    primaryStyle: "Minimalist",
-    mood: "dramatic",
-    colorPalette: "monochrome",
-    wallFinish: "textured",
-    floorMaterial: "concrete",
-    lightingMood: "dramatic-spotlit",
-    beforeImg:
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
-    afterImg:
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    id: "sample-3",
-    title: "Scandinavian Kitchen & Dining",
-    category: "Interior",
-    spaceType: "interior",
-    roomType: "Kitchen",
-    primaryStyle: "Scandinavian",
-    mood: "airy",
-    colorPalette: "cool-neutrals",
-    wallFinish: "white",
-    floorMaterial: "light-hardwood",
-    lightingMood: "soft-diffused",
-    beforeImg:
-      "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1400&q=80",
-    afterImg:
-      "https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1400&q=80",
-  },
-];
+// 4x4 GPU Render Tiles (16 total) with progressive multi-pass state
+const TOTAL_TILES = 16;
+// Natural spiral / Hilbert bucket traversal order
+const TILE_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
+
+const DEFAULT_VIEWPORT =
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80";
+const DEFAULT_RENDER =
+  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80";
+const DEFAULT_VIDEO =
+  "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
 
 export default function SamplePluginRendererPage() {
-  const [activeScene, setActiveScene] = useState(SAMPLE_GALLERY[0]);
+  // Loaded images & video state (from /load or default)
+  const [viewportImg, setViewportImg] = useState<string>(DEFAULT_VIEWPORT);
+  const [renderImg, setRenderImg] = useState<string>(DEFAULT_RENDER);
+  const [renderVideo, setRenderVideo] = useState<string>(DEFAULT_VIDEO);
+  const [sceneTitle, setSceneTitle] = useState<string>(
+    "SketchUp Active Viewport"
+  );
+
+  // Gallery Photos for bottom-right folder
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryPhoto[]>([
+    { id: 1, image: DEFAULT_RENDER, title: "Initial 4K Master" },
+  ]);
+  const [isFolderOpen, setIsFolderOpen] = useState(false);
+
+  // Flying snapshot animation state
+  const [isFlyingToFolder, setIsFlyingToFolder] = useState(false);
+  const [flyingImage, setFlyingImage] = useState<string>("");
+
+  // Render status (Image)
+  const [hasRendered, setHasRendered] = useState<boolean>(false);
+  const [isRendering, setIsRendering] = useState<boolean>(false);
+  const [renderProgress, setRenderProgress] = useState<number>(0);
+  const [renderStepText, setRenderStepText] = useState<string>("");
+
+  // REALISTIC GPU PATH-TRACING STATE
+  // tileStages: 0 = unrendered (blueprint noise), 1 = coarse 64 spp (blurry pixelated), 2 = semi-refined 256 spp, 3 = crystal clear 1024 spp
+  const [tileStages, setTileStages] = useState<number[]>(new Array(16).fill(0));
+  const [activeBuckets, setActiveBuckets] = useState<number[]>([]);
+  const [blueprintPhase, setBlueprintPhase] = useState<
+    "cad" | "noise_init" | "progressive_buckets" | "optix_denoise" | "idle"
+  >("idle");
+  const [gpuTelemetry, setGpuTelemetry] = useState({
+    pass: 0,
+    totalPasses: 64,
+    spp: 0,
+    rays: "0.0M",
+    vram: "3.2 GB / 12.0 GB",
+    timeElapsed: "0.0s",
+  });
+
+  // 3D Video Walkthrough Status
+  const [hasRenderedVideo, setHasRenderedVideo] = useState<boolean>(false);
+  const [isVideoRendering, setIsVideoRendering] = useState<boolean>(false);
+  const [videoProgress, setVideoProgress] = useState<number>(0);
+  const [videoStepText, setVideoStepText] = useState<string>("");
+  const [previewMode, setPreviewMode] = useState<"image" | "video">("image");
 
   // 6-Step Selection Questionnaire
   const [spaceType, setSpaceType] = useState<"interior" | "exterior">(
@@ -276,19 +325,40 @@ export default function SamplePluginRendererPage() {
 
   // Step UI State
   const [currentStep, setCurrentStep] = useState(0);
-  const [isRenderSettingsOpen, setIsRenderSettingsOpen] = useState(true);
-  const [creativity, setCreativity] = useState(65);
-  const [geometryStrength, setGeometryStrength] = useState(85);
 
-  // Viewport comparison slider
+  // Viewport mode: Split Slider (true) vs Side-by-Side Dual (false)
+  const [isComparing, setIsComparing] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
-  const [isComparing, setIsComparing] = useState(true);
 
-  // Render status
-  const [isRendering, setIsRendering] = useState(false);
-  const [renderProgress, setRenderProgress] = useState(0);
-  const [renderStepText, setRenderStepText] = useState("");
-  const [renderCount, setRenderCount] = useState(8);
+  // Load custom images & video from /load if available
+  useEffect(() => {
+    const savedViewport =
+      localStorage.getItem("custom_viewport_img") ||
+      sessionStorage.getItem("custom_viewport_img");
+    const savedRender =
+      localStorage.getItem("custom_render_img") ||
+      sessionStorage.getItem("custom_render_img");
+    const savedVideo =
+      localStorage.getItem("custom_render_video") ||
+      sessionStorage.getItem("custom_render_video");
+    const savedTitle =
+      localStorage.getItem("custom_scene_title") ||
+      sessionStorage.getItem("custom_scene_title");
+
+    if (savedViewport) setViewportImg(savedViewport);
+    if (savedRender) {
+      setRenderImg(savedRender);
+      setGalleryPhotos([
+        {
+          id: Date.now(),
+          image: savedRender,
+          title: savedTitle || "4K Master Render",
+        },
+      ]);
+    }
+    if (savedVideo) setRenderVideo(savedVideo);
+    if (savedTitle) setSceneTitle(savedTitle);
+  }, []);
 
   const handleSpaceChange = (type: "interior" | "exterior") => {
     setSpaceType(type);
@@ -299,35 +369,181 @@ export default function SamplePluginRendererPage() {
     }
   };
 
+  // REALISTIC SLOWER PROGRESSIVE GPU RENDER PIPELINE (~7.5 SECONDS)
   const handleTriggerRender = () => {
     if (isRendering) return;
     setIsRendering(true);
-    setRenderProgress(12);
-    setRenderStepText("Capturing SketchUp 3D Viewport...");
+    setHasRendered(false);
+    setTileStages(new Array(16).fill(0));
+    setActiveBuckets([]);
+    setBlueprintPhase("cad");
+    setRenderProgress(2);
+    setRenderStepText(
+      "Pass 1/64: Initializing CUDA Cores & BVH Spatial Hierarchy..."
+    );
+    setGpuTelemetry({
+      pass: 1,
+      totalPasses: 64,
+      spp: 16,
+      rays: "1.4M",
+      vram: "4.1 GB / 12.0 GB",
+      timeElapsed: "0.4s",
+    });
 
+    // Step 1: CAD Blueprint Wireframe & Ray Cast Matrix (0s -> 1.4s)
     setTimeout(() => {
-      setRenderProgress(40);
+      setRenderProgress(12);
       setRenderStepText(
-        `Applying ${primaryStyle} Style & ${lightingMood} PBR Lighting...`
+        "Pass 4/64: Raycasting Primary Surface Intersections & PBR Normal Map..."
       );
-    }, 600);
+      setGpuTelemetry({
+        pass: 4,
+        totalPasses: 64,
+        spp: 32,
+        rays: "6.8M",
+        vram: "5.4 GB / 12.0 GB",
+        timeElapsed: "1.2s",
+      });
+    }, 1000);
 
+    // Step 2: Coarse Noisy Monte-Carlo Preview Pass (1.6s -> 2.8s)
     setTimeout(() => {
-      setRenderProgress(75);
-      setRenderStepText("Generating 4K Neural Photorealistic Render...");
-    }, 1300);
+      setBlueprintPhase("noise_init");
+      setRenderProgress(24);
+      setRenderStepText(
+        "Pass 12/64: Monte-Carlo Path Tracing (Coarse Direct Light & Shadows)..."
+      );
+      // All tiles enter stage 1 (noisy pixelated preview)
+      setTileStages(new Array(16).fill(1));
+      setGpuTelemetry({
+        pass: 12,
+        totalPasses: 64,
+        spp: 64,
+        rays: "18.2M",
+        vram: "6.8 GB / 12.0 GB",
+        timeElapsed: "2.2s",
+      });
+    }, 1800);
 
+    // Step 3: Progressive Segmented GPU Bucket Rendering (2.8s -> 6.0s)
     setTimeout(() => {
-      setRenderProgress(95);
-      setRenderStepText("Color Grading & Super-Resolution Upscaling...");
-    }, 2000);
+      setBlueprintPhase("progressive_buckets");
+      setRenderStepText(
+        "Pass 32/64: Multi-Threaded GPU Bucket Raytracing & Secondary Bounces..."
+      );
 
+      // Sequentially process each bucket through Stage 2 (semi-clear) then Stage 3 (crystal clear)
+      TILE_ORDER.forEach((tileIdx, i) => {
+        // Parallel secondary bucket
+        const pairedTile = TILE_ORDER[(i + 8) % TOTAL_TILES];
+
+        setTimeout(() => {
+          setActiveBuckets([tileIdx, pairedTile]);
+
+          // Transition to stage 2 (refining)
+          setTileStages((prev) => {
+            const next = [...prev];
+            next[tileIdx] = Math.max(next[tileIdx], 2);
+            next[pairedTile] = Math.max(next[pairedTile], 2);
+            return next;
+          });
+
+          // Shortly after, resolve to stage 3 (crystal clear 4K)
+          setTimeout(() => {
+            setTileStages((prev) => {
+              const next = [...prev];
+              next[tileIdx] = 3;
+              next[pairedTile] = 3;
+              return next;
+            });
+          }, 180);
+
+          const progress = Math.round(26 + ((i + 1) / TOTAL_TILES) * 58);
+          setRenderProgress(progress);
+          setGpuTelemetry({
+            pass: Math.min(60, 20 + Math.round((i / TOTAL_TILES) * 40)),
+            totalPasses: 64,
+            spp: 128 + i * 56,
+            rays: `${(22.0 + i * 2.8).toFixed(1)}M`,
+            vram: "7.9 GB / 12.0 GB",
+            timeElapsed: `${(2.8 + i * 0.2).toFixed(1)}s`,
+          });
+        }, i * 190);
+      });
+    }, 2800);
+
+    // Step 4: OptiX AI Neural Denoising & Super-Resolution Pass (6.2s -> 7.2s)
+    setTimeout(() => {
+      setBlueprintPhase("optix_denoise");
+      setActiveBuckets([]);
+      setTileStages(new Array(16).fill(3));
+      setRenderProgress(94);
+      setRenderStepText(
+        "Pass 64/64: OptiX AI Neural Denoising & 4K Specular Reconstruction..."
+      );
+      setGpuTelemetry({
+        pass: 64,
+        totalPasses: 64,
+        spp: 1024,
+        rays: "68.4M",
+        vram: "8.4 GB / 12.0 GB",
+        timeElapsed: "6.4s",
+      });
+    }, 6200);
+
+    // Step 5: Render Fully Finished & Glides into Folder (7.4s)
     setTimeout(() => {
       setRenderProgress(100);
-      setRenderStepText("Render Complete!");
+      setRenderStepText("4K Photorealistic Render Complete!");
       setIsRendering(false);
-      setRenderCount((c) => Math.max(0, c - 1));
-    }, 2600);
+      setHasRendered(true);
+      setBlueprintPhase("idle");
+      setPreviewMode("image");
+
+      // TRIGGER ULTRA-SMOOTH FLY-INTO-FOLDER ANIMATION
+      setFlyingImage(renderImg);
+      setIsFlyingToFolder(true);
+
+      setTimeout(() => {
+        const newPhoto: GalleryPhoto = {
+          id: Date.now(),
+          image: renderImg,
+          title: `${roomType} - ${primaryStyle}`,
+        };
+        setGalleryPhotos((prev) => [newPhoto, ...prev.slice(0, 5)]);
+        setIsFlyingToFolder(false);
+      }, 1300);
+    }, 7400);
+  };
+
+  const handleTriggerVideoWalkthrough = () => {
+    if (isVideoRendering) return;
+    setIsVideoRendering(true);
+    setVideoProgress(15);
+    setVideoStepText("Interpolating 3D Camera Bezier Path...");
+
+    setTimeout(() => {
+      setVideoProgress(45);
+      setVideoStepText("Synthesizing 60fps Volumetric Frames...");
+    }, 800);
+
+    setTimeout(() => {
+      setVideoProgress(78);
+      setVideoStepText("Raytracing Dynamic Lighting & Reflections...");
+    }, 1600);
+
+    setTimeout(() => {
+      setVideoProgress(95);
+      setVideoStepText("Encoding 4K Cinema MP4 Video...");
+    }, 2400);
+
+    setTimeout(() => {
+      setVideoProgress(100);
+      setVideoStepText("Video Walkthrough Ready!");
+      setIsVideoRendering(false);
+      setHasRenderedVideo(true);
+      setPreviewMode("video");
+    }, 3000);
   };
 
   return (
@@ -335,22 +551,13 @@ export default function SamplePluginRendererPage() {
       {/* TOP PLUGIN HEADER */}
       <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2.5">
-            <Image
-              src="/sketchup-logo.png"
-              alt="SketchUp Logo"
-              width={26}
-              height={26}
-              className="h-6 w-6 animate-[spin_10s_linear_infinite] object-contain"
-            />
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-black tracking-tight text-white">
-                V6 RENDER
-              </span>
-              <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300">
-                PRO EXTENSION
-              </span>
-            </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-black tracking-tight text-white">
+              V6 RENDER
+            </span>
+            <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-bold text-zinc-300">
+              PRO EXTENSION
+            </span>
           </div>
 
           <div className="hidden items-center gap-2 border-l border-zinc-800 pl-3 sm:flex">
@@ -367,445 +574,437 @@ export default function SamplePluginRendererPage() {
       </header>
 
       {/* MAIN PLUGIN WORKSPACE */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* LEFT CONTROLS PANEL (EXACT 6-STEP PLUGIN ARCHITECTURE) */}
-        <aside className="flex w-[400px] shrink-0 flex-col overflow-hidden border-r border-zinc-800 bg-[#0d0d11]">
-          {/* Collapsible Header */}
-          <div
-            onClick={() => setIsRenderSettingsOpen(!isRenderSettingsOpen)}
-            className="flex h-11 shrink-0 cursor-pointer items-center justify-between border-b border-zinc-800 bg-zinc-900/60 px-4 transition-colors hover:bg-zinc-800/60"
-          >
+      <div className="relative flex flex-1 overflow-hidden">
+        {/* FAR LEFT: VERTICAL PREMIUM ICON DOCK WITH HOVER TOOLTIPS */}
+        <div className="z-40 flex w-14 shrink-0 flex-col items-center gap-2.5 border-r border-zinc-800 bg-[#0a0a0d] py-3">
+          {STEP_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentStep === item.step;
+            return (
+              <div key={item.step} className="group relative">
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(item.step)}
+                  className={cn(
+                    "flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-all",
+                    isActive
+                      ? "bg-white text-black shadow-lg ring-2 shadow-white/10 ring-white/30"
+                      : "text-zinc-400 hover:bg-zinc-800/80 hover:text-white"
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </button>
+
+                {/* PREMIUM FLOATING TOOLTIP ON HOVER */}
+                <div className="pointer-events-none absolute top-1/2 left-full z-50 ml-3 origin-left -translate-y-1/2 scale-95 rounded-lg border border-zinc-700/80 bg-zinc-900/95 px-3 py-1.5 whitespace-nowrap opacity-0 shadow-2xl backdrop-blur-md transition-all duration-200 group-hover:scale-100 group-hover:opacity-100">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                    <span>{item.title}</span>
+                  </div>
+                  <div className="text-[10px] text-zinc-400">
+                    {item.subtitle}
+                  </div>
+                  {/* Tooltip triangle arrow */}
+                  <div className="absolute top-1/2 right-full -translate-y-1/2 border-4 border-transparent border-r-zinc-900/95" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* CONTROLS CONTENT PANEL (ACTIVE STEP CONTROLS) */}
+        <aside className="flex w-[350px] shrink-0 flex-col overflow-hidden border-r border-zinc-800 bg-[#0d0d11]">
+          {/* Active Step Header Bar */}
+          <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900/60 px-4">
             <div className="flex items-center gap-2">
-              <Sliders className="h-4 w-4 text-zinc-400" />
               <span className="text-xs font-black tracking-wider text-zinc-200 uppercase">
-                Render Settings
-              </span>
-              <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-bold text-indigo-300">
-                Step {currentStep + 1} of 6
+                {STEP_ITEMS[currentStep].title}
               </span>
             </div>
-            <span className="text-xs font-bold text-zinc-400">
-              {isRenderSettingsOpen ? "▲ Close" : "▼ Open"}
-            </span>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                disabled={currentStep === 0}
+                onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 disabled:opacity-20"
+                title="Previous step"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                disabled={currentStep === 5}
+                onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
+                className="flex h-6 w-6 cursor-pointer items-center justify-center rounded border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 disabled:opacity-20"
+                title="Next step"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
 
-          {isRenderSettingsOpen && (
-            <>
-              {/* STEP TABS: 6 EQUAL SIZED PILLS WITH ZERO HORIZONTAL OVERFLOW */}
-              <div className="grid shrink-0 grid-cols-6 gap-1 border-b border-zinc-800/80 bg-[#0a0a0e] p-1.5">
-                {STEP_TABS.map((tab, idx) => (
-                  <button
-                    key={tab.label}
-                    type="button"
-                    onClick={() => setCurrentStep(idx)}
+          {/* SCROLLABLE STEP CONTENT BODY */}
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {/* STEP 0: Space Type */}
+            {currentStep === 0 && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                  Space Type
+                </div>
+                <div className="grid grid-cols-1 gap-2.5">
+                  <div
+                    onClick={() => handleSpaceChange("interior")}
                     className={cn(
-                      "flex cursor-pointer flex-col items-center justify-center rounded-md py-1 text-center transition-all",
-                      currentStep === idx
-                        ? "bg-zinc-800 font-bold text-white shadow-sm ring-1 ring-white/20"
-                        : "font-medium text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-200"
+                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-all",
+                      spaceType === "interior"
+                        ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                        : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
                     )}
                   >
-                    <span className="truncate text-[10px]">{tab.short}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* QUICK PREV / NEXT BAR */}
-              <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/60 bg-zinc-950/60 px-3.5 py-1.5 text-xs text-zinc-400">
-                <button
-                  type="button"
-                  disabled={currentStep === 0}
-                  onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-                  className="flex cursor-pointer items-center gap-1 hover:text-white disabled:opacity-30"
-                >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  <span>Back</span>
-                </button>
-                <span className="text-xs font-bold text-zinc-200">
-                  Step {currentStep + 1}: {STEP_TABS[currentStep].label}
-                </span>
-                <button
-                  type="button"
-                  disabled={currentStep === 5}
-                  onClick={() => setCurrentStep(Math.min(5, currentStep + 1))}
-                  className="flex cursor-pointer items-center gap-1 hover:text-white disabled:opacity-30"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
-              </div>
-
-              {/* SCROLLABLE STEP CONTENT BODY (VERTICAL ONLY, SCROLLBAR HIDDEN) */}
-              <div className="flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {/* STEP 0: Space Type */}
-                {currentStep === 0 && (
-                  <div className="space-y-3">
-                    <div className="text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                      Space Type
-                    </div>
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div
-                        onClick={() => handleSpaceChange("interior")}
-                        className={cn(
-                          "flex cursor-pointer flex-col gap-1 rounded-xl border p-3 transition-all",
-                          spaceType === "interior"
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <span className="text-2xl">🏠</span>
-                        <span className="text-xs font-bold text-white">
-                          Interior
-                        </span>
-                        <span className="text-[10px] text-zinc-400">
-                          Inside a building — rooms, hallways, living spaces
-                        </span>
+                    <span className="text-3xl">🏠</span>
+                    <div>
+                      <div className="text-sm font-bold text-white">
+                        Interior
                       </div>
-
-                      <div
-                        onClick={() => handleSpaceChange("exterior")}
-                        className={cn(
-                          "flex cursor-pointer flex-col gap-1 rounded-xl border p-3 transition-all",
-                          spaceType === "exterior"
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <span className="text-2xl">🏡</span>
-                        <span className="text-xs font-bold text-white">
-                          Exterior
-                        </span>
-                        <span className="text-[10px] text-zinc-400">
-                          Outside a building — façades, gardens, entrances
-                        </span>
+                      <div className="text-[11px] text-zinc-400">
+                        Inside a building — rooms, hallways, living spaces
                       </div>
                     </div>
                   </div>
-                )}
 
-                {/* STEP 1: Room / Building Type */}
-                {currentStep === 1 && (
-                  <div className="space-y-3">
-                    <div className="text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                      {spaceType === "exterior"
-                        ? "Building & Site Type"
-                        : "Room & Space Type"}
+                  <div
+                    onClick={() => handleSpaceChange("exterior")}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-all",
+                      spaceType === "exterior"
+                        ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                        : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                    )}
+                  >
+                    <span className="text-3xl">🏡</span>
+                    <div>
+                      <div className="text-sm font-bold text-white">
+                        Exterior
+                      </div>
+                      <div className="text-[11px] text-zinc-400">
+                        Outside a building — façades, gardens, entrances
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(spaceType === "exterior"
-                        ? ROOMS_EXTERIOR
-                        : ROOMS_INTERIOR
-                      ).map((r) => (
-                        <div
-                          key={r.v}
-                          onClick={() => setRoomType(r.v)}
-                          className={cn(
-                            "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
-                            roomType === r.v
-                              ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                              : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                          )}
-                        >
-                          <span className="text-lg">{r.e}</span>
-                          <span className="text-xs font-bold text-white">
-                            {r.v}
-                          </span>
-                          <span className="text-[10px] text-zinc-400">
-                            {r.d}
-                          </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 1: Room / Building Type */}
+            {currentStep === 1 && (
+              <div className="space-y-3">
+                <div className="text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                  {spaceType === "exterior"
+                    ? "Building & Site Type"
+                    : "Room & Space Type"}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {(spaceType === "exterior"
+                    ? ROOMS_EXTERIOR
+                    : ROOMS_INTERIOR
+                  ).map((r) => (
+                    <div
+                      key={r.v}
+                      onClick={() => setRoomType(r.v)}
+                      className={cn(
+                        "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
+                        roomType === r.v
+                          ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                          : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                      )}
+                    >
+                      <span className="text-lg">{r.e}</span>
+                      <span className="text-xs font-bold text-white">
+                        {r.v}
+                      </span>
+                      <span className="text-[10px] text-zinc-400">{r.d}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: Style & Mood */}
+            {currentStep === 2 && (
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Design Style
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {STYLES.map((s) => (
+                      <div
+                        key={s.v}
+                        onClick={() => setPrimaryStyle(s.v)}
+                        className={cn(
+                          "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
+                          primaryStyle === s.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <span className="text-lg">{s.e}</span>
+                        <span className="text-xs font-bold text-white">
+                          {s.v}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{s.d}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Atmospheric Mood
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {MOODS.map((m) => (
+                      <div
+                        key={m.v}
+                        onClick={() => setMood(m.v)}
+                        className={cn(
+                          "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
+                          mood === m.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <span className="text-lg">{m.e}</span>
+                        <span className="text-xs font-bold text-white">
+                          {m.label}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{m.d}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Color Palette & Accent */}
+            {currentStep === 3 && (
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Color Scheme
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PALETTES.map((p) => (
+                      <div
+                        key={p.v}
+                        onClick={() => setColorPalette(p.v)}
+                        className={cn(
+                          "flex cursor-pointer flex-col gap-1 rounded-lg border p-2.5 transition-all",
+                          colorPalette === p.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <div className="flex h-3 w-full overflow-hidden rounded">
+                          {p.c.map((hex, i) => (
+                            <div
+                              key={i}
+                              className="h-full flex-1"
+                              style={{ backgroundColor: hex }}
+                            />
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                        <span className="mt-1 text-xs font-bold text-white">
+                          {p.label}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{p.d}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
 
-                {/* STEP 2: Style & Mood */}
-                {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Design Style
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {STYLES.map((s) => (
-                          <div
-                            key={s.v}
-                            onClick={() => setPrimaryStyle(s.v)}
-                            className={cn(
-                              "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
-                              primaryStyle === s.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <span className="text-lg">{s.e}</span>
-                            <span className="text-xs font-bold text-white">
-                              {s.v}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              {s.d}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Atmospheric Mood
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {MOODS.map((m) => (
-                          <div
-                            key={m.v}
-                            onClick={() => setMood(m.v)}
-                            className={cn(
-                              "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
-                              mood === m.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <span className="text-lg">{m.e}</span>
-                            <span className="text-xs font-bold text-white">
-                              {m.label}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              {m.d}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Custom Accent Color
                   </div>
-                )}
+                  <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950 p-2.5">
+                    <input
+                      type="color"
+                      value={accentColor}
+                      onChange={(e) => setAccentColor(e.target.value)}
+                      className="h-8 w-12 cursor-pointer rounded border-0 bg-transparent"
+                    />
+                    <span className="font-mono text-xs font-bold text-zinc-300">
+                      {accentColor}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                {/* STEP 3: Color Palette & Accent */}
-                {currentStep === 3 && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Color Scheme
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {PALETTES.map((p) => (
-                          <div
-                            key={p.v}
-                            onClick={() => setColorPalette(p.v)}
-                            className={cn(
-                              "flex cursor-pointer flex-col gap-1 rounded-lg border p-2.5 transition-all",
-                              colorPalette === p.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <div className="flex h-3 w-full overflow-hidden rounded">
-                              {p.c.map((hex, i) => (
-                                <div
-                                  key={i}
-                                  className="h-full flex-1"
-                                  style={{ backgroundColor: hex }}
-                                />
-                              ))}
-                            </div>
-                            <span className="mt-1 text-xs font-bold text-white">
-                              {p.label}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              {p.d}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Custom Accent Color
-                      </div>
-                      <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950 p-2.5">
-                        <input
-                          type="color"
-                          value={accentColor}
-                          onChange={(e) => setAccentColor(e.target.value)}
-                          className="h-8 w-12 cursor-pointer rounded border-0 bg-transparent"
+            {/* STEP 4: Finishes & Materials */}
+            {currentStep === 4 && (
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Wall Finish
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {WALLS.map((w) => (
+                      <div
+                        key={w.v}
+                        onClick={() => setWallFinish(w.v)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
+                          wallFinish === w.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <div
+                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
+                          style={{ backgroundColor: w.color }}
                         />
-                        <span className="font-mono text-xs font-bold text-zinc-300">
-                          {accentColor}
+                        <div className="truncate">
+                          <div className="text-xs font-bold text-white">
+                            {w.label}
+                          </div>
+                          <div className="truncate text-[9px] text-zinc-400">
+                            {w.d}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Floor Material
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {FLOORS.map((f) => (
+                      <div
+                        key={f.v}
+                        onClick={() => setFloorMaterial(f.v)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
+                          floorMaterial === f.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <div
+                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
+                          style={{ backgroundColor: f.color }}
+                        />
+                        <div className="truncate">
+                          <div className="text-xs font-bold text-white">
+                            {f.label}
+                          </div>
+                          <div className="truncate text-[9px] text-zinc-400">
+                            {f.d}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: Furniture, Accents & Lighting */}
+            {currentStep === 5 && (
+              <div className="space-y-4">
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Wood Tone
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {WOODS.map((w) => (
+                      <div
+                        key={w.v}
+                        onClick={() => setWoodTone(w.v)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
+                          woodTone === w.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <div
+                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
+                          style={{ backgroundColor: w.color }}
+                        />
+                        <span className="text-xs font-bold text-white">
+                          {w.label}
                         </span>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
 
-                {/* STEP 4: Finishes & Materials */}
-                {currentStep === 4 && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Wall Finish
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {WALLS.map((w) => (
-                          <div
-                            key={w.v}
-                            onClick={() => setWallFinish(w.v)}
-                            className={cn(
-                              "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                              wallFinish === w.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <div
-                              className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                              style={{ backgroundColor: w.color }}
-                            />
-                            <div className="truncate">
-                              <div className="text-xs font-bold text-white">
-                                {w.label}
-                              </div>
-                              <div className="truncate text-[9px] text-zinc-400">
-                                {w.d}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Floor Material
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {FLOORS.map((f) => (
-                          <div
-                            key={f.v}
-                            onClick={() => setFloorMaterial(f.v)}
-                            className={cn(
-                              "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                              floorMaterial === f.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <div
-                              className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                              style={{ backgroundColor: f.color }}
-                            />
-                            <div className="truncate">
-                              <div className="text-xs font-bold text-white">
-                                {f.label}
-                              </div>
-                              <div className="truncate text-[9px] text-zinc-400">
-                                {f.d}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Metal Accent
                   </div>
-                )}
-
-                {/* STEP 5: Furniture, Accents & Lighting */}
-                {currentStep === 5 && (
-                  <div className="space-y-4">
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Wood Tone
+                  <div className="grid grid-cols-2 gap-2">
+                    {METALS.map((m) => (
+                      <div
+                        key={m.v}
+                        onClick={() => setMetalAccent(m.v)}
+                        className={cn(
+                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
+                          metalAccent === m.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <div
+                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
+                          style={{ backgroundColor: m.color }}
+                        />
+                        <span className="text-xs font-bold text-white">
+                          {m.label}
+                        </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {WOODS.map((w) => (
-                          <div
-                            key={w.v}
-                            onClick={() => setWoodTone(w.v)}
-                            className={cn(
-                              "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                              woodTone === w.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <div
-                              className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                              style={{ backgroundColor: w.color }}
-                            />
-                            <span className="text-xs font-bold text-white">
-                              {w.label}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Metal Accent
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {METALS.map((m) => (
-                          <div
-                            key={m.v}
-                            onClick={() => setMetalAccent(m.v)}
-                            className={cn(
-                              "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                              metalAccent === m.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <div
-                              className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                              style={{ backgroundColor: m.color }}
-                            />
-                            <span className="text-xs font-bold text-white">
-                              {m.label}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                        Lighting Mood
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {LIGHTINGS.map((l) => (
-                          <div
-                            key={l.v}
-                            onClick={() => setLightingMood(l.v)}
-                            className={cn(
-                              "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
-                              lightingMood === l.v
-                                ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                                : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                            )}
-                          >
-                            <span className="text-xs font-bold text-white">
-                              {l.label}
-                            </span>
-                            <span className="text-[10px] text-zinc-400">
-                              {l.d}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                    Lighting Mood
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LIGHTINGS.map((l) => (
+                      <div
+                        key={l.v}
+                        onClick={() => setLightingMood(l.v)}
+                        className={cn(
+                          "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
+                          lightingMood === l.v
+                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
+                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
+                        )}
+                      >
+                        <span className="text-xs font-bold text-white">
+                          {l.label}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{l.d}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
 
           {/* BOTTOM FIXED BAR: CREATE RENDER ACTION */}
           <div className="shrink-0 border-t border-zinc-800 bg-[#0b0b0f] p-4">
             <button
               type="button"
               onClick={handleTriggerRender}
-              disabled={isRendering}
+              disabled={isRendering || isVideoRendering}
               className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
             >
               {isRendering ? (
@@ -829,55 +1028,409 @@ export default function SamplePluginRendererPage() {
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0c0c10] px-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-zinc-300">
-                1. SketchUp Viewport vs 2. Render & Walkthrough
+                {sceneTitle}
               </span>
-              <span className="rounded bg-zinc-800/80 px-2 py-0.5 text-[10px] text-zinc-400">
-                4K Photoreal Output
+              <span className="rounded bg-zinc-800/80 px-2 py-0.5 font-mono text-[10px] text-zinc-400">
+                {hasRendered
+                  ? previewMode === "video"
+                    ? "3D Video Walkthrough"
+                    : "4K Photoreal Output"
+                  : isRendering
+                    ? `CUDA Core Pass: ${gpuTelemetry.pass}/${gpuTelemetry.totalPasses}`
+                    : "Raw Viewport Loaded"}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsComparing(!isComparing)}
-                className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all",
-                  isComparing
-                    ? "border-white bg-zinc-800 text-white"
-                    : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200"
-                )}
-              >
-                <Split className="h-3.5 w-3.5" />
-                <span>
-                  {isComparing ? "Hide Split View" : "Show Split View"}
-                </span>
-              </button>
+              {/* IMAGE VS VIDEO TOGGLE */}
+              {hasRendered && (
+                <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/80 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("image")}
+                    className={cn(
+                      "cursor-pointer rounded-md px-2 py-1 text-xs font-semibold transition-all",
+                      previewMode === "image"
+                        ? "bg-zinc-800 text-white shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    )}
+                  >
+                    🖼️ Image
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!hasRenderedVideo) {
+                        handleTriggerVideoWalkthrough();
+                      } else {
+                        setPreviewMode("video");
+                      }
+                    }}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold transition-all",
+                      previewMode === "video"
+                        ? "bg-zinc-800 text-white shadow-sm"
+                        : "text-zinc-400 hover:text-zinc-200"
+                    )}
+                  >
+                    <Film className="h-3 w-3" />
+                    <span>🎬 3D Video</span>
+                  </button>
+                </div>
+              )}
 
-              <a
-                href={activeScene.afterImg}
-                download="v6_render_4k.jpg"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
-              >
-                <Download className="h-3.5 w-3.5" />
-                <span>Download Image</span>
-              </a>
+              {/* TOGGLE SPLIT SLIDER VS SIDE-BY-SIDE VIEW (IMAGE MODE ONLY) */}
+              {previewMode === "image" && (
+                <button
+                  type="button"
+                  onClick={() => setIsComparing(!isComparing)}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all",
+                    isComparing
+                      ? "border-white bg-zinc-800 text-white"
+                      : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:text-zinc-200"
+                  )}
+                >
+                  {isComparing ? (
+                    <>
+                      <Columns2 className="h-3.5 w-3.5" />
+                      <span>Side-by-Side View</span>
+                    </>
+                  ) : (
+                    <>
+                      <Split className="h-3.5 w-3.5" />
+                      <span>Split Compare Slider</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              {hasRendered && (
+                <a
+                  href={previewMode === "video" ? renderVideo : renderImg}
+                  download={
+                    previewMode === "video"
+                      ? "v6_walkthrough.mp4"
+                      : "v6_render_4k.jpg"
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>
+                    {previewMode === "video"
+                      ? "Download MP4"
+                      : "Download Image"}
+                  </span>
+                </a>
+              )}
             </div>
           </div>
 
-          {/* MAIN INTERACTIVE CANVAS VIEW */}
-          <div className="relative flex flex-1 items-center justify-center overflow-hidden p-4">
-            <div className="relative h-full max-h-[640px] w-full max-w-[960px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl select-none">
-              {/* After (Photorealistic AI Render) */}
-              <img
-                src={activeScene.afterImg}
-                alt="AI Photorealistic Render"
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-              />
+          {/* MAIN CANVAS AREA: SIDE-BY-SIDE DUAL VIEW OR SPLIT SLIDER OR 3D VIDEO */}
+          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-4">
+            {/* MODE 1: SIDE-BY-SIDE DUAL VIEW (DEFAULT WHEN SPLIT VIEW IS INACTIVE) */}
+            {!isComparing ? (
+              <div className="grid h-full max-h-[640px] w-full max-w-[1100px] grid-cols-2 gap-4">
+                {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
+                <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
+                  <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
+                    <span className="text-xs font-bold text-zinc-300">
+                      1. SketchUp Viewport
+                    </span>
+                    <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[9px] font-bold text-zinc-400">
+                      Original
+                    </span>
+                  </div>
+                  <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-950">
+                    <img
+                      src={viewportImg}
+                      alt="SketchUp Viewport Capture"
+                      className="h-full w-full object-contain p-1.5"
+                    />
+                  </div>
+                </div>
 
-              {/* Before (SketchUp Raw Viewport) Clipped with CSS Polygon */}
-              {isComparing && (
+                {/* RIGHT CARD: 2. RENDER OUTPUT & GPU PROGRESSIVE BLUEPRINT CANVAS */}
+                <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
+                  <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-zinc-300">
+                        {previewMode === "video"
+                          ? "2. 3D Video Walkthrough"
+                          : "2. Render Output"}
+                      </span>
+                      {isRendering && (
+                        <span className="flex items-center gap-1 font-mono text-[10px] text-cyan-400">
+                          <span className="h-1.5 w-1.5 animate-ping rounded-full bg-cyan-400" />
+                          CUDA Active
+                        </span>
+                      )}
+                    </div>
+                    <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 font-mono text-[9px] font-bold text-indigo-300">
+                      {hasRendered
+                        ? previewMode === "video"
+                          ? "60 FPS 4K"
+                          : "4K Output"
+                        : isRendering
+                          ? `${renderProgress}%`
+                          : "Standby"}
+                    </span>
+                  </div>
+
+                  <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-950">
+                    {/* VIDEO MODE */}
+                    {previewMode === "video" && hasRenderedVideo ? (
+                      <video
+                        src={renderVideo}
+                        controls
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="h-full w-full object-contain p-1.5"
+                      />
+                    ) : isVideoRendering ? (
+                      /* Video Rendering Loader */
+                      <div className="flex max-w-sm flex-col items-center justify-center p-6 text-center">
+                        <RefreshCw className="mb-3 h-8 w-8 animate-spin text-white" />
+                        <div className="mb-1 text-sm font-bold text-white">
+                          {videoStepText}
+                        </div>
+                        <div className="mb-3 text-xs text-zinc-400">
+                          Rendering 3D Camera Walkthrough
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
+                          <div
+                            className="h-full rounded-full bg-white transition-all duration-300"
+                            style={{ width: `${videoProgress}%` }}
+                          />
+                        </div>
+                        <div className="mt-2 font-mono text-xs font-bold text-zinc-400">
+                          {videoProgress}%
+                        </div>
+                      </div>
+                    ) : isRendering ? (
+                      /* ======================================================================= */
+                      /* REALISTIC MULTI-STAGE PROGRESSIVE PIXELATION & GPU BUCKET TILE RENDERER */
+                      /* ======================================================================= */
+                      <div className="relative flex h-full w-full flex-col overflow-hidden bg-[#030712] select-none">
+                        <div className="relative flex h-full w-full flex-1 items-center justify-center overflow-hidden">
+                          {/* 1. Underlying Progressive Render Image Canvas */}
+                          <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-1.5">
+                            <img
+                              src={renderImg}
+                              alt="Rendering Target"
+                              className={cn(
+                                "h-full w-full object-contain transition-all duration-700",
+                                blueprintPhase === "cad"
+                                  ? "scale-[1.02] opacity-20 blur-xl contrast-200 grayscale"
+                                  : blueprintPhase === "noise_init"
+                                    ? "opacity-60 blur-md contrast-150 saturate-150"
+                                    : blueprintPhase === "optix_denoise"
+                                      ? "blur-0 opacity-100 contrast-100 saturate-100"
+                                      : "opacity-90"
+                              )}
+                            />
+
+                            {/* 2. CAD BLUEPRINT WIREFRAME & SCAN PHASE */}
+                            {blueprintPhase === "cad" && (
+                              <div className="pointer-events-none absolute inset-0 z-20 flex flex-col justify-between bg-cyan-950/40 p-3 backdrop-blur-sm">
+                                {/* Blueprint CAD Grid Overlay */}
+                                <div
+                                  className="absolute inset-0 opacity-40"
+                                  style={{
+                                    backgroundImage: `linear-gradient(to right, rgba(6, 182, 212, 0.25) 1px, transparent 1px),
+                                                       linear-gradient(to bottom, rgba(6, 182, 212, 0.25) 1px, transparent 1px)`,
+                                    backgroundSize: "20px 20px",
+                                  }}
+                                />
+
+                                {/* Moving Laser Sweep Line */}
+                                <motion.div
+                                  className="absolute right-0 left-0 h-0.5 bg-cyan-400 shadow-[0_0_15px_#22d3ee]"
+                                  initial={{ top: "0%" }}
+                                  animate={{ top: "100%" }}
+                                  transition={{
+                                    duration: 1.4,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                  }}
+                                />
+
+                                {/* Top Blueprint HUD */}
+                                <div className="relative z-30 flex items-center justify-between rounded border border-cyan-500/30 bg-cyan-950/80 px-2 py-1 font-mono text-[10px] text-cyan-400 backdrop-blur-md">
+                                  <span className="flex items-center gap-1.5 font-bold">
+                                    <Cpu className="h-3.5 w-3.5 animate-spin text-cyan-300" />
+                                    <span>BVH_VOXELIZE // PASS 01</span>
+                                  </span>
+                                  <span>RAY_WARPS: 1024</span>
+                                </div>
+
+                                {/* Center Target Crosshair */}
+                                <div className="relative z-30 flex items-center justify-center">
+                                  <div className="flex h-16 w-16 animate-ping items-center justify-center rounded-full border border-cyan-400/40">
+                                    <Crosshair className="h-6 w-6 text-cyan-400" />
+                                  </div>
+                                </div>
+
+                                <div className="relative z-30 flex justify-between font-mono text-[9px] text-cyan-300/80">
+                                  <span>STAGE: GEOMETRY_VOXEL_EXTRACTION</span>
+                                  <span>CUDA_CORES: 16384 ACTIVE</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 3. MULTI-STAGE PIXELATED TILES & GPU BUCKET RENDER PASS */}
+                            {(blueprintPhase === "noise_init" ||
+                              blueprintPhase === "progressive_buckets") && (
+                              <div className="pointer-events-none absolute inset-0 z-20 grid grid-cols-4 grid-rows-4 gap-0.5 p-1.5">
+                                {Array.from({ length: TOTAL_TILES }).map(
+                                  (_, idx) => {
+                                    const stage = tileStages[idx] || 0;
+                                    const isBucketActive =
+                                      activeBuckets.includes(idx);
+
+                                    return (
+                                      <div
+                                        key={idx}
+                                        className={cn(
+                                          "relative h-full w-full overflow-hidden transition-all duration-500",
+                                          stage === 0
+                                            ? "border border-cyan-500/20 bg-cyan-950/80 backdrop-blur-xl"
+                                            : stage === 1
+                                              ? "border border-cyan-500/15 bg-black/40 backdrop-blur-md" // Coarse blurry/pixelated noise
+                                              : stage === 2
+                                                ? "border border-white/10 bg-transparent backdrop-blur-xs" // Semi-clarified
+                                                : "border border-white/5 bg-transparent" // Fully resolved 4K
+                                        )}
+                                      >
+                                        {/* Stage 1: Heavy Monte-Carlo Grain & Pixelation Grid */}
+                                        {stage === 1 && (
+                                          <div
+                                            className="absolute inset-0 opacity-40 mix-blend-overlay"
+                                            style={{
+                                              backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px),
+                                                               linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)`,
+                                              backgroundSize: "6px 6px",
+                                            }}
+                                          />
+                                        )}
+
+                                        {/* Active GPU Bucket Cursor Frame with Coordinates */}
+                                        {isBucketActive && (
+                                          <div className="absolute inset-0 z-30 flex flex-col justify-between border-2 border-emerald-400 bg-emerald-500/15 p-1 shadow-[0_0_15px_#34d399]">
+                                            <div className="flex justify-between font-mono text-[7px] font-bold text-emerald-200">
+                                              <span>
+                                                [{(idx % 4) + 1},
+                                                {Math.floor(idx / 4) + 1}]
+                                              </span>
+                                              <span className="animate-pulse">
+                                                512 SPP
+                                              </span>
+                                            </div>
+                                            <div className="text-right font-mono text-[6px] font-bold text-emerald-300">
+                                              PASS {gpuTelemetry.pass}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Flash Flare when Tile Resolves to Crystal Sharpness */}
+                                        {stage === 3 && (
+                                          <motion.div
+                                            initial={{
+                                              opacity: 0.5,
+                                              scale: 1.05,
+                                            }}
+                                            animate={{ opacity: 0, scale: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                            className="pointer-events-none absolute inset-0 bg-cyan-400/25"
+                                          />
+                                        )}
+                                      </div>
+                                    );
+                                  }
+                                )}
+                              </div>
+                            )}
+
+                            {/* 4. OPTIX NEURAL DENOISING HORIZONTAL SWEEP */}
+                            {blueprintPhase === "optix_denoise" && (
+                              <motion.div
+                                className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                                initial={{ x: "-100%" }}
+                                animate={{ x: "100%" }}
+                                transition={{
+                                  duration: 0.8,
+                                  ease: "easeInOut",
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* BOTTOM GPU TELEMETRY BAR */}
+                        <div className="z-30 flex h-10 shrink-0 items-center justify-between border-t border-zinc-800 bg-[#07090e] px-3.5">
+                          <div className="flex items-center gap-2 truncate font-mono text-[11px] text-zinc-300">
+                            <RefreshCw className="h-3.5 w-3.5 shrink-0 animate-spin text-cyan-400" />
+                            <span className="truncate font-bold text-cyan-100">
+                              {renderStepText}
+                            </span>
+                          </div>
+
+                          <div className="hidden shrink-0 items-center gap-3 font-mono text-[10px] text-zinc-400 sm:flex">
+                            <span>
+                              SPP:{" "}
+                              <b className="text-white">{gpuTelemetry.spp}</b>
+                            </span>
+                            <span>
+                              RAYS:{" "}
+                              <b className="text-white">{gpuTelemetry.rays}</b>
+                            </span>
+                            <span>
+                              VRAM:{" "}
+                              <b className="text-zinc-300">
+                                {gpuTelemetry.vram}
+                              </b>
+                            </span>
+                            <span className="font-bold text-cyan-400">
+                              {renderProgress}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : hasRendered ? (
+                      /* Image Rendered State */
+                      <img
+                        src={renderImg}
+                        alt="Photorealistic Render"
+                        className="h-full w-full object-contain p-1.5"
+                      />
+                    ) : (
+                      /* Standby Placeholder in Right Card */
+                      <div className="flex flex-col items-center justify-center p-6 text-center text-zinc-500">
+                        <div className="mb-2 text-3xl">🖼️</div>
+                        <p className="max-w-xs text-xs text-zinc-400">
+                          Click <b className="text-white">Create Render</b> to
+                          process and generate the 4K photorealistic view.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* MODE 2: SPLIT COMPARE SLIDER VIEW (WHEN ACTIVE) */
+              <div className="relative h-full max-h-[640px] w-full max-w-[960px] overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl select-none">
+                {/* After (Photorealistic Render Base Image) */}
+                <img
+                  src={renderImg}
+                  alt="Photorealistic Render"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-contain p-1.5"
+                />
+
+                {/* Before (SketchUp Raw Viewport) Clipped with CSS Polygon */}
                 <div
                   className="pointer-events-none absolute inset-0"
                   style={{
@@ -885,23 +1438,21 @@ export default function SamplePluginRendererPage() {
                   }}
                 >
                   <img
-                    src={activeScene.beforeImg}
+                    src={viewportImg}
                     alt="SketchUp Raw Viewport"
-                    className="h-full w-full object-cover brightness-90 contrast-105 grayscale"
+                    className="h-full w-full object-contain p-1.5"
                   />
                   <div className="absolute top-3 left-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
                     SketchUp Viewport (Original)
                   </div>
                 </div>
-              )}
 
-              {/* After Label */}
-              <div className="pointer-events-none absolute top-3 right-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
-                AI Photorealistic Render
-              </div>
+                {/* After Label */}
+                <div className="pointer-events-none absolute top-3 right-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
+                  4K Photorealistic Render
+                </div>
 
-              {/* Interactive Divider Handle */}
-              {isComparing && (
+                {/* Interactive Divider Handle */}
                 <div
                   className="pointer-events-none absolute top-0 bottom-0 z-10 flex w-0.5 items-center justify-center bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                   style={{ left: `${sliderPosition}%` }}
@@ -910,10 +1461,8 @@ export default function SamplePluginRendererPage() {
                     <ChevronsLeftRight className="h-4 w-4 text-white" />
                   </div>
                 </div>
-              )}
 
-              {/* Range Input for dragging */}
-              {isComparing && (
+                {/* Range Input for dragging */}
                 <input
                   type="range"
                   min="0"
@@ -922,73 +1471,85 @@ export default function SamplePluginRendererPage() {
                   onChange={(e) => setSliderPosition(Number(e.target.value))}
                   className="absolute inset-0 z-20 h-full w-full cursor-ew-resize opacity-0"
                 />
-              )}
+              </div>
+            )}
 
-              {/* Rendering Overlay */}
-              {isRendering && (
-                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/85 p-6 backdrop-blur-md">
-                  <div className="flex w-full max-w-md flex-col items-center gap-3.5 text-center">
-                    <RefreshCw className="h-8 w-8 animate-spin text-white" />
-                    <div className="text-base font-bold text-white">
-                      {renderStepText}
-                    </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-800">
-                      <div
-                        className="h-full rounded-full bg-white transition-all duration-300"
-                        style={{ width: `${renderProgress}%` }}
-                      />
-                    </div>
-                    <div className="text-xs text-zinc-400">
-                      Processing PBR lighting & materials
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* BOTTOM GALLERY & RENDER HISTORY STRIP (CLEAN, NO SCROLLBAR) */}
-          <div className="flex h-24 shrink-0 items-center gap-3 overflow-x-auto border-t border-zinc-800 bg-[#0a0a0e] px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <span className="shrink-0 text-[11px] font-bold tracking-wider text-zinc-400 uppercase">
-              Past Renders
-            </span>
-            <div className="flex items-center gap-2.5">
-              {SAMPLE_GALLERY.map((scene) => (
+            {/* ACTION ROW BENEATH CARDS: GENERATE 3D VIDEO WALKTHROUGH BUTTON */}
+            {hasRendered && previewMode === "image" && (
+              <div className="flex items-center justify-center pt-3">
                 <button
-                  key={scene.id}
                   type="button"
-                  onClick={() => {
-                    setActiveScene(scene);
-                    setSpaceType(scene.spaceType as "interior" | "exterior");
-                    setRoomType(scene.roomType);
-                    setPrimaryStyle(scene.primaryStyle);
-                    setMood(scene.mood);
-                    setColorPalette(scene.colorPalette);
-                    setWallFinish(scene.wallFinish);
-                    setFloorMaterial(scene.floorMaterial);
-                    setLightingMood(scene.lightingMood);
-                  }}
-                  className={cn(
-                    "group relative h-18 w-28 shrink-0 cursor-pointer overflow-hidden rounded-lg border transition-all",
-                    activeScene.id === scene.id
-                      ? "border-white ring-2 ring-white"
-                      : "border-zinc-800 opacity-60 hover:opacity-100"
-                  )}
+                  onClick={handleTriggerVideoWalkthrough}
+                  disabled={isVideoRendering}
+                  className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-6 text-xs font-bold text-white shadow-xl transition-all hover:border-zinc-500 hover:bg-zinc-800 disabled:opacity-50"
                 >
-                  <img
-                    src={scene.afterImg}
-                    alt={scene.title}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/80 via-transparent to-transparent p-1">
-                    <span className="truncate text-[9px] font-bold text-white">
-                      {scene.category}
-                    </span>
-                  </div>
+                  <Film className="h-3.5 w-3.5 text-indigo-400" />
+                  <span>🎬 Generate 3D Video Walkthrough</span>
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
+
+          {/* BOTTOM-RIGHT: INTERACTIVE FOLDER GALLERY */}
+          <div className="absolute right-4 bottom-4 z-40">
+            <InteractiveFolderGallery
+              photos={galleryPhotos}
+              folderName="Project Renders"
+              isOpen={isFolderOpen}
+              onOpenChange={setIsFolderOpen}
+              onSelectPhoto={(photo) => {
+                setRenderImg(photo.image);
+                setHasRendered(true);
+                setPreviewMode("image");
+              }}
+            />
+          </div>
+
+          {/* FLY-INTO-FOLDER ANIMATION OVERLAY */}
+          <AnimatePresence>
+            {isFlyingToFolder && (
+              <motion.div
+                initial={{
+                  position: "fixed",
+                  top: "30%",
+                  left: "60%",
+                  width: 380,
+                  height: 240,
+                  x: "-50%",
+                  y: "-50%",
+                  scale: 1,
+                  rotate: 0,
+                  opacity: 1,
+                  borderRadius: "16px",
+                  boxShadow:
+                    "0 25px 60px -10px rgba(0,0,0,0.9), 0 0 30px rgba(255,255,255,0.4)",
+                  zIndex: 9999,
+                }}
+                animate={{
+                  top: "calc(100vh - 110px)",
+                  left: "calc(100vw - 160px)",
+                  width: 140,
+                  height: 190,
+                  scale: 0.18,
+                  rotate: 14,
+                  opacity: [1, 0.95, 0.7, 0],
+                  borderRadius: "12px",
+                }}
+                transition={{
+                  duration: 1.1,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="pointer-events-none overflow-hidden border-2 border-white bg-black"
+              >
+                <img
+                  src={flyingImage}
+                  alt="Rendering Snapshot"
+                  className="h-full w-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/30 to-transparent" />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </div>
