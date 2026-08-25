@@ -7,20 +7,11 @@ import {
   Zap,
   Download,
   Sliders,
-  ChevronDown,
   ChevronRight,
   ChevronLeft,
-  Wand2,
-  Check,
   RefreshCw,
   Split,
   ChevronsLeftRight,
-  Sparkles,
-  Layers,
-  Palette,
-  Home,
-  SlidersHorizontal,
-  Lightbulb,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -202,12 +193,12 @@ const LIGHTINGS = [
 ];
 
 const STEP_TABS = [
-  "1. Space Type",
-  "2. Room & Type",
-  "3. Design Style",
-  "4. Color Palette",
-  "5. Finishes & Materials",
-  "6. Lighting Mood",
+  { label: "Space", short: "1. Space" },
+  { label: "Room", short: "2. Room" },
+  { label: "Style", short: "3. Style" },
+  { label: "Palette", short: "4. Color" },
+  { label: "Finishes", short: "5. Finish" },
+  { label: "Lighting", short: "6. Light" },
 ];
 
 // Sample showcase scenes
@@ -224,8 +215,6 @@ const SAMPLE_GALLERY = [
     wallFinish: "beige",
     floorMaterial: "light-hardwood",
     lightingMood: "bright-natural",
-    prompt:
-      "Modern minimalist villa living room with double-height glass windows, warm travertine walls, oak flooring, soft afternoon golden hour light, photorealistic, 8k architectural digest.",
     beforeImg:
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
     afterImg:
@@ -243,8 +232,6 @@ const SAMPLE_GALLERY = [
     wallFinish: "textured",
     floorMaterial: "concrete",
     lightingMood: "dramatic-spotlit",
-    prompt:
-      "Contemporary cantilevered concrete and glass residential house nestled in a pine forest, rainy mist atmosphere, warm interior illumination glowing through floor-to-ceiling facade.",
     beforeImg:
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
     afterImg:
@@ -262,8 +249,6 @@ const SAMPLE_GALLERY = [
     wallFinish: "white",
     floorMaterial: "light-hardwood",
     lightingMood: "soft-diffused",
-    prompt:
-      "Nordic Scandinavian kitchen island, matte black faucets, fluted light oak cabinetry, marble waterfall countertop, ambient morning light, ultra photoreal, 4k.",
     beforeImg:
       "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1400&q=80",
     afterImg:
@@ -274,7 +259,7 @@ const SAMPLE_GALLERY = [
 export default function SamplePluginRendererPage() {
   const [activeScene, setActiveScene] = useState(SAMPLE_GALLERY[0]);
 
-  // 6-Step Selection Questionnaire (Matches Plugin Exact State)
+  // 6-Step Selection Questionnaire
   const [spaceType, setSpaceType] = useState<"interior" | "exterior">(
     "interior"
   );
@@ -292,7 +277,6 @@ export default function SamplePluginRendererPage() {
   // Step UI State
   const [currentStep, setCurrentStep] = useState(0);
   const [isRenderSettingsOpen, setIsRenderSettingsOpen] = useState(true);
-  const [prompt, setPrompt] = useState(SAMPLE_GALLERY[0].prompt);
   const [creativity, setCreativity] = useState(65);
   const [geometryStrength, setGeometryStrength] = useState(85);
 
@@ -313,20 +297,6 @@ export default function SamplePluginRendererPage() {
     } else {
       setRoomType("Living Room");
     }
-  };
-
-  const handleEnhancePrompt = () => {
-    const spaceLabel =
-      spaceType === "interior"
-        ? `Interior ${roomType}`
-        : `Exterior ${roomType}`;
-    const styleLabel = `${primaryStyle} style with ${mood} mood`;
-    const finishLabel = `${wallFinish} walls, ${floorMaterial} flooring, ${woodTone} wood and ${metalAccent} metal accents`;
-    const lightLabel = `${lightingMood} lighting`;
-
-    setPrompt(
-      `${spaceLabel}, ${styleLabel}, ${finishLabel}, ${lightLabel}, ultra-detailed architectural rendering, photorealistic 8k, PBR textures, architectural photography standard.`
-    );
   };
 
   const handleTriggerRender = () => {
@@ -361,7 +331,7 @@ export default function SamplePluginRendererPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#09090b] font-sans text-white select-none">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#09090b] font-sans text-white select-none [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden">
       {/* TOP PLUGIN HEADER */}
       <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         <div className="flex items-center gap-3">
@@ -412,7 +382,7 @@ export default function SamplePluginRendererPage() {
       {/* MAIN PLUGIN WORKSPACE */}
       <div className="flex flex-1 overflow-hidden">
         {/* LEFT CONTROLS PANEL (EXACT 6-STEP PLUGIN ARCHITECTURE) */}
-        <aside className="flex w-[420px] shrink-0 flex-col overflow-hidden border-r border-zinc-800 bg-[#0d0d11]">
+        <aside className="flex w-[400px] shrink-0 flex-col overflow-hidden border-r border-zinc-800 bg-[#0d0d11]">
           {/* Collapsible Header */}
           <div
             onClick={() => setIsRenderSettingsOpen(!isRenderSettingsOpen)}
@@ -434,27 +404,27 @@ export default function SamplePluginRendererPage() {
 
           {isRenderSettingsOpen && (
             <>
-              {/* STEP TABS STRIP */}
-              <div className="custom-scrollbar flex shrink-0 gap-1 overflow-x-auto border-b border-zinc-800/80 bg-[#0a0a0e] p-1">
+              {/* STEP TABS: 6 EQUAL SIZED PILLS WITH ZERO HORIZONTAL OVERFLOW */}
+              <div className="grid shrink-0 grid-cols-6 gap-1 border-b border-zinc-800/80 bg-[#0a0a0e] p-1.5">
                 {STEP_TABS.map((tab, idx) => (
                   <button
-                    key={tab}
+                    key={tab.label}
                     type="button"
                     onClick={() => setCurrentStep(idx)}
                     className={cn(
-                      "flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap transition-all",
+                      "flex cursor-pointer flex-col items-center justify-center rounded-md py-1 text-center transition-all",
                       currentStep === idx
-                        ? "bg-zinc-800 text-white shadow-sm ring-1 ring-white/20"
-                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+                        ? "bg-zinc-800 font-bold text-white shadow-sm ring-1 ring-white/20"
+                        : "font-medium text-zinc-400 hover:bg-zinc-900/60 hover:text-zinc-200"
                     )}
                   >
-                    <span>{tab}</span>
+                    <span className="truncate text-[10px]">{tab.short}</span>
                   </button>
                 ))}
               </div>
 
               {/* QUICK PREV / NEXT BAR */}
-              <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/60 bg-zinc-950/60 px-3 py-1.5 text-xs text-zinc-400">
+              <div className="flex shrink-0 items-center justify-between border-b border-zinc-800/60 bg-zinc-950/60 px-3.5 py-1.5 text-xs text-zinc-400">
                 <button
                   type="button"
                   disabled={currentStep === 0}
@@ -464,8 +434,8 @@ export default function SamplePluginRendererPage() {
                   <ChevronLeft className="h-3.5 w-3.5" />
                   <span>Back</span>
                 </button>
-                <span className="text-[11px] font-bold text-zinc-300">
-                  {STEP_TABS[currentStep]}
+                <span className="text-xs font-bold text-zinc-200">
+                  Step {currentStep + 1}: {STEP_TABS[currentStep].label}
                 </span>
                 <button
                   type="button"
@@ -478,8 +448,8 @@ export default function SamplePluginRendererPage() {
                 </button>
               </div>
 
-              {/* SCROLLABLE STEP CONTENT BODY */}
-              <div className="flex-1 space-y-4 overflow-y-auto p-4">
+              {/* SCROLLABLE STEP CONTENT BODY (VERTICAL ONLY, SCROLLBAR HIDDEN) */}
+              <div className="flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {/* STEP 0: Space Type */}
                 {currentStep === 0 && (
                   <div className="space-y-3">
@@ -843,36 +813,14 @@ export default function SamplePluginRendererPage() {
             </>
           )}
 
-          {/* BOTTOM FIXED BAR: PROMPT & RENDER BUTTON */}
-          <div className="shrink-0 space-y-2.5 border-t border-zinc-800 bg-[#0b0b0f] p-3">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold tracking-wider text-zinc-400 uppercase">
-                Scene Prompt (Optional)
-              </label>
-              <button
-                type="button"
-                onClick={handleEnhancePrompt}
-                className="flex cursor-pointer items-center gap-1 text-[11px] font-bold text-amber-400 transition-colors hover:text-amber-300"
-              >
-                <Wand2 className="h-3 w-3" />
-                <span>Auto-Build from Settings</span>
-              </button>
-            </div>
-
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              rows={2}
-              placeholder="Describe any specific architectural details..."
-              className="w-full resize-none rounded-lg border border-zinc-800 bg-zinc-950 p-2 text-xs text-white placeholder:text-zinc-600 focus:border-white focus:outline-none"
-            />
-
+          {/* BOTTOM FIXED BAR: CREATIVITY SLIDERS & CREATE RENDER ACTION (NO PROMPT) */}
+          <div className="shrink-0 space-y-3.5 border-t border-zinc-800 bg-[#0b0b0f] p-4">
             {/* AI Creativity & Strictness */}
-            <div className="grid grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <div className="mb-1 flex justify-between text-[10px] font-bold text-zinc-400">
-                  <span>Creativity</span>
-                  <span className="text-white">{creativity}%</span>
+                <div className="mb-1.5 flex justify-between text-[11px] font-bold text-zinc-400">
+                  <span>AI Creativity</span>
+                  <span className="font-bold text-white">{creativity}%</span>
                 </div>
                 <input
                   type="range"
@@ -880,13 +828,15 @@ export default function SamplePluginRendererPage() {
                   max="100"
                   value={creativity}
                   onChange={(e) => setCreativity(Number(e.target.value))}
-                  className="h-1 w-full cursor-pointer rounded bg-zinc-800 accent-white"
+                  className="h-1.5 w-full cursor-pointer rounded-lg bg-zinc-800 accent-white"
                 />
               </div>
               <div>
-                <div className="mb-1 flex justify-between text-[10px] font-bold text-zinc-400">
+                <div className="mb-1.5 flex justify-between text-[11px] font-bold text-zinc-400">
                   <span>Geometry Lock</span>
-                  <span className="text-white">{geometryStrength}%</span>
+                  <span className="font-bold text-white">
+                    {geometryStrength}%
+                  </span>
                 </div>
                 <input
                   type="range"
@@ -894,32 +844,30 @@ export default function SamplePluginRendererPage() {
                   max="100"
                   value={geometryStrength}
                   onChange={(e) => setGeometryStrength(Number(e.target.value))}
-                  className="h-1 w-full cursor-pointer rounded bg-zinc-800 accent-white"
+                  className="h-1.5 w-full cursor-pointer rounded-lg bg-zinc-800 accent-white"
                 />
               </div>
             </div>
 
             {/* ACTION BUTTON */}
-            <div className="flex gap-2 pt-1">
-              <button
-                type="button"
-                onClick={handleTriggerRender}
-                disabled={isRendering}
-                className="flex h-11 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
-              >
-                {isRendering ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 animate-spin text-black" />
-                    <span>Rendering ({renderProgress}%)...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-4 w-4 fill-black text-black" />
-                    <span>Create Render</span>
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleTriggerRender}
+              disabled={isRendering}
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
+            >
+              {isRendering ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin text-black" />
+                  <span>Rendering ({renderProgress}%)...</span>
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 fill-black text-black" />
+                  <span>Create Render</span>
+                </>
+              )}
+            </button>
           </div>
         </aside>
 
@@ -1047,8 +995,8 @@ export default function SamplePluginRendererPage() {
             </div>
           </div>
 
-          {/* BOTTOM GALLERY & RENDER HISTORY STRIP */}
-          <div className="flex h-24 shrink-0 items-center gap-3 overflow-x-auto border-t border-zinc-800 bg-[#0a0a0e] px-4 py-2.5">
+          {/* BOTTOM GALLERY & RENDER HISTORY STRIP (CLEAN, NO SCROLLBAR) */}
+          <div className="flex h-24 shrink-0 items-center gap-3 overflow-x-auto border-t border-zinc-800 bg-[#0a0a0e] px-4 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <span className="shrink-0 text-[11px] font-bold tracking-wider text-zinc-400 uppercase">
               Past Renders
             </span>
@@ -1059,7 +1007,6 @@ export default function SamplePluginRendererPage() {
                   type="button"
                   onClick={() => {
                     setActiveScene(scene);
-                    setPrompt(scene.prompt);
                     setSpaceType(scene.spaceType as "interior" | "exterior");
                     setRoomType(scene.roomType);
                     setPrimaryStyle(scene.primaryStyle);
