@@ -1530,6 +1530,17 @@
       transform: translateY(-1px);
     }
 
+  
+    .card-footer-refine {
+      padding: 10px 14px 12px 14px;
+      background: #0e0e12;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 15;
+    }
+
   </style>
 </head>
 <body>
@@ -2029,6 +2040,34 @@
 
               <div id="aiTrialOver" style="display: none;"></div>
             </div>
+
+            <!-- FLUID AI REFINE / EDIT PROMPT BAR DOCKED INSIDE RENDER CARD -->
+            <div class="card-footer-refine" id="cardFooterRefine" style="display: none;">
+              <div class="ai-refine-inner-box">
+                <div class="ai-refine-sparkle-badge">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                  <span>AI Edit</span>
+                </div>
+                <input 
+                  type="text" 
+                  id="aiRefineInput" 
+                  class="ai-refine-input" 
+                  placeholder="Type an edit... e.g. 'Warm sunset golden hour', 'Change flooring to herringbone oak'" 
+                  autocomplete="off"
+                  onkeydown="if(event.key==='Enter') triggerAIRefine()"
+                />
+                <button type="button" class="btn-ai-refine" id="btnAiRefine" onclick="triggerAIRefine()">
+                  <span>Refine</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+              </div>
+              <div class="ai-refine-suggestions">
+                <button type="button" class="refine-chip" onclick="applyRefineChip('Warm sunset golden hour sunlight through windows')">🌅 Golden Hour</button>
+                <button type="button" class="refine-chip" onclick="applyRefineChip('Light herringbone Scandinavian oak wood flooring')">🪵 Light Oak Wood</button>
+                <button type="button" class="refine-chip" onclick="applyRefineChip('Add lush indoor architectural potted plants and greenery')">🌿 Add Greenery</button>
+                <button type="button" class="refine-chip" onclick="applyRefineChip('Moody cinematic blue-hour evening with warm interior lamps')">🌙 Moody Evening</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -2055,35 +2094,7 @@
 
         <!-- GENERATE 3D VIDEO WALKTHROUGH & AI REFINE ROW -->
         <div class="action-row-bottom action-row" id="actionRowBottom">
-          <!-- FLUID AI REFINE / EDIT PROMPT BAR -->
-          <div class="ai-refine-bar-wrapper" id="aiRefineBarWrapper" style="display: none;">
-            <div class="ai-refine-inner-box">
-              <div class="ai-refine-sparkle-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-                <span>AI Edit</span>
-              </div>
-              <input 
-                type="text" 
-                id="aiRefineInput" 
-                class="ai-refine-input" 
-                placeholder="Type an edit... e.g. 'Warm sunset golden hour', 'Herringbone wood floor', 'Add indoor plants'" 
-                autocomplete="off"
-                onkeydown="if(event.key==='Enter') triggerAIRefine()"
-              />
-              <button type="button" class="btn-ai-refine" id="btnAiRefine" onclick="triggerAIRefine()">
-                <span>Refine</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </button>
-            </div>
-            <!-- Quick Suggestion Pill Chips -->
-            <div class="ai-refine-suggestions" id="aiRefineSuggestions">
-              <button type="button" class="refine-chip" onclick="applyRefineChip('Warm sunset golden hour sunlight streaming through windows')">🌅 Golden Hour</button>
-              <button type="button" class="refine-chip" onclick="applyRefineChip('Light herringbone oak wood flooring with subtle reflections')">🪵 Light Oak Wood</button>
-              <button type="button" class="refine-chip" onclick="applyRefineChip('Add lush indoor architectural potted plants and fiddle-leaf fig')">🌿 Add Greenery</button>
-              <button type="button" class="refine-chip" onclick="applyRefineChip('Moody cinematic blue-hour evening with warm interior lamps')">🌙 Moody Evening</button>
-              <button type="button" class="refine-chip" onclick="applyRefineChip('Crisp matte white Venetian plaster walls')">🏛️ White Plaster</button>
-            </div>
-          </div>
+
 
           <button type="button" class="btn-generate-video-walkthrough btn-video" id="videoBtn" onclick="triggerVideoWalkthrough()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(165,180,252,0.6));"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
@@ -3938,7 +3949,7 @@
         document.getElementById('downloadVideoLink').href = fullUrl;
         document.getElementById('downloadVideoLink').style.display = 'inline-block';
         document.getElementById('videoBtn').style.display = 'none';
-        const refineBar = document.getElementById('aiRefineBarWrapper');
+        const refineBar = document.getElementById('cardFooterRefine');
         if (refineBar) refineBar.style.display = 'none';
       } else {
         const aiImg = document.getElementById('aiImg');
@@ -3958,7 +3969,7 @@
         document.getElementById('downloadLink').href = fullUrl;
         document.getElementById('downloadLink').style.display = 'inline-block';
         document.getElementById('videoBtn').style.display = 'inline-flex';
-        const refineBar = document.getElementById('aiRefineBarWrapper');
+        const refineBar = document.getElementById('cardFooterRefine');
         if (refineBar) refineBar.style.display = 'flex';
       }
       showStatus('✓ Loaded past render from gallery', 'success');

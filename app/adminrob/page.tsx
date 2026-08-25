@@ -55,6 +55,7 @@ interface RenderLogEntry {
   provider: "Google AI Studio" | "Replicate";
   status: "success" | "fallback_cascade" | "failed";
   durationSeconds: number;
+  prompt?: string;
   details?: string;
   error?: string;
   outputPreview?: string;
@@ -258,12 +259,17 @@ function RenderLogsTable({
   logs: RenderLogEntry[];
   search: string;
 }) {
+  const [activePromptModal, setActivePromptModal] =
+    useState<RenderLogEntry | null>(null);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+
   const filtered = logs.filter(
     (l) =>
       l.email.toLowerCase().includes(search.toLowerCase()) ||
       l.requestedModel.toLowerCase().includes(search.toLowerCase()) ||
       l.executedModel.toLowerCase().includes(search.toLowerCase()) ||
-      (l.details && l.details.toLowerCase().includes(search.toLowerCase()))
+      (l.details && l.details.toLowerCase().includes(search.toLowerCase())) ||
+      (l.prompt && l.prompt.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -286,6 +292,7 @@ function RenderLogsTable({
               <th className="px-5 py-3.5">Type</th>
               <th className="px-5 py-3.5">Assigned / Requested</th>
               <th className="px-5 py-3.5">Actual Callback Engine</th>
+              <th className="px-5 py-3.5">Master Prompt</th>
               <th className="px-5 py-3.5">Provider</th>
               <th className="px-5 py-3.5">Status & Latency</th>
               <th className="px-5 py-3.5">Execution Callback Details</th>
@@ -294,7 +301,7 @@ function RenderLogsTable({
           <tbody className="divide-y divide-white/5 text-zinc-300">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-5 py-8 text-center text-zinc-500">
+                <td colSpan={9} className="px-5 py-8 text-center text-zinc-500">
                   No render execution logs recorded yet. Trigger a render from
                   the plugin to view live traces.
                 </td>
@@ -350,6 +357,24 @@ function RenderLogsTable({
                     )}
                   </td>
                   <td className="px-5 py-4">
+                    {log.prompt ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActivePromptModal(log);
+                          setCopiedPrompt(false);
+                        }}
+                        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-500/20 px-2.5 py-1 text-[11px] font-bold text-indigo-300 shadow-sm transition-all hover:bg-indigo-500/30"
+                      >
+                        📜 View Prompt
+                      </button>
+                    ) : (
+                      <span className="text-[11px] text-zinc-500 italic">
+                        Default
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-5 py-4">
                     <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-semibold text-zinc-300">
                       {log.provider}
                     </span>
@@ -385,6 +410,67 @@ function RenderLogsTable({
           </tbody>
         </table>
       </div>
+
+      {/* MASTER PROMPT INSPECTOR MODAL */}
+      {activePromptModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
+          <div className="flex max-h-[85vh] w-full max-w-3xl flex-col rounded-2xl border border-white/15 bg-zinc-950 p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📜</span>
+                <div>
+                  <h3 className="text-base font-bold text-white">
+                    Master Execution Prompt
+                  </h3>
+                  <div className="mt-0.5 flex items-center gap-2 text-xs text-zinc-400">
+                    <span className="font-medium text-zinc-200">
+                      {activePromptModal.email}
+                    </span>
+                    <span>•</span>
+                    <span className="font-semibold text-indigo-400">
+                      {activePromptModal.executedModel}
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {new Date(
+                        activePromptModal.timestamp
+                      ).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (activePromptModal.prompt) {
+                      navigator.clipboard.writeText(activePromptModal.prompt);
+                      setCopiedPrompt(true);
+                      setTimeout(() => setCopiedPrompt(false), 2000);
+                    }
+                  }}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-bold text-white transition-all hover:bg-zinc-700"
+                >
+                  {copiedPrompt ? "✓ Copied!" : "📋 Copy Prompt"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActivePromptModal(null)}
+                  className="cursor-pointer rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 flex-1 overflow-y-auto rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-zinc-300 select-text">
+              {activePromptModal.prompt ||
+                "No custom prompt attached to this log."}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
