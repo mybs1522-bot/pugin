@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { GLSLHills } from "@/components/ui/glsl-hills";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -1176,6 +1177,17 @@ export default function SamplePluginRendererPage() {
 
         {/* RIGHT PREVIEW & VIEWPORT WORKSPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden bg-[#070709]">
+          {/* GLSL ANIMATED HILLS BACKGROUND */}
+          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none">
+            <GLSLHills
+              width="100%"
+              height="100%"
+              cameraZ={125}
+              planeSize={256}
+              speed={0.5}
+            />
+          </div>
+
           {/* Viewport Action Bar */}
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0c0c10] px-4">
             <div className="flex items-center gap-2">
@@ -1281,9 +1293,9 @@ export default function SamplePluginRendererPage() {
           </div>
 
           {/* MAIN CANVAS AREA */}
-          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-2.5 sm:p-3.5">
+          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-6 sm:p-8">
             {!isComparing ? (
-              <div className="grid h-full max-h-[calc(100vh-125px)] w-full max-w-[1680px] grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid h-full max-h-[540px] max-h-[calc(100vh-125px)] w-full max-w-[1080px] grid-cols-2 gap-4">
                 {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
                 <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
                   <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
