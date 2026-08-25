@@ -26,18 +26,18 @@ import {
 const ELEMENT_STYLE = {
   style: {
     base: {
-      color: "var(--foreground, #ffffff)",
+      color: "#ffffff",
       fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       fontSmoothing: "antialiased",
       fontSize: "14px",
       "::placeholder": {
-        color: "var(--muted-foreground, #71717a)",
+        color: "#71717a",
       },
-      iconColor: "#10b981",
+      iconColor: "#ffffff",
     },
     invalid: {
-      color: "#ef4444",
-      iconColor: "#ef4444",
+      color: "#f87171",
+      iconColor: "#f87171",
     },
   },
 };
@@ -167,7 +167,7 @@ export function GlassCheckoutCard({
       document.body.removeChild(downloadLink);
 
       alert(
-        "🎉 14-Day Free Trial Activated & Plugin Downloaded! Your card has been safely saved with $0 charged today."
+        "🎉 14-Day Free Trial Activated (2,000 Renders Included) & Plugin Downloaded!"
       );
     } catch (err: any) {
       console.error("GlassCheckoutCard submission error:", err);
@@ -186,24 +186,24 @@ export function GlassCheckoutCard({
       transition={{ duration: 0.4 }}
       className={cn("mx-auto w-full max-w-[480px]", className)}
     >
-      <Card className="group border-border/60 bg-card/60 relative overflow-hidden rounded-2xl p-0 shadow-lg backdrop-blur-xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-2xl hover:shadow-emerald-500/10">
+      <Card className="group relative overflow-hidden rounded-2xl border-zinc-800 bg-[#09090b] p-0 text-white shadow-2xl">
         <form onSubmit={handleFormSubmit} className="p-6 sm:p-7">
-          <div className="mb-4">
-            <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-              Native SketchUp Extension • Unlimited 4K Renders
+          <div className="mb-4 text-left">
+            <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+              Native SketchUp Extension • Unlimited Renders (2,000 Included)
             </div>
             <div className="flex items-center justify-between">
-              <h3 className="text-foreground text-xl font-bold tracking-tight">
+              <h3 className="text-xl font-bold tracking-tight text-white">
                 Download Plugin Now
               </h3>
-              <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
                 $0.00 Due Today
               </span>
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              14 days free trial. Unrestricted access to unlimited 4K renders &
-              3D video walkthroughs.
+            <p className="mt-1 text-xs text-zinc-400">
+              14 days free trial. Unlimited 4K photorealistic renders & 3D video
+              walkthroughs (2,000 Renders Included). Cancel anytime in 1 click.
             </p>
           </div>
 
@@ -216,23 +216,23 @@ export function GlassCheckoutCard({
               className={cn(
                 "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
                 selectedPlan === "monthly"
-                  ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
-                  : "border-border/60 bg-background/50 hover:bg-background/80 opacity-80 hover:opacity-100"
+                  ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+                  : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
               )}
             >
               <div className="flex w-full items-center justify-between">
-                <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+                <span className="text-xs font-bold tracking-wider text-white uppercase">
                   Monthly
                 </span>
-                <span className="text-foreground text-sm font-black">
+                <span className="text-sm font-black text-white">
                   $20
-                  <span className="text-muted-foreground text-[10px] font-normal">
+                  <span className="text-[10px] font-normal text-zinc-400">
                     /mo
                   </span>
                 </span>
               </div>
-              <span className="text-muted-foreground mt-1.5 text-[11px] font-medium">
-                14 Days Free • Then $20/mo
+              <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
+                14 Days Free • 2,000 Renders Included
               </span>
             </button>
 
@@ -243,43 +243,43 @@ export function GlassCheckoutCard({
               className={cn(
                 "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
                 selectedPlan === "yearly"
-                  ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
-                  : "border-border/60 bg-background/50 hover:bg-background/80 opacity-80 hover:opacity-100"
+                  ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+                  : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
               )}
             >
               <div className="absolute -top-2.5 right-2">
-                <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
+                <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
                   25% OFF
                 </span>
               </div>
               <div className="flex w-full items-center justify-between">
-                <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+                <span className="text-xs font-bold tracking-wider text-white uppercase">
                   Yearly
                 </span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-muted-foreground text-[10px] line-through">
+                  <span className="text-[10px] text-zinc-500 line-through">
                     $240
                   </span>
-                  <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+                  <span className="text-sm font-black text-white">
                     $180
-                    <span className="text-muted-foreground text-[10px] font-normal">
+                    <span className="text-[10px] font-normal text-zinc-400">
                       /yr
                     </span>
                   </span>
                 </div>
               </div>
-              <span className="mt-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                $15/mo • Save $60/yr
+              <span className="mt-1.5 text-[11px] font-semibold text-zinc-300">
+                $15/mo • 2,000 Renders/mo (Save $60/yr)
               </span>
             </button>
           </div>
 
           <div className="space-y-3">
             {/* Email Address */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <Label
                 htmlFor="email"
-                className="text-foreground text-xs font-semibold tracking-wider uppercase"
+                className="text-xs font-semibold tracking-wider text-zinc-300 uppercase"
               >
                 Email Address
               </Label>
@@ -289,54 +289,54 @@ export function GlassCheckoutCard({
                 placeholder="architect@studio.com"
                 value={currentEmail}
                 onChange={(e) => setEmail(e.target.value)}
-                className="border-border/60 bg-background/60 focus:bg-background/90 h-10 text-sm backdrop-blur-sm focus:border-emerald-500"
+                className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
                 required
               />
             </div>
 
             {/* Card Number */}
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 text-left">
               <div className="flex items-center justify-between">
                 <Label
                   htmlFor="cardNumber"
-                  className="text-foreground text-xs font-semibold tracking-wider uppercase"
+                  className="text-xs font-semibold tracking-wider text-zinc-300 uppercase"
                 >
                   Card Number
                 </Label>
-                <span className="text-muted-foreground flex items-center gap-1 text-[10px]">
-                  <ShieldCheck className="h-3 w-3 text-emerald-500" /> SSL
+                <span className="flex items-center gap-1 text-[10px] text-zinc-400">
+                  <ShieldCheck className="h-3 w-3 text-zinc-300" /> SSL
                   Encrypted
                 </span>
               </div>
-              <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+              <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+                <CreditCard className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
                 <CardNumberElement options={ELEMENT_STYLE} />
               </div>
             </div>
 
             {/* Expiry Date & CVC */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 text-left">
               <div className="space-y-1.5">
                 <Label
                   htmlFor="expiry"
-                  className="text-foreground text-xs font-semibold tracking-wider uppercase"
+                  className="text-xs font-semibold tracking-wider text-zinc-300 uppercase"
                 >
                   Expiry Date
                 </Label>
-                <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                  <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+                <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+                  <Calendar className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
                   <CardExpiryElement options={ELEMENT_STYLE} />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label
                   htmlFor="cvc"
-                  className="text-foreground text-xs font-semibold tracking-wider uppercase"
+                  className="text-xs font-semibold tracking-wider text-zinc-300 uppercase"
                 >
                   CVC
                 </Label>
-                <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 backdrop-blur-sm focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-                  <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+                <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+                  <Lock className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
                   <CardCvcElement options={ELEMENT_STYLE} />
                 </div>
               </div>
@@ -344,8 +344,8 @@ export function GlassCheckoutCard({
           </div>
 
           {currentError && (
-            <div className="bg-destructive/10 border-destructive/20 text-destructive mt-3 flex items-start gap-2 rounded-xl border p-3 text-xs">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
               <span>{currentError}</span>
             </div>
           )}
@@ -354,23 +354,23 @@ export function GlassCheckoutCard({
           <Button
             type="submit"
             disabled={isLoading || !stripe}
-            className="mt-4 h-11 w-full gap-2 bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+            className="mt-4 h-11 w-full cursor-pointer gap-2 bg-white font-extrabold text-black shadow-xl transition-all hover:bg-zinc-200"
           >
             {isLoading ? (
               "Setting up trial..."
             ) : (
               <>
-                <Download className="h-4 w-4" />
+                <Download className="h-4 w-4 text-black" />
                 Start 14-Day Free Trial & Download (.rbz)
               </>
             )}
           </Button>
 
-          <div className="text-muted-foreground mt-3 flex items-center justify-center gap-1.5 text-center text-xs">
-            <Lock className="h-3 w-3 text-emerald-500" />
+          <div className="mt-3 flex items-center justify-center gap-1.5 text-center text-xs text-zinc-400">
+            <Lock className="h-3 w-3 text-zinc-300" />
             <span>
-              $0.00 charged today. 14 days free trial. Cancel anytime in 1
-              click.
+              $0.00 charged today. 14 days free trial with 2,000 Renders
+              Included. Cancel anytime in 1 click.
             </span>
           </div>
         </form>

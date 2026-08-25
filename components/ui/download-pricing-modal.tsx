@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,7 +12,6 @@ import {
   AlertCircle,
   CreditCard,
   Calendar,
-  Sparkles,
 } from "lucide-react";
 import {
   Elements,
@@ -42,18 +35,18 @@ interface DownloadPricingModalProps {
 const ELEMENT_STYLE = {
   style: {
     base: {
-      color: "var(--foreground, #18181b)",
+      color: "#ffffff",
       fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
       fontSmoothing: "antialiased",
       fontSize: "14px",
       "::placeholder": {
-        color: "var(--muted-foreground, #a1a1aa)",
+        color: "#71717a",
       },
-      iconColor: "#10b981",
+      iconColor: "#ffffff",
     },
     invalid: {
-      color: "#ef4444",
-      iconColor: "#ef4444",
+      color: "#f87171",
+      iconColor: "#f87171",
     },
   },
 };
@@ -199,30 +192,30 @@ function UnifiedTrialForm({
   };
 
   return (
-    <div className="flex flex-col gap-4 p-6 sm:p-7">
+    <div className="flex flex-col gap-4 bg-[#09090b] p-6 text-white sm:p-7">
       {/* Top Badge & Header */}
       <div className="space-y-1.5 text-left">
-        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-          Native SketchUp Extension • Unlimited 4K Renders
+        <div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+          Native SketchUp Extension • Unlimited Renders (2,000 Included)
         </div>
 
         <div className="flex items-center justify-between">
-          <h3 className="text-foreground text-xl font-black tracking-tight sm:text-2xl">
+          <h3 className="text-xl font-black tracking-tight text-white sm:text-2xl">
             Download Plugin Now
           </h3>
-          <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold text-white">
             $0.00 Due Today
           </span>
         </div>
 
-        <p className="text-muted-foreground text-xs leading-relaxed">
-          14 days free trial. Unrestricted access to unlimited 4K photorealistic
-          renders & 3D video walkthroughs. Cancel anytime in 1 click.
+        <p className="text-xs leading-relaxed text-zinc-400">
+          14 days free trial. Unlimited 4K photorealistic renders & 3D video
+          walkthroughs (2,000 Renders Included). Cancel anytime in 1 click.
         </p>
       </div>
 
-      {/* Side-by-Side Plan Selector (Directly on the page) */}
+      {/* Side-by-Side Plan Selector (Monochrome Black & White Dark Theme) */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         {/* Monthly Card */}
         <button
@@ -231,23 +224,21 @@ function UnifiedTrialForm({
           className={cn(
             "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
             selectedPlan === "monthly"
-              ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
-              : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-85 hover:opacity-100"
+              ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
           )}
         >
           <div className="flex w-full items-center justify-between">
-            <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+            <span className="text-xs font-bold tracking-wider text-white uppercase">
               Monthly
             </span>
-            <span className="text-foreground text-sm font-black">
+            <span className="text-sm font-black text-white">
               $20
-              <span className="text-muted-foreground text-[10px] font-normal">
-                /mo
-              </span>
+              <span className="text-[10px] font-normal text-zinc-400">/mo</span>
             </span>
           </div>
-          <span className="text-muted-foreground mt-1.5 text-[11px] font-medium">
-            14 Days Free • Then $20/mo
+          <span className="mt-1.5 text-[11px] font-medium text-zinc-400">
+            14 Days Free • 2,000 Renders Included
           </span>
         </button>
 
@@ -258,33 +249,33 @@ function UnifiedTrialForm({
           className={cn(
             "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
             selectedPlan === "yearly"
-              ? "border-emerald-500 bg-emerald-500/5 shadow-sm ring-2 ring-emerald-500/30 dark:bg-emerald-500/10"
-              : "border-border/60 bg-muted/20 hover:bg-muted/40 opacity-85 hover:opacity-100"
+              ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
           )}
         >
           <div className="absolute -top-2.5 right-2">
-            <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
+            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider text-black uppercase shadow-sm">
               25% OFF
             </span>
           </div>
           <div className="flex w-full items-center justify-between">
-            <span className="text-foreground text-xs font-bold tracking-wider uppercase">
+            <span className="text-xs font-bold tracking-wider text-white uppercase">
               Yearly
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-muted-foreground text-[10px] line-through">
+              <span className="text-[10px] text-zinc-500 line-through">
                 $240
               </span>
-              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">
+              <span className="text-sm font-black text-white">
                 $180
-                <span className="text-muted-foreground text-[10px] font-normal">
+                <span className="text-[10px] font-normal text-zinc-400">
                   /yr
                 </span>
               </span>
             </div>
           </div>
-          <span className="mt-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-            $15/mo • Save $60/yr
+          <span className="mt-1.5 text-[11px] font-semibold text-zinc-300">
+            $15/mo • 2,000 Renders/mo (Save $60/yr)
           </span>
         </button>
       </div>
@@ -292,7 +283,7 @@ function UnifiedTrialForm({
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 pt-1">
         {/* EMAIL ADDRESS */}
         <div className="space-y-1.5">
-          <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+          <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
             Email Address
           </label>
           <Input
@@ -300,7 +291,7 @@ function UnifiedTrialForm({
             placeholder="architect@studio.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border-border/60 bg-background/60 h-10 text-sm focus:border-emerald-500"
+            className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
             required
             autoFocus
           />
@@ -309,15 +300,15 @@ function UnifiedTrialForm({
         {/* CARD NUMBER */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
               Card Number
             </label>
-            <span className="text-muted-foreground flex items-center gap-1 text-[10px]">
-              <ShieldCheck className="h-3 w-3 text-emerald-500" /> SSL Encrypted
+            <span className="flex items-center gap-1 text-[10px] text-zinc-400">
+              <ShieldCheck className="h-3 w-3 text-zinc-300" /> SSL Encrypted
             </span>
           </div>
-          <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-            <CreditCard className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+          <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+            <CreditCard className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
             <CardNumberElement options={ELEMENT_STYLE} />
           </div>
         </div>
@@ -325,52 +316,53 @@ function UnifiedTrialForm({
         {/* EXPIRY DATE & CVC */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
               Expiry Date
             </label>
-            <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-              <Calendar className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+              <Calendar className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
               <CardExpiryElement options={ELEMENT_STYLE} />
             </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-foreground text-xs font-semibold tracking-wider uppercase">
+            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
               CVC
             </label>
-            <div className="border-border/60 bg-background/60 relative rounded-lg border p-2.5 pl-10 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500">
-              <Lock className="text-muted-foreground absolute top-2.5 left-3 h-4 w-4" />
+            <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+              <Lock className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
               <CardCvcElement options={ELEMENT_STYLE} />
             </div>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="bg-destructive/10 border-destructive/20 text-destructive flex items-start gap-2 rounded-xl border p-3 text-xs">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* SUBMIT CTA */}
+        {/* SUBMIT CTA (Black & White High Contrast) */}
         <Button
           type="submit"
           size="lg"
           disabled={loading || !stripe}
-          className="mt-1 h-12 w-full gap-2 bg-emerald-600 text-sm font-bold text-white shadow-lg transition-all hover:bg-emerald-500 dark:bg-emerald-500 dark:text-black dark:hover:bg-emerald-400"
+          className="mt-1 h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-xl transition-all hover:bg-zinc-200"
         >
           {loading ? (
             "Verifying Card & Starting Trial..."
           ) : (
             <>
-              <Download className="h-4 w-4" />
+              <Download className="h-4 w-4 text-black" />
               Start 14-Day Free Trial & Download (.rbz)
             </>
           )}
         </Button>
 
-        <p className="text-muted-foreground text-center text-[11px] leading-relaxed">
-          <Lock className="mr-1 inline-block h-3 w-3 text-emerald-500" />
-          $0.00 charged today. 14 days free trial. Cancel anytime with 1 click.
+        <p className="text-center text-[11px] leading-relaxed text-zinc-400">
+          <Lock className="mr-1 inline-block h-3 w-3 text-zinc-300" />
+          $0.00 charged today. 14 days free trial with 2,000 Renders Included.
+          Cancel anytime with 1 click.
         </p>
       </form>
     </div>
@@ -408,27 +400,30 @@ export function DownloadPricingModal({
         }
       }}
     >
-      <DialogContent className="border-border bg-background max-w-[480px] overflow-hidden rounded-2xl p-0 shadow-2xl">
+      <DialogContent className="max-w-[480px] overflow-hidden rounded-2xl border-zinc-800 bg-[#09090b] p-0 text-white shadow-2xl">
         {!done ? (
           <Elements stripe={getStripeClient()}>
             <UnifiedTrialForm onSuccess={handleSuccess} />
           </Elements>
         ) : (
-          <div className="flex flex-col items-center gap-4 p-6 text-center sm:p-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-emerald-500">
-              <CheckCircle2 className="h-8 w-8" />
+          <div className="flex flex-col items-center gap-4 bg-[#09090b] p-6 text-center text-white sm:p-8">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-white">
+              <CheckCircle2 className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-foreground text-xl font-bold">
+              <h3 className="text-xl font-bold text-white">
                 14-Day Free Trial Activated!
               </h3>
-              <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">
+              <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
                 Your 14-day trial for{" "}
-                <span className="text-foreground font-semibold">
+                <span className="font-semibold text-white">
                   {confirmedEmail}
                 </span>{" "}
-                has been set up with card securely on file. Your download of{" "}
-                <code className="text-foreground font-mono">v6_render.rbz</code>{" "}
+                has been set up with card securely on file (2,000 Renders
+                Included). Your download of{" "}
+                <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-zinc-200">
+                  v6_render.rbz
+                </code>{" "}
                 has started.
               </p>
             </div>
@@ -437,7 +432,7 @@ export function DownloadPricingModal({
               <Button
                 onClick={handleManualDownload}
                 variant="outline"
-                className="border-border w-full gap-2"
+                className="w-full gap-2 border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800"
               >
                 <Download className="h-4 w-4" />
                 Click here if download didn't start automatically
@@ -445,7 +440,7 @@ export function DownloadPricingModal({
 
               <Button
                 onClick={() => onOpenChange(false)}
-                className="w-full font-bold"
+                className="w-full bg-white font-bold text-black hover:bg-zinc-200"
               >
                 Done
               </Button>
