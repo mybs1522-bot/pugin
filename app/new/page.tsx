@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { GLSLHills } from "@/components/ui/glsl-hills";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Zap,
@@ -1177,18 +1176,6 @@ export default function SamplePluginRendererPage() {
 
         {/* RIGHT PREVIEW & VIEWPORT WORKSPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden bg-[#070709]">
-          {/* GLSL ANIMATED HILLS BACKGROUND */}
-          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40 select-none">
-            <GLSLHills
-              width="100%"
-              height="100%"
-              cameraZ={125}
-              planeSize={256}
-              speed={0.4}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(7,7,9,0.85)_80%,#070709_100%)]" />
-          </div>
-
           {/* Viewport Action Bar */}
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0c0c10] px-4">
             <div className="flex items-center gap-2">
@@ -1294,9 +1281,9 @@ export default function SamplePluginRendererPage() {
           </div>
 
           {/* MAIN CANVAS AREA */}
-          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-3 sm:p-4">
+          <div className="relative flex flex-1 flex-col items-center justify-center overflow-hidden p-2.5 sm:p-3.5">
             {!isComparing ? (
-              <div className="grid h-full max-h-[660px] w-full max-w-[1260px] grid-cols-2 gap-3.5 sm:gap-4">
+              <div className="grid h-full max-h-[calc(100vh-125px)] w-full max-w-[1680px] grid-cols-2 gap-3 sm:gap-4">
                 {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
                 <div className="relative flex h-full flex-col overflow-hidden rounded-xl border border-zinc-800 bg-black shadow-2xl">
                   <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
