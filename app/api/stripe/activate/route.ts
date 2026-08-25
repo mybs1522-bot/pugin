@@ -63,6 +63,27 @@ export async function POST(req: NextRequest) {
         proration_behavior: "always_invoice",
       });
 
+      // Anti-Fraud / Empty Card Check: Verify the subscription is actually paid/active
+      if (
+        updated.status === "past_due" ||
+        updated.status === "incomplete" ||
+        updated.status === "unpaid"
+      ) {
+        await setUserPaidStatus(
+          email,
+          false,
+          "Payment Failed (Card Empty/Declined)"
+        );
+        return NextResponse.json(
+          {
+            error:
+              "Card charge was declined (insufficient funds or bank declined). Please update your payment method.",
+            status: updated.status,
+          },
+          { status: 402 }
+        );
+      }
+
       await setUserPaidStatus(email, true, `Stripe Pro (${plan})`);
 
       return NextResponse.json({
@@ -107,6 +128,26 @@ export async function POST(req: NextRequest) {
         payment_behavior: "error_if_incomplete",
         metadata: { activatedVia: "1-Click Plugin Activation" },
       });
+
+      if (
+        newSub.status === "past_due" ||
+        newSub.status === "incomplete" ||
+        newSub.status === "unpaid"
+      ) {
+        await setUserPaidStatus(
+          email,
+          false,
+          "Payment Failed (Card Empty/Declined)"
+        );
+        return NextResponse.json(
+          {
+            error:
+              "Card charge was declined (insufficient funds). Please update your payment method.",
+            status: newSub.status,
+          },
+          { status: 402 }
+        );
+      }
 
       await setUserPaidStatus(email, true, `Stripe Pro (${plan})`);
 

@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req.headers);
+    const ipCheck = checkRateLimit(ip, 10, 10 * 60 * 1000);
+    if (!ipCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many card verification attempts from this IP. Please try again in ${Math.ceil(
+            ipCheck.retryAfterSeconds / 60
+          )} minutes.`,
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json().catch(() => ({}));
     const email = (body?.email || "").trim().toLowerCase();
 
@@ -10,6 +24,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Valid email is required" },
         { status: 400 }
+      );
+    }
+
+    const emailCheck = checkRateLimit(email, 5, 10 * 60 * 1000);
+    if (!emailCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many card verification attempts for this email. Please try again in ${Math.ceil(
+            emailCheck.retryAfterSeconds / 60
+          )} minutes.`,
+        },
+        { status: 429 }
       );
     }
 
@@ -38,7 +64,7 @@ export async function POST(req: NextRequest) {
       customer: customerId,
       payment_method_types: ["card"],
       usage: "off_session",
-      metadata: { email },
+      metadata: { email, clientIp: ip },
     });
 
     return NextResponse.json({
