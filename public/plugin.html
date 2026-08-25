@@ -616,12 +616,22 @@
     .canvas-center {
       position: relative;
       flex: 1;
-      padding: 16px;
+      padding: 14px 16px 12px 16px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       overflow: hidden;
+      min-height: 0;
+    }
+    .canvas-viewport-area {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
 
     .dual-preview-grid, .preview-split {
@@ -796,10 +806,10 @@
       width: 100%;
       height: 100%;
       max-height: 640px;
-      max-width: 960px;
+      max-width: 1100px;
       border-radius: 14px;
       border: 1px solid var(--border-subtle);
-      background-color: #000000;
+      background-color: #09090b;
       overflow: hidden;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
@@ -814,6 +824,8 @@
       object-fit: contain;
       padding: 6px;
       pointer-events: none;
+      display: block;
+      background: #09090b;
     }
     .split-overlay-wrapper {
       position: absolute;
@@ -1795,6 +1807,7 @@
 
       <!-- MAIN CANVAS AREA: SIDE-BY-SIDE DUAL VIEW OR SPLIT SLIDER -->
       <div class="canvas-center">
+        <div class="canvas-viewport-area">
         <!-- MODE 1: DUAL SIDE-BY-SIDE CARDS -->
         <div class="dual-preview-grid preview-split" id="dualPreviewGrid">
           <!-- LEFT CARD: SKETCHUP VIEWPORT -->
@@ -1907,10 +1920,10 @@
 
         <!-- MODE 2: SPLIT COMPARE SLIDER -->
         <div class="split-slider-container" id="splitSliderContainer">
-          <img id="splitImgAfter" src="" alt="Render" class="split-img-base" style="display:none;">
+          <img id="splitImgAfter" src="" alt="Render" class="split-img-base">
           
           <div class="split-overlay-wrapper" id="splitOverlayWrapper" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);">
-            <img id="splitImgBefore" src="" alt="Viewport" class="split-img-overlay" style="display:none;">
+            <img id="splitImgBefore" src="" alt="Viewport" class="split-img-overlay">
             <div class="split-tag left">SketchUp Viewport (Original)</div>
           </div>
 
@@ -1923,6 +1936,7 @@
           </div>
 
           <input type="range" min="0" max="100" value="50" class="split-range-input" id="splitRangeInput" oninput="updateSplitSlider(this.value)">
+        </div>
         </div>
 
         <!-- GENERATE 3D VIDEO WALKTHROUGH BUTTON ROW -->
@@ -2001,6 +2015,24 @@
       document.getElementById('splitSliderContainer').classList.toggle('active', isSplitComparing);
       document.getElementById('btnToggleSplit').classList.toggle('active', isSplitComparing);
       document.getElementById('splitToggleText').textContent = isSplitComparing ? 'Side-by-Side View' : 'Split Compare Slider';
+
+      // Always sync before & after images when switching to or updating split view
+      const vpImg = document.getElementById('viewportImg');
+      const aiImg = document.getElementById('aiImg');
+      const splitBefore = document.getElementById('splitImgBefore');
+      const splitAfter = document.getElementById('splitImgAfter');
+      
+      const beforeSrc = (vpImg && vpImg.src && !vpImg.src.endsWith('.html') && vpImg.style.display !== 'none') ? vpImg.src : (capturedViewportImageData || '');
+      const afterSrc = (aiImg && aiImg.src && !aiImg.src.endsWith('.html') && aiImg.style.display !== 'none') ? aiImg.src : (lastRenderUrl || '');
+
+      if (splitBefore && beforeSrc) {
+        splitBefore.src = beforeSrc;
+        splitBefore.style.display = 'block';
+      }
+      if (splitAfter && afterSrc) {
+        splitAfter.src = afterSrc;
+        splitAfter.style.display = 'block';
+      }
     }
 
     function updateSplitSlider(val) {
@@ -3693,38 +3725,55 @@
 
     async function previewPastRender(itemObj) {
       if (!itemObj) return;
-      let fullUrl = itemObj.url;
+      toggleGalleryModal(false);
 
-      // If URL was stored in IndexedDB (base64)
+      let fullUrl = itemObj.url;
       if (!fullUrl && itemObj.id) {
         const record = await getFromDB(itemObj.id);
         if (record && record.url) {
           fullUrl = record.url;
         }
       }
-
       if (!fullUrl) fullUrl = itemObj.thumb;
       if (!fullUrl) return;
+
+      const aiPlaceholder = document.getElementById('aiPlaceholder');
+      if (aiPlaceholder) {
+        aiPlaceholder.style.setProperty('display', 'none', 'important');
+        aiPlaceholder.classList.add('hidden');
+      }
 
       if (itemObj.type === 'video') {
         const videoEl = document.getElementById('aiVideo');
         videoEl.src = fullUrl;
+        videoEl.style.display = 'block';
         videoEl.load();
+        document.getElementById('aiImg').style.display = 'none';
         document.getElementById('viewModeToggle').style.display = 'flex';
         switchPreviewMode('video');
         document.getElementById('downloadVideoLink').href = fullUrl;
         document.getElementById('downloadVideoLink').style.display = 'inline-block';
+        document.getElementById('videoBtn').style.display = 'none';
       } else {
         const aiImg = document.getElementById('aiImg');
         aiImg.src = fullUrl;
+        aiImg.style.display = 'block';
+        document.getElementById('aiVideo').style.display = 'none';
         lastRenderUrl = fullUrl;
+
+        const splitAfter = document.getElementById('splitImgAfter');
+        if (splitAfter) {
+          splitAfter.src = fullUrl;
+          splitAfter.style.display = 'block';
+        }
+
         document.getElementById('viewModeToggle').style.display = 'flex';
         switchPreviewMode('image');
         document.getElementById('downloadLink').href = fullUrl;
         document.getElementById('downloadLink').style.display = 'inline-block';
-        document.getElementById('videoBtn').style.display = 'inline-block';
+        document.getElementById('videoBtn').style.display = 'inline-flex';
       }
-      showStatus('Loaded past render from gallery', 'success');
+      showStatus('✓ Loaded past render from gallery', 'success');
     }
 
     
