@@ -1415,6 +1415,121 @@
     @keyframes spin {
       100% { transform: rotate(360deg); }
     }
+  
+    /* FLUID AI REFINE MESSAGE BAR */
+    .ai-refine-bar-wrapper {
+      width: 100%;
+      max-width: 680px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      animation: slideUpFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      z-index: 30;
+    }
+    @keyframes slideUpFadeIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .ai-refine-inner-box {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 6px 5px 12px;
+      background: linear-gradient(135deg, rgba(24, 24, 32, 0.94) 0%, rgba(14, 14, 20, 0.97) 100%);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 9999px;
+      box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.85), 0 0 20px rgba(99, 102, 241, 0.18);
+      transition: all 0.2s ease;
+    }
+    .ai-refine-inner-box:focus-within {
+      border-color: rgba(165, 180, 252, 0.75);
+      box-shadow: 0 12px 35px -4px rgba(0, 0, 0, 0.95), 0 0 25px rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+    .ai-refine-sparkle-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(129, 140, 248, 0.35);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      flex-shrink: 0;
+    }
+    .ai-refine-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 12px;
+      font-family: inherit;
+      padding: 4px 6px;
+    }
+    .ai-refine-input::placeholder {
+      color: #71717a;
+      font-size: 11.5px;
+    }
+    .btn-ai-refine {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 9999px;
+      color: #ffffff;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+      transition: all 0.2s ease;
+    }
+    .btn-ai-refine:hover {
+      background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+      transform: scale(1.03);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    }
+    .btn-ai-refine:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .ai-refine-suggestions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 2px 4px;
+    }
+    .refine-chip {
+      background: rgba(24, 24, 30, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #a1a1aa;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.18s ease;
+    }
+    .refine-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(165, 180, 252, 0.4);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
   </style>
 </head>
 <body>
@@ -1938,8 +2053,38 @@
         </div>
         </div>
 
-        <!-- GENERATE 3D VIDEO WALKTHROUGH BUTTON ROW -->
+        <!-- GENERATE 3D VIDEO WALKTHROUGH & AI REFINE ROW -->
         <div class="action-row-bottom action-row" id="actionRowBottom">
+          <!-- FLUID AI REFINE / EDIT PROMPT BAR -->
+          <div class="ai-refine-bar-wrapper" id="aiRefineBarWrapper" style="display: none;">
+            <div class="ai-refine-inner-box">
+              <div class="ai-refine-sparkle-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2.2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <span>AI Edit</span>
+              </div>
+              <input 
+                type="text" 
+                id="aiRefineInput" 
+                class="ai-refine-input" 
+                placeholder="Type an edit... e.g. 'Warm sunset golden hour', 'Herringbone wood floor', 'Add indoor plants'" 
+                autocomplete="off"
+                onkeydown="if(event.key==='Enter') triggerAIRefine()"
+              />
+              <button type="button" class="btn-ai-refine" id="btnAiRefine" onclick="triggerAIRefine()">
+                <span>Refine</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+            <!-- Quick Suggestion Pill Chips -->
+            <div class="ai-refine-suggestions" id="aiRefineSuggestions">
+              <button type="button" class="refine-chip" onclick="applyRefineChip('Warm sunset golden hour sunlight streaming through windows')">🌅 Golden Hour</button>
+              <button type="button" class="refine-chip" onclick="applyRefineChip('Light herringbone oak wood flooring with subtle reflections')">🪵 Light Oak Wood</button>
+              <button type="button" class="refine-chip" onclick="applyRefineChip('Add lush indoor architectural potted plants and fiddle-leaf fig')">🌿 Add Greenery</button>
+              <button type="button" class="refine-chip" onclick="applyRefineChip('Moody cinematic blue-hour evening with warm interior lamps')">🌙 Moody Evening</button>
+              <button type="button" class="refine-chip" onclick="applyRefineChip('Crisp matte white Venetian plaster walls')">🏛️ White Plaster</button>
+            </div>
+          </div>
+
           <button type="button" class="btn-generate-video-walkthrough btn-video" id="videoBtn" onclick="triggerVideoWalkthrough()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 6px rgba(165,180,252,0.6));"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
             <span>Generate 3D Video Walkthrough</span>
@@ -3167,11 +3312,38 @@
       }
     }
 
+    
+    function applyRefineChip(text) {
+      const input = document.getElementById('aiRefineInput');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+
+    async function triggerAIRefine() {
+      const input = document.getElementById('aiRefineInput');
+      const editPrompt = input ? input.value.trim() : '';
+      if (!editPrompt) {
+        showStatus('Please type an edit instruction first', 'error');
+        if (input) input.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btnAiRefine');
+      if (btn) btn.disabled = true;
+      showStatus('🎨 Refining render: "' + editPrompt.slice(0, 30) + '..."', 'loading');
+
+      await triggerAIRender(editPrompt);
+
+      if (btn) btn.disabled = false;
+    }
+
     function triggerRender() {
       triggerAIRender();
     }
 
-    async function triggerAIRender() {
+    async function triggerAIRender(editPrompt = "") {
       if (!userEmail) {
         document.getElementById('authModal').style.display = 'flex';
         return;
@@ -3753,6 +3925,8 @@
         document.getElementById('downloadVideoLink').href = fullUrl;
         document.getElementById('downloadVideoLink').style.display = 'inline-block';
         document.getElementById('videoBtn').style.display = 'none';
+        const refineBar = document.getElementById('aiRefineBarWrapper');
+        if (refineBar) refineBar.style.display = 'none';
       } else {
         const aiImg = document.getElementById('aiImg');
         aiImg.src = fullUrl;
@@ -3771,6 +3945,8 @@
         document.getElementById('downloadLink').href = fullUrl;
         document.getElementById('downloadLink').style.display = 'inline-block';
         document.getElementById('videoBtn').style.display = 'inline-flex';
+        const refineBar = document.getElementById('aiRefineBarWrapper');
+        if (refineBar) refineBar.style.display = 'flex';
       }
       showStatus('✓ Loaded past render from gallery', 'success');
     }

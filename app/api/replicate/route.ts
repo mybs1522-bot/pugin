@@ -552,9 +552,14 @@ export async function POST(request: Request) {
       assignedModel.includes("nano-banana") ||
       assignedModel.includes("gemini");
 
-    const prompt = isGoogle
+    const editPrompt: string = req.editPrompt || req.customPrompt || "";
+    let prompt = isGoogle
       ? buildNanoBananaPhotorealisticPrompt(questionnaire)
       : buildFluxPhotorealisticPrompt(questionnaire);
+
+    if (editPrompt && editPrompt.trim()) {
+      prompt += ` SPECIFIC USER REFINEMENT / EDIT INSTRUCTION: "${editPrompt.trim()}". Seamlessly apply these user modifications while maintaining 100% of the architectural perspective and geometry.`;
+    }
 
     const defaultGeminiKey = Buffer.from(
       "QVEuQWI4Uk42TC0yeUNiMWpBSnQtTzZpMllxR2Q1VUVWMWxfenpMS2hlSXl3MG4wLVRscXc=",
