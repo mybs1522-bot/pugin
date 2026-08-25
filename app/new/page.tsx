@@ -813,43 +813,8 @@ export default function SamplePluginRendererPage() {
             </>
           )}
 
-          {/* BOTTOM FIXED BAR: CREATIVITY SLIDERS & CREATE RENDER ACTION (NO PROMPT) */}
-          <div className="shrink-0 space-y-3.5 border-t border-zinc-800 bg-[#0b0b0f] p-4">
-            {/* AI Creativity & Strictness */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <div className="mb-1.5 flex justify-between text-[11px] font-bold text-zinc-400">
-                  <span>AI Creativity</span>
-                  <span className="font-bold text-white">{creativity}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="20"
-                  max="100"
-                  value={creativity}
-                  onChange={(e) => setCreativity(Number(e.target.value))}
-                  className="h-1.5 w-full cursor-pointer rounded-lg bg-zinc-800 accent-white"
-                />
-              </div>
-              <div>
-                <div className="mb-1.5 flex justify-between text-[11px] font-bold text-zinc-400">
-                  <span>Geometry Lock</span>
-                  <span className="font-bold text-white">
-                    {geometryStrength}%
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min="30"
-                  max="100"
-                  value={geometryStrength}
-                  onChange={(e) => setGeometryStrength(Number(e.target.value))}
-                  className="h-1.5 w-full cursor-pointer rounded-lg bg-zinc-800 accent-white"
-                />
-              </div>
-            </div>
-
-            {/* ACTION BUTTON */}
+          {/* BOTTOM FIXED BAR: CREATE RENDER ACTION */}
+          <div className="shrink-0 border-t border-zinc-800 bg-[#0b0b0f] p-4">
             <button
               type="button"
               onClick={handleTriggerRender}
