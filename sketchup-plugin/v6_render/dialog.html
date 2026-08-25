@@ -1197,72 +1197,161 @@
       border-radius: 9999px;
     }
 
-    /* FULL GALLERY POPUP MODAL */
+    /* FULL GALLERY POPUP MODAL - FLUID & ULTRA PREMIUM */
     .gallery-popup-modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(16px);
-      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(20px);
+      z-index: 1000;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 28px;
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
     }
     .gallery-popup-modal.active {
       display: flex;
+      opacity: 1;
     }
     .gallery-modal-content {
       width: 100%;
-      max-width: 800px;
-      background: #0e0e12;
-      border: 1px solid var(--border-subtle);
-      border-radius: 16px;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      max-width: 860px;
+      background: linear-gradient(180deg, #13131a 0%, #0c0c10 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 22px;
+      box-shadow: 0 35px 80px -10px rgba(0,0,0,0.95), 0 0 30px rgba(99, 102, 241, 0.15);
       display: flex;
       flex-direction: column;
-      max-height: 80vh;
+      max-height: 82vh;
       overflow: hidden;
+      transform: scale(0.96);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .gallery-popup-modal.active .gallery-modal-content {
+      transform: scale(1);
     }
     .gallery-modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-subtle);
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
     }
     .gallery-grid-body, .past-renders-carousel {
-      padding: 20px;
+      padding: 22px;
       overflow-y: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 18px;
+      align-items: start;
     }
-    .gallery-grid-item, .past-renders-card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 12px;
+    .past-renders-card {
+      position: relative;
+      height: 160px;
+      border-radius: 14px;
       overflow: hidden;
       cursor: pointer;
-      transition: all 0.2s;
+      background: #181820;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 24px -6px rgba(0, 0, 0, 0.6);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .gallery-grid-item:hover, .past-renders-card:hover {
-      border-color: #c084fc;
-      transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-    }
-    .gallery-item-thumb {
+    .past-renders-card img {
       width: 100%;
-      height: 120px;
+      height: 100%;
       object-fit: cover;
+      display: block;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .gallery-item-info {
-      padding: 8px 12px;
-      font-size: 11px;
-      color: #e4e4e7;
+    .past-renders-card:hover {
+      border-color: rgba(129, 140, 248, 0.6);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 18px 36px -6px rgba(0, 0, 0, 0.85), 0 0 22px rgba(99, 102, 241, 0.3);
+    }
+    .past-renders-card:hover img {
+      transform: scale(1.08);
+    }
+    .past-card-gradient-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.85) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .past-card-tag-top {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 3;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .past-card-info-bottom {
+      position: absolute;
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
+      z-index: 3;
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+    .past-card-time {
+      font-size: 11px;
+      font-weight: 600;
+      color: #e4e4e7;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    }
+    .past-card-action-hint {
+      font-size: 10px;
+      font-weight: 700;
+      color: #a5b4fc;
+      opacity: 0;
+      transform: translateX(4px);
+      transition: all 0.2s;
+    }
+    .past-renders-card:hover .past-card-action-hint {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .past-card-play-btn {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .past-card-play-btn span {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 0 18px rgba(99, 102, 241, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #ffffff;
+      padding-left: 2px;
+      transition: transform 0.2s;
+    }
+    .past-renders-card:hover .past-card-play-btn span {
+      transform: scale(1.15);
     }
 
     /* FLYING RENDER SNAPSHOT ANIMATION */
@@ -3694,14 +3783,21 @@
         const itemJson = JSON.stringify(item).replace(/"/g, '&quot;');
 
         html += `
-          <div class="past-renders-card" onclick="previewPastRender(${itemJson})" title="Click to view render #${list.length - index}">
+          <div class="past-renders-card" onclick="previewPastRender(${itemJson})" title="Click to load render #${list.length - index}">
+            <img src="${displayThumb}" alt="Past Render" onerror="this.style.opacity='0.3'">
+            <div class="past-card-gradient-overlay"></div>
+            <div class="past-card-tag-top">
+              ${isVid ? '<span>🎬 3D Walkthrough</span>' : '<span>🖼️ 4K Render</span>'}
+            </div>
             ${isVid ? `
-              <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.35); z-index:2;">
-                <span style="font-size:18px;">▶️</span>
+              <div class="past-card-play-btn">
+                <span>▶</span>
               </div>
             ` : ''}
-            <img src="${displayThumb}" alt="Past Render" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'120\\' height=\\'86\\' fill=\\'%2318181b\\'><rect width=\\'120\\' height=\\'86\\'/><text x=\\'50%\\' y=\\'50%\\' fill=\\'%2371717a\\' font-size=\\'10\\' text-anchor=\\'middle\\' dy=\\'.3em\\'>Render</text></svg>'">
-            <span class="card-badge">${isVid ? '🎬 Video' : '🖼️ ' + (timeStr || 'Render')}</span>
+            <div class="past-card-info-bottom">
+              <span class="past-card-time">${timeStr || ('Render #' + (list.length - index))}</span>
+              <span class="past-card-action-hint">Load View ➔</span>
+            </div>
           </div>
         `;
       });
