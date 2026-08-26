@@ -376,6 +376,21 @@ export default function SamplePluginRendererPage() {
     useState(false);
   const [comparisonProgress, setComparisonProgress] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
+  const [imageAspectRatio, setImageAspectRatio] = useState<number>(16 / 9);
+
+  // Dynamically detect image aspect ratio to adapt viewport card frames
+  useEffect(() => {
+    if (viewportImg) {
+      const img = new Image();
+      img.onload = () => {
+        if (img.naturalWidth && img.naturalHeight) {
+          const ratio = img.naturalWidth / img.naturalHeight;
+          setImageAspectRatio(Math.max(0.5, Math.min(2.2, ratio)));
+        }
+      };
+      img.src = viewportImg;
+    }
+  }, [viewportImg, renderImg]);
 
   // Load custom images & video from /load or storage
   useEffect(() => {
@@ -1805,11 +1820,19 @@ export default function SamplePluginRendererPage() {
           </div>
 
           {/* MAIN CANVAS AREA */}
-          <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-hidden p-3 sm:p-5 md:p-6">
+          <div className="relative z-10 flex flex-1 flex-col items-center justify-center overflow-hidden p-3 sm:p-4 md:p-5">
             {!isComparing ? (
-              <div className="grid h-[360px] max-h-[62vh] w-full max-w-[780px] grid-cols-2 gap-3 sm:h-[390px] sm:gap-4 md:h-[420px] md:max-w-[840px]">
+              <div className="flex max-h-[70vh] w-full items-center justify-center gap-3 transition-all duration-300 sm:gap-4">
                 {/* LEFT CARD: 1. SKETCHUP VIEWPORT */}
-                <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all">
+                <div
+                  className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all duration-300"
+                  style={{
+                    aspectRatio: `${imageAspectRatio}`,
+                    height: "min(490px, 66vh)",
+                    maxHeight: "66vh",
+                    maxWidth: "min(490px, calc(50vw - 20px))",
+                  }}
+                >
                   <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
                     <span className="text-xs font-bold text-zinc-300">
                       1. SketchUp Viewport
@@ -1818,17 +1841,25 @@ export default function SamplePluginRendererPage() {
                       Original
                     </span>
                   </div>
-                  <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/40 p-2">
+                  <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-black/40 p-1.5">
                     <img
                       src={viewportImg}
                       alt="SketchUp Viewport Capture"
-                      className="h-full max-h-[300px] w-full rounded-lg object-contain p-1 transition-all sm:max-h-[330px] md:max-h-[360px]"
+                      className="h-full w-full rounded-lg object-contain transition-all"
                     />
                   </div>
                 </div>
 
                 {/* RIGHT CARD: 2. RENDER OUTPUT & GPU PROGRESSIVE BLUEPRINT CANVAS */}
-                <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all">
+                <div
+                  className="relative flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all duration-300"
+                  style={{
+                    aspectRatio: `${imageAspectRatio}`,
+                    height: "min(490px, 66vh)",
+                    maxHeight: "66vh",
+                    maxWidth: "min(490px, calc(50vw - 20px))",
+                  }}
+                >
                   <div className="flex h-9 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/80 px-3.5">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-zinc-300">
@@ -2063,7 +2094,7 @@ export default function SamplePluginRendererPage() {
                       <img
                         src={renderImg}
                         alt="Photorealistic Render"
-                        className="h-full max-h-[300px] w-full rounded-lg object-contain p-1 transition-all sm:max-h-[330px] md:max-h-[360px]"
+                        className="h-full w-full rounded-lg object-contain transition-all"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center p-6 text-center text-zinc-500">
@@ -2079,11 +2110,19 @@ export default function SamplePluginRendererPage() {
               </div>
             ) : (
               /* SPLIT SLIDER VIEW */
-              <div className="relative h-[360px] max-h-[62vh] w-full max-w-[760px] overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all select-none sm:h-[390px] md:h-[420px] md:max-w-[820px]">
+              <div
+                className="relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-950/70 shadow-2xl backdrop-blur-xl transition-all duration-300 select-none"
+                style={{
+                  aspectRatio: `${imageAspectRatio}`,
+                  height: "min(510px, 68vh)",
+                  maxHeight: "68vh",
+                  maxWidth: "min(940px, 90vw)",
+                }}
+              >
                 <img
                   src={renderImg}
                   alt="Photorealistic Render"
-                  className="pointer-events-none absolute inset-0 h-full w-full rounded-lg object-contain p-2"
+                  className="pointer-events-none absolute inset-0 h-full w-full rounded-lg object-contain p-1.5"
                 />
                 <div
                   className="pointer-events-none absolute inset-0"
@@ -2094,7 +2133,7 @@ export default function SamplePluginRendererPage() {
                   <img
                     src={viewportImg}
                     alt="SketchUp Raw Viewport"
-                    className="h-full w-full rounded-lg object-contain p-2"
+                    className="h-full w-full rounded-lg object-contain p-1.5"
                   />
                   <div className="absolute top-3 left-3 rounded-md border border-white/10 bg-black/80 px-2.5 py-1 text-[11px] font-bold text-white shadow-lg backdrop-blur-md">
                     SketchUp Viewport (Original)
