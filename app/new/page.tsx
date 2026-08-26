@@ -891,22 +891,30 @@ export default function SamplePluginRendererPage() {
           const blob = new Blob(recordedChunks, { type: "video/webm" });
           const videoUrl = URL.createObjectURL(blob);
           setRenderVideo(videoUrl);
+          setHasRendered(true);
           setHasRenderedVideo(true);
           setGalleryPhotos((prev) => [
             {
               id: Date.now(),
               image: renderImg,
-              title: "Slider Video Compare",
+              title: "Split Comparison Clip",
             },
             ...prev,
           ]);
+          setIsComparing(false);
           setPreviewMode("video");
-          setStatusMessage("✓ Side-by-side comparison video created!");
+          setStatusMessage(
+            "✓ Comparison video created! Click Download Video (MP4) below."
+          );
         }
       } else {
+        setHasRendered(true);
         setHasRenderedVideo(true);
+        setIsComparing(false);
         setPreviewMode("video");
-        setStatusMessage("✓ Side-by-side slider sweep complete!");
+        setStatusMessage(
+          "✓ Comparison video ready! Click Download Video (MP4) below."
+        );
       }
     } catch (err) {
       console.error("Error processing comparison video:", err);
@@ -1734,7 +1742,7 @@ export default function SamplePluginRendererPage() {
 
             <div className="flex items-center gap-2">
               {/* IMAGE VS VIDEO TOGGLE */}
-              {hasRendered && (
+              {(hasRendered || hasRenderedVideo) && (
                 <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/80 p-0.5">
                   <button
                     type="button"
@@ -1754,6 +1762,7 @@ export default function SamplePluginRendererPage() {
                       if (!hasRenderedVideo) {
                         handleTriggerVideoWalkthrough();
                       } else {
+                        setIsComparing(false);
                         setPreviewMode("video");
                       }
                     }}
@@ -1796,17 +1805,17 @@ export default function SamplePluginRendererPage() {
                 </button>
               )}
 
-              {hasRendered && (
+              {(hasRendered || hasRenderedVideo) && (
                 <a
                   href={previewMode === "video" ? renderVideo : renderImg}
                   download={
                     previewMode === "video"
-                      ? "v6_walkthrough.mp4"
+                      ? "v6_slider_video.mp4"
                       : "v6_render_4k.jpg"
                   }
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900/60 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+                  className="flex items-center gap-1.5 rounded-lg border border-emerald-500/40 bg-emerald-950/40 px-2.5 py-1 text-xs font-semibold text-emerald-300 transition-colors hover:bg-emerald-900/60 hover:text-white"
                 >
                   <Download className="h-3.5 w-3.5" />
                   <span>
@@ -2164,8 +2173,9 @@ export default function SamplePluginRendererPage() {
               </div>
             )}
 
-            {/* SMALL BLACK BUTTON: PROCESS COMPARISON VIDEO */}
-            <div className="flex items-center justify-center gap-3 pt-3">
+            {/* ACTION ROW BENEATH CARDS */}
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+              {/* SMALL BLACK BUTTON: PROCESS COMPARISON VIDEO */}
               <button
                 type="button"
                 onClick={handleProcessComparisonVideo}
@@ -2189,6 +2199,35 @@ export default function SamplePluginRendererPage() {
                   </>
                 )}
               </button>
+
+              {/* DIRECT DOWNLOAD COMPARISON / WALKTHROUGH VIDEO BUTTON */}
+              {hasRenderedVideo && (
+                <a
+                  href={renderVideo}
+                  download="v6_comparison_video.mp4"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-emerald-500/50 bg-gradient-to-r from-emerald-950/80 to-zinc-950 px-4 text-xs font-bold text-emerald-300 shadow-xl transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white active:scale-95"
+                >
+                  <Download className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Download Video (MP4)</span>
+                </a>
+              )}
+
+              {/* PLAY VIDEO BUTTON IF IN IMAGE MODE */}
+              {hasRenderedVideo && previewMode === "image" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsComparing(false);
+                    setPreviewMode("video");
+                  }}
+                  className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-cyan-500/40 bg-zinc-950 px-3.5 text-xs font-bold text-cyan-300 shadow-xl transition-all duration-150 hover:border-cyan-400 hover:bg-zinc-900 hover:text-white active:scale-95"
+                >
+                  <Film className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Play Video</span>
+                </button>
+              )}
 
               {hasRendered && previewMode === "image" && (
                 <button

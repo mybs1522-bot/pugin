@@ -260,7 +260,8 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
     >
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-10"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-[0.07]"
+        style={{ opacity: 0.07 }}
       />
     </div>
   );
