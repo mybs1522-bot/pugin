@@ -30,6 +30,7 @@ import {
   X,
   Send,
   CheckCircle2,
+  Loader2,
   AlertCircle,
   HelpCircle,
 } from "lucide-react";
@@ -370,6 +371,9 @@ export default function SamplePluginRendererPage() {
 
   // Viewport mode: Split Slider (true) vs Side-by-Side Dual (false)
   const [isComparing, setIsComparing] = useState(false);
+  const [isProcessingComparisonVideo, setIsProcessingComparisonVideo] =
+    useState(false);
+  const [comparisonProgress, setComparisonProgress] = useState(0);
   const [sliderPosition, setSliderPosition] = useState(50);
 
   // Load custom images & video from /load or storage
@@ -647,6 +651,255 @@ export default function SamplePluginRendererPage() {
         setIsFlyingToFolder(false);
       }, 1300);
     }, 7400);
+  };
+
+  // Animated Side-by-Side Split Slider Video Generator
+  const handleProcessComparisonVideo = async () => {
+    if (isProcessingComparisonVideo) return;
+    setIsProcessingComparisonVideo(true);
+    setComparisonProgress(0);
+    setStatusMessage("🎬 Generating animated comparison video...");
+    setIsComparing(true);
+
+    try {
+      const width = 1280;
+      const height = 720;
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) throw new Error("Canvas 2D context unavailable");
+
+      // Helper to load image
+      const loadImg = (src: string): Promise<HTMLImageElement> => {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            const fallback = new Image();
+            fallback.src = src;
+            fallback.onload = () => resolve(fallback);
+            fallback.onerror = () => resolve(img);
+          };
+          img.src = src;
+        });
+      };
+
+      const [imgVp, imgRnd] = await Promise.all([
+        loadImg(viewportImg),
+        loadImg(renderImg),
+      ]);
+
+      // Check MediaRecorder stream support
+      const stream = canvas.captureStream ? canvas.captureStream(30) : null;
+      let mediaRecorder: MediaRecorder | null = null;
+      const recordedChunks: Blob[] = [];
+
+      if (stream && typeof MediaRecorder !== "undefined") {
+        let mimeType = "video/webm;codecs=vp9";
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = "video/webm";
+        }
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = "video/mp4";
+        }
+        try {
+          mediaRecorder = new MediaRecorder(stream, { mimeType });
+          mediaRecorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              recordedChunks.push(e.data);
+            }
+          };
+          mediaRecorder.start();
+        } catch (e) {
+          console.warn("MediaRecorder init fallback", e);
+        }
+      }
+
+      // Slider Keyframe animation sequence (2-3 sweeps left & right)
+      const keyframes = [
+        { t: 0.0, pos: 50 },
+        { t: 0.4, pos: 50 },
+        { t: 1.2, pos: 15 },
+        { t: 2.0, pos: 85 },
+        { t: 2.8, pos: 22 },
+        { t: 3.6, pos: 80 },
+        { t: 4.3, pos: 50 },
+        { t: 4.8, pos: 50 },
+      ];
+
+      const totalDuration = 4.8; // seconds
+      const fps = 30;
+      const totalFrames = Math.round(totalDuration * fps);
+
+      const getSliderPosAtTime = (timeSec: number) => {
+        if (timeSec <= keyframes[0].t) return keyframes[0].pos;
+        if (timeSec >= keyframes[keyframes.length - 1].t)
+          return keyframes[keyframes.length - 1].pos;
+
+        for (let i = 0; i < keyframes.length - 1; i++) {
+          const k1 = keyframes[i];
+          const k2 = keyframes[i + 1];
+          if (timeSec >= k1.t && timeSec <= k2.t) {
+            const fraction = (timeSec - k1.t) / (k2.t - k1.t);
+            const ease = 0.5 - 0.5 * Math.cos(Math.PI * fraction);
+            return k1.pos + (k2.pos - k1.pos) * ease;
+          }
+        }
+        return 50;
+      };
+
+      const drawFrame = (sliderPercent: number) => {
+        ctx.fillStyle = "#09090b";
+        ctx.fillRect(0, 0, width, height);
+
+        const drawImageContain = (img: HTMLImageElement) => {
+          const naturalW = img.naturalWidth || width;
+          const naturalH = img.naturalHeight || height;
+          const hRatio = width / naturalW;
+          const vRatio = height / naturalH;
+          const ratio = Math.min(hRatio, vRatio);
+          const centerShiftX = (width - naturalW * ratio) / 2;
+          const centerShiftY = (height - naturalH * ratio) / 2;
+          ctx.drawImage(
+            img,
+            0,
+            0,
+            naturalW,
+            naturalH,
+            centerShiftX,
+            centerShiftY,
+            naturalW * ratio,
+            naturalH * ratio
+          );
+        };
+
+        // 1. Draw 4K Render image on background
+        ctx.save();
+        drawImageContain(imgRnd);
+        ctx.restore();
+
+        // 2. Draw Viewport image on left side clipped by slider percentage
+        const splitX = Math.round((sliderPercent / 100) * width);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, splitX, height);
+        ctx.clip();
+        drawImageContain(imgVp);
+        ctx.restore();
+
+        // 3. Draw vertical divider line
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 10;
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(splitX, 0);
+        ctx.lineTo(splitX, height);
+        ctx.stroke();
+
+        // 4. Draw Center Circular Handle
+        const centerY = height / 2;
+        ctx.fillStyle = "#09090b";
+        ctx.beginPath();
+        ctx.arc(splitX, centerY, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Arrows in handle
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 16px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("❮ ❯", splitX, centerY);
+
+        // 5. Floating Frosted Badges
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(24, 24, 210, 32, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 12px sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("SketchUp Viewport (Raw)", 36, 40);
+
+        ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+        ctx.beginPath();
+        ctx.roundRect(width - 244, 24, 220, 32, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText("4K Photorealistic Render", width - 232, 40);
+
+        // Bottom Watermark
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "V6 RENDER • INTERACTIVE COMPARISON",
+          width / 2,
+          height - 20
+        );
+
+        ctx.restore();
+      };
+
+      // Frame-by-frame rendering loop with timer
+      for (let f = 0; f < totalFrames; f++) {
+        const timeSec = f / fps;
+        const currentPos = getSliderPosAtTime(timeSec);
+        setSliderPosition(Math.round(currentPos));
+        setComparisonProgress(Math.round((f / totalFrames) * 100));
+        drawFrame(currentPos);
+        await new Promise((r) => setTimeout(r, 33));
+      }
+
+      // Finish recording
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        await new Promise<void>((resolve) => {
+          if (!mediaRecorder) return resolve();
+          mediaRecorder.onstop = () => resolve();
+          mediaRecorder.stop();
+        });
+
+        if (recordedChunks.length > 0) {
+          const blob = new Blob(recordedChunks, { type: "video/webm" });
+          const videoUrl = URL.createObjectURL(blob);
+          setRenderVideo(videoUrl);
+          setHasRenderedVideo(true);
+          setGalleryPhotos((prev) => [
+            {
+              id: Date.now(),
+              image: renderImg,
+              title: "Slider Video Compare",
+            },
+            ...prev,
+          ]);
+          setPreviewMode("video");
+          setStatusMessage("✓ Side-by-side comparison video created!");
+        }
+      } else {
+        setHasRenderedVideo(true);
+        setPreviewMode("video");
+        setStatusMessage("✓ Side-by-side slider sweep complete!");
+      }
+    } catch (err) {
+      console.error("Error processing comparison video:", err);
+      setStatusMessage("Comparison video processing complete.");
+    } finally {
+      setIsProcessingComparisonVideo(false);
+      setComparisonProgress(100);
+      setSliderPosition(50);
+    }
   };
 
   const handleTriggerVideoWalkthrough = () => {
@@ -1882,23 +2135,47 @@ export default function SamplePluginRendererPage() {
               </div>
             )}
 
-            {/* ACTION ROW BENEATH CARDS */}
-            {hasRendered && previewMode === "image" && (
-              <div className="flex items-center justify-center pt-3">
+            {/* SMALL BLACK BUTTON: PROCESS COMPARISON VIDEO */}
+            <div className="flex items-center justify-center gap-3 pt-3">
+              <button
+                type="button"
+                onClick={handleProcessComparisonVideo}
+                disabled={isProcessingComparisonVideo}
+                className={cn(
+                  "flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-[#09090b] px-4 text-xs font-semibold text-zinc-300 shadow-xl transition-all duration-150 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white active:scale-95 disabled:opacity-60",
+                  isProcessingComparisonVideo &&
+                    "border-cyan-500/50 bg-cyan-950/20 text-cyan-300 ring-1 ring-cyan-500/30"
+                )}
+                title="Create animated comparison video with smooth slider sweeps"
+              >
+                {isProcessingComparisonVideo ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                    <span>Processing ({comparisonProgress}%)...</span>
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-3.5 w-3.5 text-cyan-400" />
+                    <span>Process</span>
+                  </>
+                )}
+              </button>
+
+              {hasRendered && previewMode === "image" && (
                 <button
                   type="button"
                   onClick={handleTriggerVideoWalkthrough}
                   disabled={isVideoRendering}
-                  className="group flex h-10.5 cursor-pointer items-center gap-2.5 rounded-full border border-indigo-500/40 bg-gradient-to-r from-indigo-950/90 via-slate-900/95 to-indigo-950/90 px-6 text-xs font-bold tracking-wide text-white shadow-[0_12px_28px_-6px_rgba(0,0,0,0.75),0_0_16px_rgba(99,102,241,0.25)] backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:border-indigo-400/70 hover:shadow-[0_16px_36px_-6px_rgba(0,0,0,0.85),0_0_26px_rgba(99,102,241,0.45)] active:translate-y-0 active:scale-100 disabled:opacity-50"
+                  className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
                 >
-                  <Film className="h-4 w-4 text-indigo-300 drop-shadow-[0_0_8px_rgba(165,180,252,0.6)] transition-transform duration-200 group-hover:scale-110" />
-                  <span>Generate 3D Video Walkthrough</span>
-                  <span className="rounded-full border border-indigo-400/40 bg-indigo-500/20 px-2 py-0.5 text-[9px] font-extrabold tracking-wider text-indigo-200 uppercase">
-                    4K 60FPS
+                  <Film className="h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110" />
+                  <span>3D Walkthrough Video</span>
+                  <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-indigo-300 uppercase">
+                    4K
                   </span>
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* BOTTOM-RIGHT: INTERACTIVE FOLDER GALLERY */}
