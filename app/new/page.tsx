@@ -268,6 +268,15 @@ const DEFAULT_VIDEO =
   "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
 
 export default function SamplePluginRendererPage() {
+  // Startup / Boot Splash Screen (#pluginIntroOverlay)
+  const [showSplashOverlay, setShowSplashOverlay] = useState<boolean>(true);
+  const [splashProgress, setSplashProgress] = useState<number>(0);
+  const [splashStep1Active, setSplashStep1Active] = useState<boolean>(false);
+  const [splashStep3Done, setSplashStep3Done] = useState<boolean>(false);
+  const [splashOverlayOpacity, setSplashOverlayOpacity] = useState<number>(1);
+  const [splashOverlayPointerEvents, setSplashOverlayPointerEvents] =
+    useState<boolean>(true);
+
   // User Authentication & Session
   const [userEmail, setUserEmail] = useState<string>("user@v6render.com");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
@@ -398,6 +407,37 @@ export default function SamplePluginRendererPage() {
     }
     if (savedVideo) setRenderVideo(savedVideo);
     if (savedTitle) setSceneTitle(savedTitle);
+  }, []);
+
+  // Startup / Boot Splash Screen Intro Animation
+  useEffect(() => {
+    // 150ms: progress to 45%
+    const t1 = setTimeout(() => {
+      setSplashProgress(45);
+      setSplashStep1Active(true);
+    }, 150);
+
+    // 700ms: progress to 100%, step 3 done
+    const t2 = setTimeout(() => {
+      setSplashProgress(100);
+      setSplashStep3Done(true);
+    }, 700);
+
+    // 1400ms: smoothly fade opacity to 0 and trigger automated active viewport capture
+    const t3 = setTimeout(() => {
+      setSplashOverlayOpacity(0);
+      setSplashOverlayPointerEvents(false);
+      handleRefreshViewport();
+      setTimeout(() => {
+        setShowSplashOverlay(false);
+      }, 600);
+    }, 1400);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, []);
 
   const handleSpaceChange = (type: "interior" | "exterior") => {
@@ -643,6 +683,223 @@ export default function SamplePluginRendererPage() {
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#09090b] font-sans text-white select-none [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden">
+      {/* STARTUP / BOOT SPLASH SCREEN OVERLAY (#pluginIntroOverlay) */}
+      {showSplashOverlay && (
+        <div
+          id="pluginIntroOverlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "#09090b",
+            zIndex: 999999,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: splashOverlayOpacity,
+            pointerEvents: splashOverlayPointerEvents ? "auto" : "none",
+            transition: "opacity 0.6s ease, visibility 0.6s ease",
+            visibility: splashOverlayOpacity === 0 ? "hidden" : "visible",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "300px",
+              textAlign: "center",
+            }}
+          >
+            {/* Logo Header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "24px",
+              }}
+            >
+              <img
+                src="/v6-logo.png"
+                alt="V6 Render"
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 0 16px rgba(99,102,241,0.55))",
+                }}
+              />
+              <div style={{ textAlign: "left" }}>
+                <div
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: 800,
+                    color: "#ffffff",
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  V6 Render
+                </div>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "#a1a1aa",
+                    fontWeight: 500,
+                  }}
+                >
+                  Photorealistic AI Architecture
+                </div>
+              </div>
+            </div>
+
+            {/* Live Status Indicator Pill */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(34,197,94,0.1)",
+                border: "1px solid rgba(34,197,94,0.25)",
+                borderRadius: "999px",
+                padding: "4px 12px",
+                marginBottom: "20px",
+                fontSize: "11px",
+                color: "#4ade80",
+                fontWeight: 600,
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#22c55e",
+                  boxShadow: "0 0 8px #22c55e",
+                }}
+              />
+              <span>V6 Engine Initialized</span>
+            </div>
+
+            {/* Step List / Checkpoints */}
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              {/* Step 1: Initializing V6 Engine */}
+              <div
+                id="splashStep1"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  background: "rgba(255,255,255,0.03)",
+                  border: splashStep1Active
+                    ? "1px solid rgba(255,255,255,0.1)"
+                    : "1px solid rgba(255,255,255,0.06)",
+                  fontSize: "12px",
+                  color: splashStep1Active ? "#a1a1aa" : "#71717a",
+                  transition: "all 0.3s",
+                }}
+              >
+                <span style={{ fontSize: "12px" }}>⚙️</span>
+                <span>Initializing V6 Engine</span>
+              </div>
+
+              {/* Step 2: SketchUp Ruby Bridge Connected (Active Highlighted Item) */}
+              <div
+                id="splashStep2"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "8px",
+                  padding: "12px 14px",
+                  borderRadius: "12px",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  fontSize: "12px",
+                  color: "#ffffff",
+                  fontWeight: 600,
+                  boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+                  transition: "all 0.3s",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    className="inline-block animate-spin"
+                    style={{ fontSize: "13px" }}
+                  >
+                    ⚙️
+                  </span>
+                  <span>SketchUp Ruby Bridge Connected</span>
+                </div>
+                {/* Glowing Green Dynamic Progress Bar */}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "4px",
+                    background: "rgba(255,255,255,0.1)",
+                    borderRadius: "999px",
+                    overflow: "hidden",
+                  }}
+                >
+                  <div
+                    id="splashProgressBar"
+                    style={{
+                      width: `${splashProgress}%`,
+                      height: "100%",
+                      background: "linear-gradient(90deg, #22c55e, #10b981)",
+                      borderRadius: "999px",
+                      transition: "width 0.4s ease, background 0.4s ease",
+                      boxShadow: "0 0 10px rgba(34,197,94,0.6)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Step 3: Loading Assets & Viewport */}
+              <div
+                id="splashStep3"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  background: splashStep3Done
+                    ? "rgba(34,197,94,0.08)"
+                    : "rgba(255,255,255,0.03)",
+                  border: splashStep3Done
+                    ? "1px solid rgba(34,197,94,0.2)"
+                    : "1px solid rgba(255,255,255,0.06)",
+                  fontSize: "12px",
+                  color: splashStep3Done ? "#22c55e" : "#71717a",
+                  fontWeight: splashStep3Done ? 600 : 400,
+                  transition: "all 0.3s",
+                }}
+              >
+                <span id="splashCheckIcon" style={{ fontSize: "12px" }}>
+                  ✔️
+                </span>
+                <span id="splashStep3Text">Loading Assets & Viewport</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TOP PLUGIN HEADER WITH USER ACCOUNT PILL & LIVE SUPPORT */}
       <header className="flex h-13 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0e0e12] px-4">
         <div className="flex items-center gap-3">
