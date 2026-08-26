@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { GLSLHills } from "@/components/ui/glsl-hills";
+import { SwipeToRender } from "@/components/ui/swipe-to-render";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -1660,24 +1661,13 @@ export default function SamplePluginRendererPage() {
 
           {/* BOTTOM FIXED BAR: CREATE RENDER & REFRESH VIEWPORT */}
           <div className="shrink-0 space-y-2 border-t border-zinc-800 bg-[#0b0b0f] p-3.5">
-            <button
-              type="button"
-              onClick={handleTriggerRender}
+            {/* SWIPE TO CREATE RENDER BUTTON */}
+            <SwipeToRender
+              onSwipeComplete={handleTriggerRender}
+              isRendering={isRendering}
+              renderProgress={renderProgress}
               disabled={isRendering || isVideoRendering}
-              className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white text-sm font-black text-black shadow-xl transition-all hover:bg-zinc-200 disabled:opacity-75"
-            >
-              {isRendering ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin text-black" />
-                  <span>Rendering ({renderProgress}%)...</span>
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 fill-black text-black" />
-                  <span>Create Render</span>
-                </>
-              )}
-            </button>
+            />
 
             {/* REFRESH VIEWPORT BUTTON */}
             <button
