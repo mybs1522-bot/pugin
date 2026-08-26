@@ -164,8 +164,8 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
 
               void main(void) {
                 float dist = length(vPosition);
-                float alpha = clamp((220.0 - dist) / 160.0, 0.15, 0.95);
-                vec3 baseColor = mix(vec3(0.38, 0.40, 0.95), vec3(0.13, 0.82, 0.93), clamp(vPosition.y / 35.0, 0.0, 1.0));
+                float alpha = clamp((220.0 - dist) / 170.0, 0.1, 0.85);
+                vec3 baseColor = vec3(0.95, 0.95, 0.98);
                 gl_FragColor = vec4(baseColor, alpha);
               }
             `,
