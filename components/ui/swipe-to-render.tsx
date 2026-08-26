@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { ChevronsRight, RefreshCw, Zap } from "lucide-react";
+import { ArrowRight, ChevronRight, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SwipeToRenderProps {
@@ -86,7 +86,7 @@ export function SwipeToRender({
     <div
       ref={containerRef}
       className={cn(
-        "relative h-12 w-full overflow-hidden rounded-full border border-white/20 bg-gradient-to-r from-zinc-950 via-[#0e0e14] to-zinc-950 p-1 shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 select-none",
+        "relative h-12 w-full overflow-hidden rounded-full border border-white/25 bg-[#09090d] p-1 shadow-[inset_0_2px_8px_rgba(0,0,0,0.8),0_4px_24px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-all duration-300 select-none",
         isRendering &&
           "border-cyan-500/40 bg-zinc-950 shadow-[0_0_24px_rgba(34,211,238,0.2)]",
         disabled && "cursor-not-allowed opacity-60",
@@ -96,14 +96,14 @@ export function SwipeToRender({
     >
       {/* Glowing Filled Trail */}
       <div
-        className="pointer-events-none absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-cyan-500/25 via-indigo-500/35 to-white/30 transition-all"
+        className="pointer-events-none absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-cyan-500/30 via-indigo-500/40 to-white/30 transition-all"
         style={{
           width: isRendering ? "100%" : `${dragX + 44}px`,
           opacity: isRendering ? 0.35 : progressFraction * 0.9,
         }}
       />
 
-      {/* Shimmering Center Label */}
+      {/* Center Label: Render + Animated Pulse Guide */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4">
         {isRendering ? (
           <div className="flex items-center gap-2 text-xs font-bold text-cyan-300">
@@ -114,16 +114,16 @@ export function SwipeToRender({
           </div>
         ) : (
           <div
-            className="flex items-center gap-1.5 text-xs font-extrabold tracking-wider text-zinc-300 uppercase transition-opacity duration-200"
+            className="flex items-center gap-2 transition-opacity duration-200"
             style={{
-              opacity: Math.max(0.12, 1 - progressFraction * 1.6),
+              opacity: Math.max(0.1, 1 - progressFraction * 1.6),
             }}
           >
-            <span className="bg-gradient-to-r from-zinc-300 via-white to-zinc-300 bg-clip-text text-transparent">
-              Slide to Render
+            <span className="text-sm font-black tracking-wider text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              Render
             </span>
-            {/* Animated Pulsing Arrows Asking to Swipe */}
-            <span className="ml-1 inline-flex items-center gap-0.5 text-sm">
+            {/* Animated Directional Wave */}
+            <span className="inline-flex items-center gap-0.5 text-xs opacity-80">
               <span className="animate-[pulse_1.2s_ease-in-out_infinite] font-bold text-cyan-400">
                 ›
               </span>
@@ -138,7 +138,7 @@ export function SwipeToRender({
         )}
       </div>
 
-      {/* Luxury Glossy White Swiper Knob */}
+      {/* Luxury Glossy White Swiper Knob with Right Arrow Icon */}
       {!isRendering && (
         <div
           onPointerDown={handlePointerDown}
@@ -146,8 +146,8 @@ export function SwipeToRender({
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
           className={cn(
-            "relative z-10 flex h-10 w-10 cursor-grab items-center justify-center rounded-full border border-white/90 bg-white text-zinc-950 shadow-[0_2px_14px_rgba(255,255,255,0.4),0_0_20px_rgba(99,102,241,0.25)] transition-shadow duration-200 hover:scale-105 active:scale-95 active:cursor-grabbing",
-            isDragging && "scale-105 shadow-[0_0_25px_rgba(255,255,255,0.85)]"
+            "relative z-10 flex h-10 w-10 cursor-grab items-center justify-center rounded-full border border-white bg-white shadow-[0_2px_14px_rgba(255,255,255,0.45),0_0_20px_rgba(99,102,241,0.3)] transition-shadow duration-200 hover:scale-105 active:scale-95 active:cursor-grabbing",
+            isDragging && "scale-105 shadow-[0_0_25px_rgba(255,255,255,0.9)]"
           )}
           style={{
             transform: `translateX(${dragX}px)`,
@@ -156,10 +156,12 @@ export function SwipeToRender({
               : "transform 0.35s cubic-bezier(0.2, 1, 0.3, 1)",
           }}
         >
-          {/* Animated Chevrons inside Knob */}
+          {/* Bold Right Icon inside Circle */}
           <div className="relative flex items-center justify-center">
-            <ChevronsRight className="h-5 w-5 text-zinc-950 transition-transform duration-200 group-hover:translate-x-0.5" />
-            <span className="pointer-events-none absolute -inset-1 animate-pulse rounded-full bg-cyan-400/25 blur-xs" />
+            <ArrowRight
+              className="h-5 w-5 text-black transition-transform duration-150 group-hover:translate-x-0.5"
+              strokeWidth={2.8}
+            />
           </div>
         </div>
       )}
