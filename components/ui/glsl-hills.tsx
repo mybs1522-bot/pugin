@@ -17,7 +17,7 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
   height = "100%",
   cameraZ = 125,
   planeSize = 256,
-  speed = 0.5,
+  speed = 0.15,
   className = "",
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -164,8 +164,8 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
 
               void main(void) {
                 float dist = length(vPosition);
-                float alpha = clamp((220.0 - dist) / 220.0, 0.02, 0.20);
-                vec3 baseColor = vec3(0.9, 0.9, 0.95);
+                float alpha = clamp((220.0 - dist) / 240.0, 0.01, 0.10);
+                vec3 baseColor = vec3(0.85, 0.85, 0.90);
                 gl_FragColor = vec4(baseColor, alpha);
               }
             `,
@@ -260,7 +260,7 @@ const GLSLHills: React.FC<GLSLHillsProps> = ({
     >
       <canvas
         ref={canvasRef}
-        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-25"
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-15"
       />
     </div>
   );

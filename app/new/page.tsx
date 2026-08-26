@@ -1196,7 +1196,7 @@ export default function SamplePluginRendererPage() {
               height="100%"
               cameraZ={125}
               planeSize={256}
-              speed={0.5}
+              speed={0.15}
             />
           </div>
 
