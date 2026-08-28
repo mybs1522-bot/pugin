@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { GLSLHills } from "@/components/ui/glsl-hills";
 import { SwipeToRender } from "@/components/ui/swipe-to-render";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1971,17 +1970,6 @@ export default function SamplePluginRendererPage() {
 
         {/* RIGHT PREVIEW & VIEWPORT WORKSPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden bg-[#070709]">
-          {/* GLSL ANIMATED HILLS BACKGROUND */}
-          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none">
-            <GLSLHills
-              width="100%"
-              height="100%"
-              cameraZ={125}
-              planeSize={256}
-              speed={0.15}
-            />
-          </div>
-
           {/* Viewport Action Bar */}
           <div className="flex h-11 shrink-0 items-center justify-between border-b border-zinc-800 bg-[#0c0c10] px-4">
             <div className="flex items-center gap-2">
