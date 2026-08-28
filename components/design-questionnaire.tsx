@@ -697,29 +697,6 @@ export function DesignQuestionnaireForm({
       {step === 3 && (
         <div className="space-y-5">
           <div>
-            <SectionLabel>Custom Accent Color</SectionLabel>
-            <div className="border-foreground/10 bg-foreground/5 flex items-center gap-4 rounded-2xl border p-4">
-              <div className="relative">
-                <input
-                  type="color"
-                  value={value.accentColor ?? "#8B5CF6"}
-                  onChange={(e) => set("accentColor", e.target.value)}
-                  className="border-foreground/20 h-12 w-12 cursor-pointer rounded-xl border-2 bg-transparent p-0.5"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-semibold">Pick any accent color</p>
-                <p className="text-muted-foreground text-xs">
-                  Applied to walls, accents, or furniture details
-                </p>
-                <p className="text-muted-foreground mt-1 font-mono text-xs">
-                  {(value.accentColor ?? "#8B5CF6").toUpperCase()}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div>
             <SectionLabel>Color Palette</SectionLabel>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {(

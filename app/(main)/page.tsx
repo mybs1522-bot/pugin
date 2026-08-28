@@ -22,10 +22,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GoogleAuth } from "@/components/google-auth";
 
-const FeaturesBento = dynamic(
-  () => import("@/components/ui/features-8").then((m) => m.Features),
-  { loading: () => null }
-);
 const CinematicFooter = dynamic(
   () => import("@/components/ui/motion-footer").then((m) => m.CinematicFooter),
   { loading: () => null }
@@ -61,63 +57,67 @@ const FundingAnnouncement = dynamic(
     ),
   { loading: () => null }
 );
+const FlippingMeter = dynamic(
+  () => import("@/components/ui/flipping-meter").then((m) => m.FlippingMeter),
+  { loading: () => null }
+);
 
 const features = [
   {
     icon: Wand2,
-    title: "100% Accurate AI Rendering",
+    title: "100% Exact Geometry Lock",
     description:
-      "Unlike generic AI tools that hallucinate and alter your design, V6 Render preserves your SketchUp model's geometry, textures, and camera perspective with zero drift.",
+      "Zero warped walls or broken scale. Your cabinetry, door reveals, and room dimensions remain mathematically locked.",
   },
   {
     icon: Camera,
-    title: "4K Photorealism & 3D Video Walkthroughs",
+    title: "4K Stills & 3D Walkthroughs",
     description:
-      "Generate ultra-sharp 4K interior and exterior architectural photographs, plus smooth cinematic 3D walkthrough videos in seconds.",
+      "Deliver publication-ready 4K perspectives and cinematic video walkthroughs in minutes, not days.",
   },
   {
     icon: Zap,
-    title: "No GPU, No High RAM, No Learning Curve",
+    title: "Zero GPU Upgrades Required",
     description:
-      "Say goodbye to $5,000 GPU workstations and complex V-Ray or Lumion render settings. High-speed cloud AI handles all heavy processing on any laptop or desktop.",
+      "Cloud-accelerated rendering. Get $5,000 RTX workstation power on any MacBook or standard laptop.",
   },
   {
     icon: Layers,
-    title: "Effortless Client Feedback Loops",
+    title: "Live Client Mood Iterations",
     description:
-      "Explore dozens of material finishes, styles, and lighting moods live in client meetings. Cut revision turnaround from days down to seconds.",
+      "Switch finishes, daylight angles, and material palettes live during client meetings for immediate sign-offs.",
   },
   {
     icon: Download,
-    title: "10-Second Native .rbz Plugin Setup",
+    title: "Native One-Click Plugin",
     description:
-      "Download the lightweight v6_render.rbz file and launch directly inside SketchUp with zero complex installations or configuration required.",
+      "Runs natively inside SketchUp as a standard .rbz file. No file exporting, broken FBX textures, or proxy linking.",
   },
   {
     icon: Shield,
-    title: "Lightning-Fast 9.3s Renders",
+    title: "True Physical PBR Lighting",
     description:
-      "Renders finish in under 10 seconds with automatic high-resolution gallery saving and instant one-click direct downloads.",
+      "Accurate daylight bounce, glass refractions, and realistic material textures that look like an actual photo shoot.",
   },
 ];
 
 const steps = [
   {
     number: "01",
-    title: "Install the SketchUp Plugin",
-    body: "Download the official v6_render.rbz file and install it inside SketchUp Extension Manager in under 10 seconds.",
+    title: "Install Native .rbz Plugin",
+    body: "One-click installation inside SketchUp Extension Manager for Windows & macOS.",
     icon: ImageIcon,
   },
   {
     number: "02",
-    title: "Capture Any Viewport Angle",
-    body: "Click Render inside SketchUp to capture your active view with 100% geometry and camera fidelity.",
+    title: "Frame Any Viewport Angle",
+    body: "Locks your exact CAD geometry, structural dimensions, and camera perspective.",
     icon: Layers,
   },
   {
     number: "03",
-    title: "Generate 4K Stills & 3D Videos",
-    body: "Receive photorealistic 4K architectural visuals and smooth 3D video walkthroughs delivered in under 10 seconds.",
+    title: "Generate 4K Stills & Walkthroughs",
+    body: "Instant photorealistic lighting, physical PBR reflections, and smooth 3D video.",
     icon: Zap,
   },
 ];
@@ -125,17 +125,20 @@ const steps = [
 export default function HomePage() {
   return (
     <>
+      {/* ── Top Live Flipping Meter (Sticky) ──────────────── */}
+      <FlippingMeter />
+
       <div className="min-h-svh w-full bg-gray-50 dark:bg-transparent">
         {/* ── Navbar ─────────────────────────────────────────── */}
         <nav className="dark:bg-background/80 sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 lg:px-12 xl:px-16">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5 sm:px-6 sm:py-2 lg:px-12 xl:px-16">
             <Link href="/" className="flex items-center">
               <Image
                 src="/v6-logo.png"
                 alt="V6 Logo"
-                width={54}
-                height={36}
-                className="h-8 w-auto object-contain"
+                width={90}
+                height={60}
+                className="h-11 w-auto object-contain sm:h-13 md:h-14"
                 priority
               />
             </Link>
@@ -161,13 +164,6 @@ export default function HomePage() {
             </div>
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <GoogleAuth />
-              <Button asChild size="sm" className="hidden sm:flex">
-                <Link href="/render">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Open Studio
-                </Link>
-              </Button>
             </div>
           </div>
         </nav>
@@ -175,93 +171,40 @@ export default function HomePage() {
         {/* ── Download the App (top) ───────────────────────── */}
         <CinematicFooter windowsHref="#" macHref="#" />
 
-        <div className="mx-auto w-full max-w-7xl space-y-20 px-6 py-16 pb-24 lg:space-y-28 lg:px-12 lg:py-24 xl:px-16">
-          {/* ── Funding announcement (Pricing Offer) ───────────── */}
-          <div id="pricing">
-            <FundingAnnouncement />
-          </div>
-
-          {/* ── Before / After cards ─────────────────────────── */}
-          <div className="flex justify-center py-4">
-            <BeforeAfterCards />
-          </div>
-
-          {/* ── Features Grid Section ────────────────────────── */}
-          <section id="features" className="space-y-10">
-            <div className="text-center">
-              <div className="border-primary/30 bg-primary/10 text-primary mb-3 inline-flex items-center gap-2 rounded-full border px-4 py-1 text-xs font-semibold tracking-widest uppercase">
-                <Sparkles className="h-3.5 w-3.5" /> Built for Architects &
-                Designers
-              </div>
-              <h2 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                The Smarter Way to Render in SketchUp
-              </h2>
-              <p className="text-muted-foreground mx-auto mt-3 max-w-2xl text-sm leading-relaxed lg:text-base">
-                Eliminate hours of manual lighting setups, complex render
-                settings, and long wait times. Get instant, physically accurate
-                PBR photorealism directly from your SketchUp viewport.
-              </p>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {features.map((f, i) => (
-                <Card
-                  key={i}
-                  className="border-border/60 bg-card/60 hover:border-foreground/30 relative overflow-hidden backdrop-blur-sm transition-all hover:shadow-lg"
-                >
-                  <CardContent className="flex flex-col gap-3.5 p-6">
-                    <div className="bg-primary/10 text-primary border-primary/20 flex h-11 w-11 items-center justify-center rounded-xl border">
-                      <f.icon className="h-5 w-5" />
-                    </div>
-                    <h3 className="text-foreground text-lg font-bold tracking-tight">
-                      {f.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {f.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-
-          {/* ── Features Bento Section ──────────────────────── */}
-          <FeaturesBento />
-
-          {/* ── How it works ─────────────────────────────────── */}
+        <div className="mx-auto w-full max-w-7xl space-y-6 px-3 py-3 pb-8 sm:space-y-16 sm:px-6 sm:py-12 sm:pb-20 lg:space-y-24 lg:px-12 lg:py-20 xl:px-16">
+          {/* ── How it works (Complete Workflow in 3 Simple Steps) ─ */}
           <section
             id="how-it-works"
-            className="bg-background rounded-2xl border px-6 py-12 sm:px-12 lg:px-20 lg:py-20"
+            className="bg-background rounded-xl border px-3 py-5 sm:rounded-2xl sm:px-12 sm:py-12 lg:px-20 lg:py-20"
           >
-            <div className="mb-10 text-center lg:mb-16">
-              <h2 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                Complete Workflow in 3 Simple Steps
+            <div className="mb-4 text-center sm:mb-10 lg:mb-16">
+              <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                From SketchUp to 4K Presentation in 3 Steps
               </h2>
-              <p className="text-muted-foreground mt-2 text-sm lg:mt-4 lg:text-base">
-                From raw SketchUp viewport to photorealistic 4K presentations in
-                under 10 seconds.
+              <p className="text-muted-foreground mt-1.5 text-xs sm:mt-2 sm:text-base lg:mt-3 lg:text-lg">
+                No render queues, complex node graphs, or export bottlenecks.
               </p>
             </div>
-            <div className="grid gap-8 sm:grid-cols-3 lg:gap-14">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-8 lg:gap-14">
               {steps.map((s) => (
                 <div
                   key={s.number}
-                  className="flex flex-col items-center gap-4 text-center lg:gap-6"
+                  className="flex flex-col items-center gap-3 text-center sm:gap-4 lg:gap-6"
                 >
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-full border before:absolute before:-inset-2 before:rounded-full before:border lg:h-20 lg:w-20 dark:border-white/10 dark:before:border-white/5">
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full border before:absolute before:-inset-1.5 before:rounded-full before:border sm:h-12 sm:w-12 lg:h-20 lg:w-20 dark:border-white/10 dark:before:border-white/5">
                     <s.icon
-                      className="h-5 w-5 lg:h-8 lg:w-8"
+                      className="h-4 w-4 sm:h-5 sm:w-5 lg:h-8 lg:w-8"
                       strokeWidth={1.5}
                     />
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs font-semibold tracking-widest uppercase">
+                    <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase sm:text-xs">
                       {s.number}
                     </p>
-                    <p className="mt-1 font-bold lg:mt-2 lg:text-xl">
+                    <p className="mt-1 text-base font-bold sm:text-lg lg:mt-2 lg:text-xl">
                       {s.title}
                     </p>
-                    <p className="text-muted-foreground mt-1.5 text-sm leading-6 lg:mt-3 lg:text-base lg:leading-7">
+                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed sm:mt-1.5 sm:text-sm sm:leading-6 lg:mt-2 lg:text-base">
                       {s.body}
                     </p>
                   </div>
@@ -272,6 +215,54 @@ export default function HomePage() {
 
           {/* ── Stats dashboard ───────────────────────────────── */}
           <StatsDashboard />
+
+          {/* ── Before / After cards ─────────────────────────── */}
+          <div className="flex justify-center py-1 sm:py-3">
+            <BeforeAfterCards />
+          </div>
+
+          {/* ── Features Grid Section ────────────────────────── */}
+          <section id="features" className="space-y-3.5 sm:space-y-8">
+            <div className="text-center">
+              <div className="border-primary/30 bg-primary/10 text-primary mb-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider uppercase sm:mb-3 sm:px-4 sm:text-xs">
+                <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Built for
+                Architects & Designers
+              </div>
+              <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                Why Leading Studios Replaced Heavy Render Farms
+              </h2>
+              <p className="text-muted-foreground mx-auto mt-1.5 max-w-2xl text-xs leading-relaxed sm:mt-3 sm:text-base lg:text-lg">
+                Stop losing hours to trial-and-error lighting passes and frozen
+                laptops.
+              </p>
+            </div>
+
+            <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+              {features.map((f, i) => (
+                <Card
+                  key={i}
+                  className="border-border/60 bg-card/60 hover:border-foreground/30 relative overflow-hidden rounded-lg backdrop-blur-sm transition-all hover:shadow-lg sm:rounded-2xl"
+                >
+                  <CardContent className="flex flex-col gap-2 p-3.5 sm:gap-3.5 sm:p-6">
+                    <div className="bg-primary/10 text-primary border-primary/20 flex h-8 w-8 items-center justify-center rounded-lg border sm:h-11 sm:w-11 sm:rounded-xl">
+                      <f.icon className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                    </div>
+                    <h3 className="text-foreground text-base font-bold tracking-tight sm:text-lg lg:text-xl">
+                      {f.title}
+                    </h3>
+                    <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm lg:text-[15px]">
+                      {f.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Funding announcement (Pricing Offer) ───────────── */}
+          <div id="pricing">
+            <FundingAnnouncement />
+          </div>
 
           {/* ── Trusted by ────────────────────────────────── */}
           <TrustedBySection />
@@ -284,7 +275,7 @@ export default function HomePage() {
       {/* ── Site footer ─────────────────────────────────────── */}
       <Footer
         brandName="V6 Render"
-        brandDescription="Lightning-fast SketchUp rendering software for architects and interior designers. Generate photorealistic 4K images and 3D video walkthroughs in under 10 seconds with zero GPU requirements."
+        brandDescription="Architectural rendering extension for SketchUp. Deliver client-winning 4K presentation visuals and smooth 3D walkthroughs with 100% exact CAD geometry preservation and zero GPU hardware load."
         socialLinks={[
           {
             icon: <Twitter className="h-6 w-6" />,

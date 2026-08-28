@@ -40,6 +40,14 @@ import {
   InteractiveFolderGallery,
   GalleryPhoto,
 } from "@/components/ui/interactive-folder-gallery";
+import {
+  INTERIOR_SURFACES,
+  INTERIOR_PBR_CATEGORIES,
+  EXTERIOR_SURFACES,
+  EXTERIOR_PBR_CATEGORIES,
+  type PbrCategory,
+  type ArchitecturalSurfaceTarget,
+} from "@/lib/pbr-materials";
 
 // EXACT PLUGIN DATA STRUCTURES
 const ROOMS_INTERIOR = [
@@ -121,101 +129,43 @@ const PALETTES = [
   },
 ];
 
-const WALLS = [
-  { v: "white", label: "White", color: "#FFFFFF", d: "Crisp bright white" },
-  { v: "cream", label: "Cream", color: "#FAF6EE", d: "Warm soft cream" },
-  {
-    v: "light-gray",
-    label: "Soft Gray",
-    color: "#E2E8F0",
-    d: "Cool neutral gray",
-  },
-  { v: "beige", label: "Warm Beige", color: "#E6DEC8", d: "Sandy warm beige" },
-  { v: "dark", label: "Deep Dark", color: "#1E293B", d: "Moody dark gray" },
-  {
-    v: "textured",
-    label: "Textured Stucco",
-    color: "#DCD6CD",
-    d: "Subtle plaster",
-  },
-  {
-    v: "wood-paneled",
-    label: "Wood Paneled",
-    color: "#A87B51",
-    d: "Timber accent",
-  },
-];
-
-const FLOORS = [
-  {
-    v: "light-hardwood",
-    label: "Light Hardwood",
-    color: "#E2C4A2",
-    d: "Blonde oak/ash",
-  },
-  {
-    v: "dark-hardwood",
-    label: "Dark Hardwood",
-    color: "#4A3324",
-    d: "Walnut timber",
-  },
-  {
-    v: "marble",
-    label: "Marble Stone",
-    color: "#F8FAF9",
-    d: "Luxurious stone",
-  },
-  {
-    v: "concrete",
-    label: "Polished Concrete",
-    color: "#94A3B8",
-    d: "Industrial gray",
-  },
-  {
-    v: "carpet",
-    label: "Plush Carpet",
-    color: "#CBD5E1",
-    d: "Soft woven textile",
-  },
-  {
-    v: "tile",
-    label: "Porcelain Tile",
-    color: "#E2E8F0",
-    d: "Large format tile",
-  },
-  {
-    v: "herringbone",
-    label: "Herringbone Parquet",
-    color: "#B88E64",
-    d: "Patterned wood",
-  },
-];
-
-const WOODS = [
-  { v: "light-ash", label: "Light Ash", color: "#E5D3B3" },
-  { v: "medium-oak", label: "Medium Oak", color: "#B88E64" },
-  { v: "dark-walnut", label: "Dark Walnut", color: "#4A3324" },
-  { v: "painted-white", label: "Painted White", color: "#FFFFFF" },
-  { v: "none", label: "None", color: "#334155" },
-];
-
-const METALS = [
-  { v: "brushed-gold", label: "Brushed Gold", color: "#EAB308" },
-  { v: "polished-silver", label: "Polished Silver", color: "#CBD5E1" },
-  { v: "matte-black", label: "Matte Black", color: "#1E293B" },
-  { v: "aged-bronze", label: "Aged Bronze", color: "#9A3412" },
-  { v: "none", label: "None", color: "#334155" },
-];
-
 const LIGHTINGS = [
-  { v: "bright-natural", label: "Bright Daylight", d: "Cool 6500K sunlight" },
-  { v: "warm-ambient", label: "Warm Ambient", d: "Cozy 2700K lamp glow" },
+  {
+    v: "bright-natural",
+    label: "Bright Daylight",
+    icon: "☀️",
+    d: "Crisp 6500K natural sun",
+  },
+  {
+    v: "golden-hour",
+    label: "Golden Hour",
+    icon: "🌅",
+    d: "Warm low-angle sunset glow",
+  },
+  {
+    v: "warm-ambient",
+    label: "Warm Ambient",
+    icon: "🛋️",
+    d: "Cozy 2700K interior lamps",
+  },
+  {
+    v: "blue-dusk",
+    label: "Architectural Dusk",
+    icon: "🌆",
+    d: "Moody twilight & soft lights",
+  },
   {
     v: "dramatic-spotlit",
-    label: "Dramatic Spotlit",
-    d: "High contrast pools",
+    label: "Dramatic Spotlight",
+    icon: "🔦",
+    d: "High contrast focus pools",
   },
-  { v: "soft-diffused", label: "Soft Diffused", d: "Gentle even shadows" },
+  {
+    v: "soft-diffused",
+    label: "Overcast Sky",
+    icon: "☁️",
+    d: "Gentle even shadows",
+  },
 ];
 
 // PREMIUM STEP DOCK ITEMS WITH ICONS & TOOLTIPS
@@ -361,11 +311,62 @@ export default function SamplePluginRendererPage() {
   const [mood, setMood] = useState("cozy");
   const [colorPalette, setColorPalette] = useState("warm-neutrals");
   const [accentColor, setAccentColor] = useState("#8B5CF6");
-  const [wallFinish, setWallFinish] = useState("white");
-  const [floorMaterial, setFloorMaterial] = useState("light-hardwood");
-  const [woodTone, setWoodTone] = useState("medium-oak");
-  const [metalAccent, setMetalAccent] = useState("brushed-gold");
+  const [wallFinish, setWallFinish] = useState("beige_wall_001");
+  const [floorMaterial, setFloorMaterial] = useState("american_walnut_veneer");
+  const [woodTone, setWoodTone] = useState("american_walnut_veneer");
+  const [metalAccent, setMetalAccent] = useState("blue_metal_plate");
   const [lightingMood, setLightingMood] = useState("bright-natural");
+
+  // Multi-Surface Architectural Material System (Interior & Exterior)
+  const [activeSurfaceId, setActiveSurfaceId] = useState<string>("wall");
+  const [surfaceCategory, setSurfaceCategory] = useState<
+    Record<string, string>
+  >({
+    // Interior defaults
+    wall: "concretes",
+    floor: "woods",
+    cabinetry: "woods",
+    countertop: "marbles",
+    fabric: "fabrics",
+    fixtures: "metals",
+    ceiling: "concretes",
+    // Exterior defaults
+    facade: "facades",
+    masonry: "masonry",
+    roofing: "roofing",
+    pavement: "pavers",
+    landscape: "landscape",
+    decking: "decking",
+    framing: "roofing",
+  });
+  const [surfaceMaterials, setSurfaceMaterials] = useState<
+    Record<string, string>
+  >({
+    // Interior defaults
+    wall: "beige_wall_001",
+    floor: "american_walnut_veneer",
+    cabinetry: "ash_veneer",
+    countertop: "calacatta_gold",
+    fabric: "brown_leather",
+    fixtures: "metal_plate_02",
+    ceiling: "beige_wall_002",
+    // Exterior defaults
+    facade: "beige_wall_001",
+    masonry: "aerial_rocks_02",
+    roofing: "corrugated_iron",
+    pavement: "brick_pavement",
+    landscape: "aerial_grass_rock",
+    decking: "black_painted_planks",
+    framing: "blue_metal_plate",
+  });
+  const [accentMaterialCat, setAccentMaterialCat] = useState("woods");
+
+  // Step 6: Atmospheric & Lighting Controls
+  const [sunIntensity, setSunIntensity] = useState(80);
+  const [colorTemperature, setColorTemperature] = useState(5200);
+  const [sunAngle, setSunAngle] = useState(45);
+  const [interiorLightsOn, setInteriorLightsOn] = useState(true);
+  const [shadowSoftness, setShadowSoftness] = useState(60);
 
   // Step UI State
   const [currentStep, setCurrentStep] = useState(0);
@@ -464,8 +465,10 @@ export default function SamplePluginRendererPage() {
     setSpaceType(type);
     if (type === "exterior") {
       setRoomType("House");
+      setActiveSurfaceId("facade");
     } else {
       setRoomType("Living Room");
+      setActiveSurfaceId("wall");
     }
   };
 
@@ -1504,178 +1507,434 @@ export default function SamplePluginRendererPage() {
                     ))}
                   </div>
                 </div>
-
-                <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Custom Accent Color
-                  </div>
-                  <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950 p-2.5">
-                    <input
-                      type="color"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="h-8 w-12 cursor-pointer border-0 bg-transparent"
-                    />
-                    <span className="font-mono text-xs font-bold text-zinc-300">
-                      {accentColor}
-                    </span>
-                  </div>
-                </div>
               </div>
             )}
 
-            {/* STEP 4: Finishes & Materials */}
+            {/* STEP 4: Comprehensive Multi-Surface Architectural Materials (Interior & Exterior) */}
             {currentStep === 4 && (
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Wall Finish
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {WALLS.map((w) => (
-                      <div
-                        key={w.v}
-                        onClick={() => setWallFinish(w.v)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                          wallFinish === w.v
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <div
-                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                          style={{ backgroundColor: w.color }}
-                        />
-                        <div className="truncate">
-                          <div className="text-xs font-bold text-white">
-                            {w.label}
-                          </div>
-                          <div className="truncate text-[9px] text-zinc-400">
-                            {w.d}
-                          </div>
+              <div className="space-y-3.5">
+                {/* INTERACTIVE TARGET SURFACE SLIDER & SELECTOR */}
+                {(() => {
+                  const activeSurfaces =
+                    spaceType === "exterior"
+                      ? EXTERIOR_SURFACES
+                      : INTERIOR_SURFACES;
+                  const activeCategories =
+                    spaceType === "exterior"
+                      ? EXTERIOR_PBR_CATEGORIES
+                      : INTERIOR_PBR_CATEGORIES;
+
+                  const activeSurfaceIndex = Math.max(
+                    0,
+                    activeSurfaces.findIndex((s) => s.id === activeSurfaceId)
+                  );
+                  const activeSurface =
+                    activeSurfaces[activeSurfaceIndex] || activeSurfaces[0];
+                  const assignedMatId = surfaceMaterials[activeSurface.id];
+                  let activeMatThumb = "";
+                  let activeMatName = "Default";
+                  for (const cat of activeCategories) {
+                    const found = cat.textures.find(
+                      (t) => t.id === assignedMatId
+                    );
+                    if (found) {
+                      activeMatThumb = found.thumb;
+                      activeMatName = found.name;
+                      break;
+                    }
+                  }
+
+                  return (
+                    <div className="space-y-2.5 rounded-xl border border-zinc-800 bg-zinc-950/80 p-3 shadow-inner">
+                      {/* Slider Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-black tracking-wider text-zinc-300 uppercase">
+                            {spaceType === "exterior"
+                              ? "Exterior Surface"
+                              : "Interior Surface"}
+                          </span>
+                          <span className="rounded bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+                            {activeSurfaceIndex + 1} of {activeSurfaces.length}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newIndex =
+                                (activeSurfaceIndex -
+                                  1 +
+                                  activeSurfaces.length) %
+                                activeSurfaces.length;
+                              setActiveSurfaceId(activeSurfaces[newIndex].id);
+                            }}
+                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white"
+                            title="Previous surface"
+                          >
+                            <ChevronLeft className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newIndex =
+                                (activeSurfaceIndex + 1) %
+                                activeSurfaces.length;
+                              setActiveSurfaceId(activeSurfaces[newIndex].id);
+                            }}
+                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white"
+                            title="Next surface"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
+
+                      {/* Interactive Scrubber Slider Track */}
+                      <div className="space-y-1">
+                        <input
+                          type="range"
+                          min={0}
+                          max={activeSurfaces.length - 1}
+                          step={1}
+                          value={activeSurfaceIndex}
+                          onChange={(e) => {
+                            const idx = Number(e.target.value);
+                            setActiveSurfaceId(activeSurfaces[idx].id);
+                          }}
+                          className="accent-primary h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-zinc-800"
+                        />
+                        <div className="flex justify-between px-0.5 font-mono text-[9px] text-zinc-500">
+                          {activeSurfaces.map((s) => (
+                            <span
+                              key={s.id}
+                              className={cn(
+                                s.id === activeSurface.id
+                                  ? "text-primary font-bold"
+                                  : ""
+                              )}
+                            >
+                              {s.label.split(" ")[0]}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Active Surface Card */}
+                      <div className="flex items-center justify-between rounded-lg border border-zinc-800/90 bg-zinc-900/90 p-2.5 shadow-sm">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl">{activeSurface.icon}</span>
+                          <div>
+                            <div className="text-xs font-bold text-white">
+                              {activeSurface.label}
+                            </div>
+                            <div className="text-[10px] text-zinc-400">
+                              Selected:{" "}
+                              <span className="font-semibold text-zinc-200">
+                                {activeMatName}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {activeMatThumb && (
+                          <div className="border-primary/50 ring-primary/20 relative h-9 w-9 shrink-0 overflow-hidden rounded-lg border shadow ring-2">
+                            <img
+                              src={activeMatThumb}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/20 via-transparent to-white/20" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Category Filter Chips for active surface */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {(() => {
+                    const activeSurfaces =
+                      spaceType === "exterior"
+                        ? EXTERIOR_SURFACES
+                        : INTERIOR_SURFACES;
+                    const activeCategories =
+                      spaceType === "exterior"
+                        ? EXTERIOR_PBR_CATEGORIES
+                        : INTERIOR_PBR_CATEGORIES;
+
+                    return activeCategories.map((cat) => {
+                      const currentCatId =
+                        surfaceCategory[activeSurfaceId] ||
+                        activeSurfaces.find((s) => s.id === activeSurfaceId)
+                          ?.defaultCategory ||
+                        activeCategories[0].id;
+                      const isCatActive = currentCatId === cat.id;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setSurfaceCategory((prev) => ({
+                              ...prev,
+                              [activeSurfaceId]: cat.id,
+                            }));
+                          }}
+                          className={cn(
+                            "flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10.5px] font-medium transition-all",
+                            isCatActive
+                              ? "border-primary bg-primary/20 ring-primary font-semibold text-white ring-1"
+                              : "border-zinc-800 bg-zinc-900/60 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                          )}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.label}</span>
+                          <span className="font-mono text-[9px] text-zinc-500">
+                            ({cat.textures.length})
+                          </span>
+                        </button>
+                      );
+                    });
+                  })()}
                 </div>
 
-                <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Floor Material
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {FLOORS.map((f) => (
-                      <div
-                        key={f.v}
-                        onClick={() => setFloorMaterial(f.v)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                          floorMaterial === f.v
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <div
-                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                          style={{ backgroundColor: f.color }}
-                        />
-                        <div className="truncate">
-                          <div className="text-xs font-bold text-white">
-                            {f.label}
-                          </div>
-                          <div className="truncate text-[9px] text-zinc-400">
-                            {f.d}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {/* Pure PBR Texture Thumbnail Grid (High-density visual swatches) */}
+                {(() => {
+                  const activeSurfaces =
+                    spaceType === "exterior"
+                      ? EXTERIOR_SURFACES
+                      : INTERIOR_SURFACES;
+                  const activeCategories =
+                    spaceType === "exterior"
+                      ? EXTERIOR_PBR_CATEGORIES
+                      : INTERIOR_PBR_CATEGORIES;
+
+                  const currentCatId =
+                    surfaceCategory[activeSurfaceId] ||
+                    activeSurfaces.find((s) => s.id === activeSurfaceId)
+                      ?.defaultCategory ||
+                    activeCategories[0].id;
+                  const currentCategory =
+                    activeCategories.find((c) => c.id === currentCatId) ||
+                    activeCategories[0];
+                  const selectedMatId = surfaceMaterials[activeSurfaceId];
+
+                  return (
+                    <div className="grid max-h-[280px] grid-cols-5 gap-2 overflow-y-auto pr-1 sm:grid-cols-6">
+                      {currentCategory.textures.map((t) => {
+                        const isSelected = selectedMatId === t.id;
+                        return (
+                          <button
+                            key={t.id}
+                            type="button"
+                            title={t.name}
+                            onClick={() => {
+                              setSurfaceMaterials((prev) => ({
+                                ...prev,
+                                [activeSurfaceId]: t.id,
+                              }));
+                              // Sync legacy fields
+                              if (
+                                activeSurfaceId === "wall" ||
+                                activeSurfaceId === "facade"
+                              )
+                                setWallFinish(t.id);
+                              if (
+                                activeSurfaceId === "floor" ||
+                                activeSurfaceId === "pavement"
+                              )
+                                setFloorMaterial(t.id);
+                              if (
+                                activeSurfaceId === "cabinetry" ||
+                                activeSurfaceId === "decking"
+                              )
+                                setWoodTone(t.id);
+                              if (
+                                activeSurfaceId === "fixtures" ||
+                                activeSurfaceId === "framing"
+                              )
+                                setMetalAccent(t.id);
+                            }}
+                            className={cn(
+                              "group relative aspect-square w-full overflow-hidden rounded-xl border transition-all duration-150 focus:outline-none",
+                              isSelected
+                                ? "border-primary ring-primary shadow-primary/30 scale-95 shadow-md ring-2 ring-offset-2 ring-offset-zinc-950"
+                                : "border-zinc-800 bg-zinc-900/60 hover:scale-105 hover:border-zinc-600"
+                            )}
+                          >
+                            <img
+                              src={t.thumb}
+                              alt={t.name}
+                              className="h-full w-full object-cover object-center"
+                              loading="lazy"
+                            />
+                            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/30 via-transparent to-white/20" />
+                            {isSelected && (
+                              <div className="bg-primary absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black text-white shadow">
+                                ✓
+                              </div>
+                            )}
+                            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">
+                              <span className="block truncate text-center text-[9px] font-semibold text-white">
+                                {t.name}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
-            {/* STEP 5: Furniture, Accents & Lighting */}
+            {/* STEP 5: Atmospheric & Lighting Controls Studio */}
             {currentStep === 5 && (
               <div className="space-y-4">
+                {/* Lighting Presets */}
                 <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Wood Tone
+                  <div className="mb-2.5 flex items-center justify-between">
+                    <span className="text-xs font-bold tracking-wider text-zinc-400 uppercase">
+                      Atmospheric Lighting Mood
+                    </span>
+                    <span className="text-[10px] font-medium text-zinc-500">
+                      Physically-Based Solar Engine
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    {WOODS.map((w) => (
-                      <div
-                        key={w.v}
-                        onClick={() => setWoodTone(w.v)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                          woodTone === w.v
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
+                    {LIGHTINGS.map((l) => {
+                      const isSelected = lightingMood === l.v;
+                      return (
                         <div
-                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                          style={{ backgroundColor: w.color }}
-                        />
-                        <span className="text-xs font-bold text-white">
-                          {w.label}
-                        </span>
-                      </div>
-                    ))}
+                          key={l.v}
+                          onClick={() => setLightingMood(l.v)}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 transition-all",
+                            isSelected
+                              ? "border-primary bg-primary/10 ring-primary text-white shadow-sm ring-1"
+                              : "border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800/40"
+                          )}
+                        >
+                          <span className="shrink-0 text-xl">{l.icon}</span>
+                          <div className="min-w-0 flex-1 truncate">
+                            <div className="truncate text-xs font-bold text-white">
+                              {l.label}
+                            </div>
+                            <div className="truncate text-[10px] text-zinc-400">
+                              {l.d}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Metal Accent
+                {/* Fine-Grained Lighting Sliders */}
+                <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-950/80 p-3.5">
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                    <span className="text-xs font-bold tracking-wider text-zinc-300 uppercase">
+                      Photometric Parameters
+                    </span>
+                    <span className="font-mono text-[10px] text-zinc-500">
+                      GPU Real-Time
+                    </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {METALS.map((m) => (
-                      <div
-                        key={m.v}
-                        onClick={() => setMetalAccent(m.v)}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-all",
-                          metalAccent === m.v
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <div
-                          className="h-4 w-4 shrink-0 rounded-full border border-zinc-700"
-                          style={{ backgroundColor: m.color }}
-                        />
-                        <span className="text-xs font-bold text-white">
-                          {m.label}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                <div>
-                  <div className="mb-2 text-xs font-bold tracking-wider text-zinc-400 uppercase">
-                    Lighting Mood
+                  {/* Sun Intensity */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-zinc-400">
+                        Sunlight Intensity
+                      </span>
+                      <span className="font-mono font-bold text-zinc-200">
+                        {sunIntensity}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={150}
+                      value={sunIntensity}
+                      onChange={(e) => setSunIntensity(Number(e.target.value))}
+                      className="accent-primary h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-zinc-800"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {LIGHTINGS.map((l) => (
-                      <div
-                        key={l.v}
-                        onClick={() => setLightingMood(l.v)}
-                        className={cn(
-                          "flex cursor-pointer flex-col gap-0.5 rounded-lg border p-2.5 transition-all",
-                          lightingMood === l.v
-                            ? "border-white bg-zinc-800/90 text-white ring-1 ring-white"
-                            : "border-zinc-800 bg-zinc-900/40 text-zinc-400 hover:border-zinc-700"
-                        )}
-                      >
-                        <span className="text-xs font-bold text-white">
-                          {l.label}
-                        </span>
-                        <span className="text-[10px] text-zinc-400">{l.d}</span>
+
+                  {/* Color Temperature */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-zinc-400">
+                        Color Temperature
+                      </span>
+                      <span className="font-mono font-bold text-zinc-200">
+                        {colorTemperature}K
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={2700}
+                      max={7500}
+                      step={100}
+                      value={colorTemperature}
+                      onChange={(e) =>
+                        setColorTemperature(Number(e.target.value))
+                      }
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-zinc-800 accent-amber-500"
+                    />
+                    <div className="flex justify-between font-mono text-[9px] text-zinc-500">
+                      <span>2700K (Warm)</span>
+                      <span>5000K (Neutral)</span>
+                      <span>7500K (Sky)</span>
+                    </div>
+                  </div>
+
+                  {/* Sun Elevation Angle */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span className="font-medium text-zinc-400">
+                        Sun Altitude Angle
+                      </span>
+                      <span className="font-mono font-bold text-zinc-200">
+                        {sunAngle}°
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={10}
+                      max={90}
+                      value={sunAngle}
+                      onChange={(e) => setSunAngle(Number(e.target.value))}
+                      className="accent-primary h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-zinc-800"
+                    />
+                  </div>
+
+                  {/* Interior Fixtures Toggle */}
+                  <div className="flex items-center justify-between border-t border-zinc-800/80 pt-1">
+                    <div>
+                      <div className="text-xs font-semibold text-zinc-200">
+                        Interior Emissive Lights
                       </div>
-                    ))}
+                      <div className="text-[10px] text-zinc-400">
+                        Recessed downlights & pendant lamps
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInteriorLightsOn(!interiorLightsOn)}
+                      className={cn(
+                        "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                        interiorLightsOn ? "bg-primary" : "bg-zinc-800"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                          interiorLightsOn ? "translate-x-4" : "translate-x-0"
+                        )}
+                      />
+                    </button>
                   </div>
                 </div>
               </div>

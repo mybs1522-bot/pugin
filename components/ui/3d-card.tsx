@@ -30,7 +30,7 @@ const PhotoCard = ({
 
   return (
     <div
-      className="bg-background/40 border-border/40 absolute h-[220px] w-[150px] rounded-md border p-2 shadow-lg backdrop-blur-sm lg:h-[300px] lg:w-[210px]"
+      className="bg-background/40 border-border/40 absolute h-[190px] w-[130px] rounded-md border p-1.5 shadow-lg backdrop-blur-sm sm:h-[220px] sm:w-[150px] sm:p-2 lg:h-[300px] lg:w-[210px]"
       style={{
         transform: `rotate(${rotation}deg) scale(${isActive ? 1.07 : 1})`,
         zIndex: isActive ? 20 : 1,
@@ -132,7 +132,7 @@ export function BeforeAfterCards() {
   return (
     <div
       ref={containerRef}
-      className="relative flex h-[300px] w-[300px] items-center justify-center lg:h-[440px] lg:w-[440px]"
+      className="relative flex h-[260px] w-[280px] items-center justify-center sm:h-[300px] sm:w-[300px] lg:h-[440px] lg:w-[440px]"
     >
       <AnimatedGrid />
 
@@ -150,7 +150,7 @@ export function BeforeAfterCards() {
       {/* After card */}
       <PhotoCard
         src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80"
-        alt="After: AI rendered room"
+        alt="After: Photorealistic rendered room"
         rotation={10}
         label="After"
         index={1}

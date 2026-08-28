@@ -14,8 +14,8 @@ import { Check, Sparkles, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FEATURES = [
-  "Unlimited AI renders",
-  "All 20+ design styles",
+  "Unlimited photorealistic renders",
+  "All 20+ architectural design styles",
   "Photorealistic DSLR-quality output",
   "Instant auto-download",
   "Interior & exterior redesign",
@@ -55,7 +55,7 @@ export function PricingModal({ open, onClose, hadTrial = false }: Props) {
         <div className="border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
           <DialogHeader className="space-y-0.5">
             <DialogTitle className="text-xl font-bold text-zinc-900 dark:text-white">
-              Unlock AI Design Generation
+              Unlock Photorealistic Studio Rendering
             </DialogTitle>
             <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
               {hadTrial

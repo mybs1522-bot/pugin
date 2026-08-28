@@ -45,21 +45,31 @@ export function TrustedBySection() {
   return (
     <section className="w-full overflow-hidden">
       {/* Trusted by logos */}
-      <div className="mb-10 text-center">
-        <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
+      <div className="mb-6 text-center sm:mb-10">
+        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase sm:text-sm sm:tracking-widest">
           Trusted by design professionals at
         </p>
-        <div className="mt-6 grid grid-cols-3 gap-6 text-zinc-900 sm:grid-cols-5 dark:text-white">
-          <Retool />
-          <Vercel />
-          <Remote />
-          <Arc />
-          <Raycast />
+        <div className="mt-4 grid grid-cols-2 items-center justify-items-center gap-4 text-zinc-900 sm:mt-6 sm:grid-cols-5 sm:gap-6 dark:text-white">
+          <div className="w-24 sm:w-full">
+            <Retool />
+          </div>
+          <div className="w-24 sm:w-full">
+            <Vercel />
+          </div>
+          <div className="w-24 sm:w-full">
+            <Remote />
+          </div>
+          <div className="w-24 sm:w-full">
+            <Arc />
+          </div>
+          <div className="col-span-2 w-24 sm:col-span-1 sm:w-full">
+            <Raycast />
+          </div>
         </div>
       </div>
 
       {/* Sparkles glow band */}
-      <div className="relative h-72 w-full overflow-hidden [mask-image:radial-gradient(50%_50%,white,transparent)]">
+      <div className="relative h-24 w-full overflow-hidden [mask-image:radial-gradient(50%_50%,white,transparent)] sm:h-72">
         <div className="absolute inset-0 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,#8350e8,transparent_70%)] before:opacity-40" />
         <div className="absolute top-1/2 -left-1/2 z-10 aspect-[1/0.7] w-[200%] rounded-[100%] border-t border-zinc-900/20 bg-white dark:border-white/20 dark:bg-zinc-900" />
         <Sparkles

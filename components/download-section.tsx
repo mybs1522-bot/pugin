@@ -16,7 +16,7 @@ export function DownloadSection() {
         </h2>
         <p className="text-muted-foreground mx-auto mt-3 max-w-md text-sm">
           Native desktop experience&nbsp;·&nbsp;offline setup&nbsp;·&nbsp;cloud
-          AI generation
+          rendering engine
         </p>
 
         {/* Buttons */}
@@ -38,7 +38,7 @@ export function DownloadSection() {
               </span>
               <span className="block text-sm font-semibold">Windows</span>
               <span className="text-muted-foreground block text-[10px]">
-                Windows 10/11 · 64-bit
+                All Versions
               </span>
             </span>
           </a>
@@ -61,7 +61,7 @@ export function DownloadSection() {
               </span>
               <span className="block text-sm font-semibold">macOS</span>
               <span className="text-muted-foreground block text-[10px]">
-                macOS 10+ · Apple Silicon &amp; Intel
+                All Versions
               </span>
             </span>
           </a>
@@ -80,7 +80,7 @@ export function DownloadSection() {
           </a>
         </div>
         <p className="text-muted-foreground/70 mt-3 text-[11px]">
-          Free to download · Premium subscription required for AI generation
+          Free to download · Premium subscription required for rendering
         </p>
       </div>
 

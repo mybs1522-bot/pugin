@@ -55,8 +55,8 @@ export function PlanNotActiveModal({
             </DialogTitle>
             <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
               {hadTrial
-                ? "Activate your monthly plan to start generating AI designs."
-                : "Start your 7-day free trial to unlock unlimited AI renders and downloads."}
+                ? "Activate your monthly plan to start generating renders."
+                : "Start your 7-day free trial to unlock unlimited renders and downloads."}
             </DialogDescription>
           </DialogHeader>
 

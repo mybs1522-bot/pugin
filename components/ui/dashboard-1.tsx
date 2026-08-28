@@ -96,7 +96,7 @@ export const MarketingDashboard = React.forwardRef<
       <motion.div
         ref={ref}
         className={cn(
-          "bg-card text-card-foreground w-full max-w-2xl rounded-2xl border p-6",
+          "bg-card text-card-foreground w-full max-w-2xl rounded-xl border p-4 sm:rounded-2xl sm:p-6",
           className
         )}
         variants={containerVariants}
@@ -106,23 +106,23 @@ export const MarketingDashboard = React.forwardRef<
         {/* Header */}
         <motion.div
           variants={itemVariants}
-          className="mb-6 flex items-center justify-between"
+          className="mb-4 flex items-center justify-between sm:mb-6"
         >
-          <h2 className="text-2xl font-bold">{title}</h2>
+          <h2 className="text-base font-bold sm:text-2xl">{title}</h2>
           <Button
             variant="ghost"
             size="icon"
             onClick={onFilterClick}
             aria-label="Filter activities"
           >
-            <Filter className="h-5 w-5" />
+            <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         </motion.div>
 
         {/* Stats Grid */}
         <div
           className={cn(
-            "grid grid-cols-1 gap-4",
+            "grid grid-cols-1 gap-3.5 sm:gap-4",
             teamActivities && "md:grid-cols-2"
           )}
         >
@@ -133,19 +133,19 @@ export const MarketingDashboard = React.forwardRef<
               whileHover={{ scale: 1.03, y: -5 }}
               transition={hoverTransition}
             >
-              <Card className="h-full overflow-hidden rounded-xl p-4">
-                <CardContent className="p-2">
-                  <div className="mb-4 flex items-center justify-between">
-                    <p className="text-muted-foreground font-medium">
+              <Card className="h-full overflow-hidden rounded-xl p-3.5 sm:p-4">
+                <CardContent className="p-1 sm:p-2">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
+                    <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                       Renders Created
                     </p>
-                    <Clock className="text-muted-foreground h-5 w-5" />
+                    <Clock className="text-muted-foreground h-4 w-4 sm:h-5 sm:w-5" />
                   </div>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold">
+                  <div className="mb-3 sm:mb-4">
+                    <span className="text-3xl font-bold sm:text-4xl">
                       <AnimatedNumber value={teamActivities.totalHours} />
                     </span>
-                    <span className="text-muted-foreground ml-1">
+                    <span className="text-muted-foreground ml-1 text-xs sm:text-sm">
                       k renders
                     </span>
                   </div>
@@ -160,7 +160,7 @@ export const MarketingDashboard = React.forwardRef<
                       />
                     ))}
                   </div>
-                  <div className="text-muted-foreground flex items-center justify-between text-xs">
+                  <div className="text-muted-foreground flex items-center justify-between text-[11px] sm:text-xs">
                     {teamActivities.stats.map((stat) => (
                       <div
                         key={stat.label}
@@ -184,19 +184,19 @@ export const MarketingDashboard = React.forwardRef<
             whileHover={{ scale: 1.03, y: -5 }}
             transition={hoverTransition}
           >
-            <Card className="h-full overflow-hidden rounded-xl border-lime-200 bg-lime-50 p-4 dark:border-lime-800 dark:bg-lime-900/30">
-              <CardContent className="p-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <p className="font-medium text-lime-900 dark:text-lime-200">
+            <Card className="h-full overflow-hidden rounded-xl border-lime-200 bg-lime-50 p-3.5 sm:p-4 dark:border-lime-800 dark:bg-lime-900/30">
+              <CardContent className="p-1 sm:p-2">
+                <div className="mb-3 flex items-center justify-between sm:mb-4">
+                  <p className="text-xs font-medium text-lime-900 sm:text-sm dark:text-lime-200">
                     {teamLabel}
                   </p>
-                  <Users className="h-5 w-5 text-lime-900 dark:text-lime-200" />
+                  <Users className="h-4 w-4 text-lime-900 sm:h-5 sm:w-5 dark:text-lime-200" />
                 </div>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-lime-950 dark:text-lime-50">
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-3xl font-bold text-lime-950 sm:text-4xl dark:text-lime-50">
                     <AnimatedNumber value={team.memberCount} integer />
                   </span>
-                  <span className="ml-1 text-lime-800 dark:text-lime-300">
+                  <span className="ml-1 text-xs text-lime-800 sm:text-sm dark:text-lime-300">
                     users
                   </span>
                 </div>
@@ -209,7 +209,7 @@ export const MarketingDashboard = React.forwardRef<
                       transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
                       whileHover={{ scale: 1.2, zIndex: 10, y: -2 }}
                     >
-                      <Avatar className="border-2 border-lime-100 dark:border-lime-900">
+                      <Avatar className="h-7 w-7 border-2 border-lime-100 sm:h-8 sm:w-8 dark:border-lime-900">
                         <AvatarImage src={member.avatarUrl} alt={member.name} />
                         <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                       </Avatar>
@@ -226,20 +226,23 @@ export const MarketingDashboard = React.forwardRef<
           variants={itemVariants}
           whileHover={{ scale: 1.02 }}
           transition={hoverTransition}
-          className="mt-4"
+          className="mt-3.5 sm:mt-4"
         >
-          <div className="bg-muted/60 flex items-center justify-between rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-background rounded-full p-2">
-                <Zap className="text-foreground h-5 w-5" />
+          <div className="bg-muted/60 flex flex-col items-stretch gap-3 rounded-xl p-3.5 sm:flex-row sm:items-center sm:justify-between sm:p-4">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="bg-background shrink-0 rounded-full p-1.5 sm:p-2">
+                <Zap className="text-foreground h-4 w-4 sm:h-5 sm:w-5" />
               </div>
-              <p className="text-muted-foreground text-sm font-medium">
+              <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                 {cta.text}
               </p>
             </div>
-            <Button onClick={cta.onButtonClick} className="shrink-0">
+            <Button
+              onClick={cta.onButtonClick}
+              className="w-full shrink-0 text-xs sm:w-auto sm:text-sm"
+            >
               {cta.buttonText}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:ml-2 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </motion.div>

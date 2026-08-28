@@ -14,22 +14,24 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "V6 Render — AI Rendering Extension for SketchUp",
+  title: "V6 Render — Architectural Rendering Extension for SketchUp",
   description:
-    "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view in under 10 seconds. 100% geometry preservation, zero GPU needed.",
+    "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view. 100% geometry preservation, zero GPU needed.",
   keywords: [
     "V6 Render",
     "SketchUp render",
-    "SketchUp AI rendering",
+    "SketchUp architectural rendering",
     "photorealistic SketchUp",
     "3D walkthrough",
     "architectural visualization",
+    "interior design rendering",
+    "PBR materials",
   ],
   robots: "index, follow",
   openGraph: {
-    title: "V6 Render — AI Rendering Extension for SketchUp",
+    title: "V6 Render — Architectural Rendering Extension for SketchUp",
     description:
-      "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view in under 10 seconds.",
+      "Generate photorealistic 4K renders and 3D video walkthroughs from any SketchUp view with 100% geometry preservation.",
     url: "https://www.avada.space/",
     siteName: "V6 Render",
     locale: "en_US",
@@ -39,14 +41,15 @@ export const metadata: Metadata = {
         url: "/v6-logo.png",
         width: 392,
         height: 262,
-        alt: "V6 Render - SketchUp AI Rendering Extension",
+        alt: "V6 Render - SketchUp Architectural Rendering Extension",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "V6 Render — AI Rendering Extension for SketchUp",
-    description: "Lightning-fast SketchUp rendering software you'll love.",
+    title: "V6 Render — Architectural Rendering Extension for SketchUp",
+    description:
+      "Photorealistic SketchUp rendering software built for architects and interior designers.",
     images: ["/v6-logo.png"],
   },
   manifest: "/manifest.json",

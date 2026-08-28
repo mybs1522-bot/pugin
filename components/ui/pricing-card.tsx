@@ -15,7 +15,7 @@ const FEATURES = [
   { label: "Unlimited 4K Renders & 3D Video Walkthroughs", highlight: true },
   { label: "100% Geometry & Camera Perspective Lock (Zero Drift)" },
   { label: "Native SketchUp .rbz Extension (Windows & Mac)" },
-  { label: "High-Speed Cloud AI · Zero GPU or High RAM Needed" },
+  { label: "Dedicated Cloud Rendering · Zero GPU or High RAM Needed" },
   { label: "Physical PBR Lighting, Materials & Realistic Reflections" },
 ];
 

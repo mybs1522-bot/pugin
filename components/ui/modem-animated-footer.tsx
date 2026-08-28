@@ -38,23 +38,23 @@ export const Footer = ({
 }: FooterProps) => {
   return (
     <section className={cn("relative mt-0 w-full overflow-hidden", className)}>
-      <footer className="bg-background relative mt-20 border-t">
-        <div className="relative mx-auto flex min-h-[30rem] max-w-7xl flex-col justify-between p-4 py-10 sm:min-h-[35rem] md:min-h-[40rem]">
-          <div className="mb-12 flex w-full flex-col sm:mb-20 md:mb-0">
+      <footer className="bg-background relative mt-10 border-t sm:mt-20">
+        <div className="relative mx-auto flex min-h-[22rem] max-w-7xl flex-col justify-between p-4 py-8 sm:min-h-[35rem] sm:py-10 md:min-h-[40rem]">
+          <div className="mb-8 flex w-full flex-col sm:mb-20 md:mb-0">
             <div className="flex w-full flex-col items-center">
               <div className="flex flex-1 flex-col items-center space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-foreground text-3xl font-bold">
+                  <span className="text-foreground text-2xl font-bold sm:text-3xl">
                     {brandName}
                   </span>
                 </div>
-                <p className="text-muted-foreground w-full max-w-sm px-4 text-center font-semibold sm:w-96 sm:px-0">
+                <p className="text-muted-foreground w-full max-w-sm px-2 text-center text-xs font-medium sm:w-96 sm:px-0 sm:text-sm sm:font-semibold">
                   {brandDescription}
                 </p>
               </div>
 
               {socialLinks.length > 0 && (
-                <div className="mt-3 mb-8 flex gap-4">
+                <div className="mt-3 mb-6 flex gap-4 sm:mb-8">
                   {socialLinks.map((link, index) => (
                     <Link
                       key={index}
@@ -63,7 +63,7 @@ export const Footer = ({
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <div className="h-6 w-6 duration-300 hover:scale-110">
+                      <div className="h-5 w-5 duration-300 hover:scale-110 sm:h-6 sm:w-6">
                         {link.icon}
                       </div>
                       <span className="sr-only">{link.label}</span>
@@ -73,7 +73,7 @@ export const Footer = ({
               )}
 
               {navLinks.length > 0 && (
-                <div className="text-muted-foreground flex max-w-full flex-wrap justify-center gap-4 px-4 text-sm font-medium">
+                <div className="text-muted-foreground flex max-w-full flex-wrap justify-center gap-3 px-2 text-xs font-medium sm:gap-4 sm:px-4 sm:text-sm">
                   {navLinks.map((link, index) => (
                     <Link
                       key={index}
@@ -88,8 +88,8 @@ export const Footer = ({
             </div>
           </div>
 
-          <div className="mt-20 flex flex-col items-center justify-center gap-2 px-4 md:mt-24 md:flex-row md:items-center md:justify-between md:gap-1 md:px-0">
-            <p className="text-muted-foreground text-center text-base md:text-left">
+          <div className="mt-10 flex flex-col items-center justify-center gap-2 px-2 sm:mt-20 sm:px-4 md:mt-24 md:flex-row md:items-center md:justify-between md:gap-1 md:px-0">
+            <p className="text-muted-foreground text-center text-xs sm:text-base md:text-left">
               &copy;{new Date().getFullYear()} {brandName}. All rights reserved.
             </p>
             {creatorName && creatorUrl && (

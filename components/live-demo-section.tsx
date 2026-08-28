@@ -307,7 +307,7 @@ export function LiveDemoSection() {
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
           <span className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
           <div className="bg-background ml-3 flex-1 rounded-md border px-3 py-0.5 text-center text-xs text-gray-400">
-            app.interiordesigner.ai/render
+            app.v6render.com/studio
           </div>
           <AnimatePresence>
             {phase === "result" && (
@@ -487,7 +487,7 @@ export function LiveDemoSection() {
               >
                 <Image
                   src={AFTER}
-                  alt="AI render"
+                  alt="Photorealistic architectural render"
                   fill
                   className="object-cover"
                   sizes="640px"
@@ -499,7 +499,7 @@ export function LiveDemoSection() {
                   className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-white/20 bg-black/55 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm"
                 >
                   <Sparkles className="h-3 w-3 text-yellow-300" />
-                  AI Render — Modern · Warm
+                  Photorealistic Render — Modern · Warm
                 </motion.div>
               </motion.div>
             )}
