@@ -14,6 +14,9 @@ import {
 } from "@/lib/usage";
 import type { DesignQuestionnaire } from "@/types";
 
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
+
 const DEFAULT_REPLICATE_TOKEN = Buffer.from(
   "cjhfNUY0Z2I0RWwzSVdjN2ZKTmNoZDBGdE9pWm1vbkZtbzRKNFdkbQ==",
   "base64"
@@ -430,9 +433,6 @@ function buildModelInput(
   };
 }
 
-export const maxDuration = 60;
-export const dynamic = "force-dynamic";
-
 async function resolveOutputUrl(output: unknown): Promise<string> {
   if (!output) return "";
   let item = Array.isArray(output) ? output[output.length - 1] : output;
@@ -630,6 +630,7 @@ ${basePrompt}`;
           const res = await fetch(googleUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            signal: AbortSignal.timeout(7500),
             body: JSON.stringify({
               contents: [
                 {
@@ -653,16 +654,7 @@ ${basePrompt}`;
               errData.error?.message || `Google AI Studio HTTP ${res.status}`;
             console.warn(`Model ${googleModel} returned error: ${errMsg}`);
             lastError = errMsg;
-            // If experiencing high demand (503/429), smoothly cascade to the next available model
-            if (
-              res.status === 503 ||
-              res.status === 429 ||
-              errMsg.includes("demand") ||
-              errMsg.includes("quota")
-            ) {
-              continue;
-            }
-            throw new Error(errMsg);
+            continue;
           }
 
           const data = await res.json();
@@ -685,7 +677,7 @@ ${basePrompt}`;
         } catch (err) {
           lastError = err instanceof Error ? err.message : String(err);
           console.warn(
-            `Error on ${googleModel}, attempting fallback...`,
+            `Error or timeout on ${googleModel}, attempting fallback...`,
             lastError
           );
         }
@@ -694,49 +686,37 @@ ${basePrompt}`;
       const durationSeconds =
         Math.round(((Date.now() - startTime) / 1000) * 10) / 10;
 
-      if (!imageUri) {
+      if (imageUri) {
+        const isCascade = usedModel !== candidateModels[0];
+
         await recordRenderLog({
           email: normEmail,
           type: "image",
           requestedModel: assignedModel,
-          executedModel: "failed",
+          executedModel: usedModel,
           provider: "Google AI Studio",
-          status: "failed",
+          status: isCascade ? "fallback_cascade" : "success",
           durationSeconds,
           prompt,
-          error: lastError || "Google AI Studio returned no image output.",
+          details: isCascade
+            ? `Primary model (${candidateModels[0]}) was slow/overloaded; successfully cascaded to ${usedModel}`
+            : `Direct execution via Google AI Studio (${usedModel})`,
+          outputPreview: imageUri.substring(0, 100),
         });
 
-        throw new Error(
-          lastError || "Google AI Studio returned no image output."
-        );
+        const newTotal = await incrementImageCount(normEmail, assignedModel);
+
+        return NextResponse.json({
+          success: true,
+          output: [imageUri],
+          model: usedModel,
+          count: newTotal,
+        });
       }
 
-      const isCascade = usedModel !== candidateModels[0];
-
-      await recordRenderLog({
-        email: normEmail,
-        type: "image",
-        requestedModel: assignedModel,
-        executedModel: usedModel,
-        provider: "Google AI Studio",
-        status: isCascade ? "fallback_cascade" : "success",
-        durationSeconds,
-        prompt,
-        details: isCascade
-          ? `Primary model (${candidateModels[0]}) was overloaded (503); successfully cascaded to ${usedModel}`
-          : `Direct execution via Google AI Studio (${usedModel})`,
-        outputPreview: imageUri ? imageUri.substring(0, 100) : undefined,
-      });
-
-      const newTotal = await incrementImageCount(normEmail, assignedModel);
-
-      return NextResponse.json({
-        success: true,
-        output: [imageUri],
-        model: usedModel,
-        count: newTotal,
-      });
+      console.log(
+        `Google AI models timed out or were busy (${lastError}). Seamlessly routing to async Replicate prediction pipeline...`
+      );
     }
 
     // Case 2: Replicate Models (FLUX 2 Pro, FLUX Depth Pro, SDXL ControlNet, etc.)
