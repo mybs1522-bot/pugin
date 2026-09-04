@@ -3708,14 +3708,13 @@
       <button type="button" class="header-profile-menu-pill" id="btnProfileMenuPill" onclick="openUserProfileModal('profile')" title="Account, Settings & Billing">
         <div class="profile-pill-avatar" id="avatarCircle">
           <span id="avatarInitials">US</span>
-          <span class="profile-pill-dot" title="Account Status"></span>
         </div>
         <span class="profile-pill-email" id="avatarHeaderEmail">user@v6render.com</span>
-        <span class="profile-pill-badge" id="avatarHeaderPlanBadge">PRO ACTIVE</span>
         <span class="profile-pill-arrow">▾</span>
       </button>
 
       <button type="button" class="support-btn-header" id="btnSupportHeader" onclick="toggleSupportModal(true)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; flex-shrink:0;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         <span>Support</span>
         <span class="badge-pill-red" id="supportBadgePill">1 New</span>
       </button>
@@ -5168,12 +5167,8 @@
       // 1. Header Elements (Always clean PRO ACTIVE on main page)
       const elInitials = document.getElementById("avatarInitials");
       const elHeaderEmail = document.getElementById("avatarHeaderEmail");
-      const elHeaderBadge = document.getElementById("avatarHeaderPlanBadge");
-
       if (elInitials) elInitials.innerText = initials;
       if (elHeaderEmail) elHeaderEmail.innerText = email;
-      if (elHeaderBadge) elHeaderBadge.innerText = "PRO ACTIVE";
-
       // 2. Modal Header & Profile Pane (Clean professional profile representation)
       const elModalHeaderInitials = document.getElementById("modalHeaderAvatarInitials");
       const elModalHeaderEmail = document.getElementById("modalHeaderTitleEmail");
