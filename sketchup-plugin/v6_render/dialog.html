@@ -2020,7 +2020,9 @@
         <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
           <div style="display:flex; align-items:center; gap:8px;">
             <h3 style="font-size:18px; font-weight:900; color:#ffffff; letter-spacing:-0.02em; margin:0;">Activate Pro Plan</h3>
-            <span style="font-size:20px;">⚡</span>
+            <div style="width:28px; height:28px; display:flex; align-items:center; justify-content:center;">
+              <img src="/sketchup-logo.png" alt="SketchUp Logo" class="rotating-sketchup-logo" style="width:26px; height:26px; object-fit:contain; animation: spin 8s linear infinite;" onerror="this.src='sketchup-logo.png'" />
+            </div>
           </div>
           <span id="checkoutDuePill" style="background:#18181b; border:1px solid #27272a; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:800; color:#ffffff; white-space:nowrap;">$20.00 Due Today</span>
         </div>
@@ -2075,7 +2077,7 @@
 
         <!-- SUBMIT BUTTON -->
         <button id="btnPluginPayPro" type="submit" style="width:100%; background:#ffffff; color:#000000; border:none; border-radius:12px; height:46px; font-size:13px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 8px 25px rgba(255,255,255,0.2); transition:all 0.15s ease;">
-          ⚡ Pay $20 & Activate Pro
+          Activate Pro
         </button>
 
         <p style="text-align:center; font-size:10px; color:#71717a; margin:10px 0 0 0;">
@@ -2939,7 +2941,7 @@
           yearlyCard.style.background = '#18181b';
         }
         if (duePill) duePill.innerText = '$180.00 Due Today';
-        if (payBtn) payBtn.innerHTML = '⚡ Pay $180 & Activate Pro';
+        if (payBtn) payBtn.innerHTML = 'Activate Pro';
       } else {
         if (monthlyCard) {
           monthlyCard.style.borderColor = '#ffffff';
@@ -2950,7 +2952,7 @@
           yearlyCard.style.background = 'rgba(24,24,27,0.5)';
         }
         if (duePill) duePill.innerText = '$20.00 Due Today';
-        if (payBtn) payBtn.innerHTML = '⚡ Pay $20 & Activate Pro';
+        if (payBtn) payBtn.innerHTML = 'Activate Pro';
       }
     }
 
@@ -3014,7 +3016,7 @@
 
       if (payBtn) {
         payBtn.disabled = true;
-        payBtn.innerHTML = '⚡ Processing Payment...';
+        payBtn.innerHTML = 'Activating Pro...';
       }
 
       try {
@@ -3085,7 +3087,7 @@
       } finally {
         if (payBtn) {
           payBtn.disabled = false;
-          selectPluginCheckoutPlan(pluginSelectedPlan);
+          payBtn.innerHTML = 'Activate Pro';
         }
       }
     }

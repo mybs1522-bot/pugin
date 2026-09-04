@@ -407,17 +407,12 @@ function UnifiedTrialForm({
         >
           {loading ? (
             mode === "activate_pro" ? (
-              "Processing Payment & Activating Pro..."
+              "Activating Pro..."
             ) : (
               "Verifying Card & Starting Trial..."
             )
           ) : mode === "activate_pro" ? (
-            <>
-              <Zap className="h-4 w-4 fill-black text-black" />
-              {selectedPlan === "monthly"
-                ? "⚡ Pay $20 & Activate Pro"
-                : "⚡ Pay $180 & Activate Pro"}
-            </>
+            "Activate Pro"
           ) : (
             <>
               <Download className="h-4 w-4 text-black" />
