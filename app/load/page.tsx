@@ -13,8 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { setAsset, getAsset } from "@/lib/storage";
 
-const DEFAULT_SAMPLE_VIDEO =
-  "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
+const DEFAULT_SAMPLE_VIDEO = "/sample-walkthrough.mp4";
 
 const DEFAULT_SAMPLES = [
   {
@@ -23,8 +22,7 @@ const DEFAULT_SAMPLES = [
       "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80",
     render:
       "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80",
-    video:
-      "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4",
+    video: "/sample-walkthrough.mp4",
   },
   {
     title: "Cantilevered Forest House",
@@ -32,8 +30,7 @@ const DEFAULT_SAMPLES = [
       "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1400&q=80",
     render:
       "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=80",
-    video:
-      "https://assets.mixkit.co/videos/preview/mixkit-living-room-with-modern-furniture-41487-large.mp4",
+    video: "/sample-walkthrough.mp4",
   },
 ];
 

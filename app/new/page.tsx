@@ -217,8 +217,7 @@ const DEFAULT_VIEWPORT =
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80";
 const DEFAULT_RENDER =
   "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80";
-const DEFAULT_VIDEO =
-  "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
+const DEFAULT_VIDEO = "/sample-walkthrough.mp4";
 
 export default function SamplePluginRendererPage() {
   // Startup / Boot Splash Screen (#pluginIntroOverlay)
@@ -456,12 +455,15 @@ export default function SamplePluginRendererPage() {
             setRenderVideo(freshUrl);
           } catch (e) {
             console.warn("Could not create object URL for video blob:", e);
+            setRenderVideo(DEFAULT_VIDEO);
           }
         } else if (
           typeof idbVideo === "string" &&
           !idbVideo.startsWith("blob:")
         ) {
           setRenderVideo(idbVideo);
+        } else {
+          setRenderVideo(DEFAULT_VIDEO);
         }
       } else if (
         finalVideo &&
@@ -469,6 +471,8 @@ export default function SamplePluginRendererPage() {
         !finalVideo.startsWith("blob:")
       ) {
         setRenderVideo(finalVideo);
+      } else {
+        setRenderVideo(DEFAULT_VIDEO);
       }
       if (finalTitle) setSceneTitle(finalTitle);
     }
@@ -988,16 +992,22 @@ export default function SamplePluginRendererPage() {
             setRenderVideo(freshUrl);
           } catch (e) {
             console.warn("Could not create object URL for video blob:", e);
+            setRenderVideo(DEFAULT_VIDEO);
           }
         } else if (
           typeof idbVideo === "string" &&
           !idbVideo.startsWith("blob:")
         ) {
           setRenderVideo(idbVideo);
+        } else {
+          setRenderVideo(DEFAULT_VIDEO);
         }
+      } else {
+        setRenderVideo(DEFAULT_VIDEO);
       }
     } catch (e) {
       console.warn("Storage retrieval:", e);
+      setRenderVideo(DEFAULT_VIDEO);
     }
 
     setIsVideoRendering(true);
@@ -2270,30 +2280,28 @@ export default function SamplePluginRendererPage() {
                   <div className="relative flex flex-1 items-center justify-center overflow-hidden bg-zinc-950">
                     {/* VIDEO MODE */}
                     {previewMode === "video" && hasRenderedVideo ? (
-                      <video
-                        ref={videoRef}
-                        key={renderVideo}
-                        src={renderVideo}
-                        controls
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        preload="auto"
-                        className="h-full w-full object-contain p-1.5"
-                        onError={() => {
-                          console.warn(
-                            "Video failed to load from source, falling back to default sample video"
-                          );
-                          if (renderVideo !== DEFAULT_VIDEO) {
-                            setRenderVideo(DEFAULT_VIDEO);
-                          }
-                        }}
-                      >
-                        <source src={renderVideo} type="video/mp4" />
-                        <source src={renderVideo} />
-                        Your browser does not support HTML5 video.
-                      </video>
+                      <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black/60 p-1.5">
+                        <video
+                          ref={videoRef}
+                          key={renderVideo}
+                          src={renderVideo}
+                          controls
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          preload="auto"
+                          className="h-full w-full rounded-lg object-contain"
+                          onError={() => {
+                            console.warn(
+                              "Video failed to load from source, falling back to default sample video"
+                            );
+                            if (renderVideo !== DEFAULT_VIDEO) {
+                              setRenderVideo(DEFAULT_VIDEO);
+                            }
+                          }}
+                        />
+                      </div>
                     ) : isVideoRendering ? (
                       <div className="flex max-w-sm flex-col items-center justify-center p-6 text-center">
                         <RefreshCw className="mb-3 h-8 w-8 animate-spin text-white" />
