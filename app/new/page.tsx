@@ -449,7 +449,6 @@ export default function SamplePluginRendererPage() {
       }
       if (finalVideo) {
         setRenderVideo(finalVideo);
-        setHasRenderedVideo(true);
       }
       if (finalTitle) setSceneTitle(finalTitle);
     }
@@ -974,35 +973,49 @@ export default function SamplePluginRendererPage() {
     }
 
     setIsVideoRendering(true);
+    setHasRenderedVideo(false);
     setPreviewMode("video");
     setIsComparing(false);
-    setVideoProgress(15);
-    setVideoStepText("Interpolating 3D Camera Bezier Path...");
+    setVideoProgress(0);
+    setVideoStepText("Initializing 3D Camera Bezier Path & Trajectory...");
     setStatusMessage("Rendering 3D camera walkthrough...");
 
     setTimeout(() => {
+      setVideoProgress(20);
+      setVideoStepText("Interpolating 3D Camera Bezier Splines...");
+    }, 500);
+
+    setTimeout(() => {
       setVideoProgress(45);
-      setVideoStepText("Synthesizing 60fps Volumetric Frames...");
-    }, 700);
+      setVideoStepText("Synthesizing 60fps Volumetric Frame Buffers...");
+    }, 1100);
 
     setTimeout(() => {
-      setVideoProgress(78);
+      setVideoProgress(70);
       setVideoStepText("Raytracing Dynamic Lighting & Reflections...");
-    }, 1400);
+    }, 1800);
 
     setTimeout(() => {
-      setVideoProgress(95);
-      setVideoStepText("Encoding 4K Cinema MP4 Video...");
-    }, 2100);
+      setVideoProgress(90);
+      setVideoStepText("Denoising OptiX Temporal Anti-Aliasing Passes...");
+    }, 2500);
+
+    setTimeout(() => {
+      setVideoProgress(98);
+      setVideoStepText("Encoding 4K Cinema MP4 Video Container...");
+    }, 3100);
 
     setTimeout(() => {
       setVideoProgress(100);
-      setVideoStepText("Video Walkthrough Ready!");
+      setVideoStepText("3D Video Walkthrough Ready!");
+    }, 3600);
+
+    setTimeout(() => {
       setIsVideoRendering(false);
       setHasRenderedVideo(true);
       setPreviewMode("video");
       setStatusMessage("3D Video Walkthrough Ready!");
-    }, 2800);
+    }, 3900);
   };
 
   return (
@@ -2047,8 +2060,8 @@ export default function SamplePluginRendererPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* IMAGE VS VIDEO TOGGLE */}
-              {(hasRendered || hasRenderedVideo) && (
+              {/* IMAGE VS VIDEO TOGGLE - ONLY VISIBLE ONCE VIDEO HAS BEEN RENDERED */}
+              {hasRendered && hasRenderedVideo && (
                 <div className="flex items-center gap-1 rounded-lg border border-zinc-800 bg-zinc-900/80 p-0.5">
                   <button
                     type="button"
@@ -2085,8 +2098,8 @@ export default function SamplePluginRendererPage() {
                 </div>
               )}
 
-              {/* TOGGLE SPLIT SLIDER VS SIDE-BY-SIDE VIEW (IMAGE MODE ONLY) */}
-              {previewMode === "image" && (
+              {/* TOGGLE SPLIT SLIDER VS SIDE-BY-SIDE VIEW (IMAGE MODE ONLY AFTER RENDER) */}
+              {hasRendered && previewMode === "image" && (
                 <button
                   type="button"
                   onClick={() => setIsComparing(!isComparing)}
@@ -2111,12 +2124,12 @@ export default function SamplePluginRendererPage() {
                 </button>
               )}
 
-              {(hasRendered || hasRenderedVideo) && (
+              {(previewMode === "video" ? hasRenderedVideo : hasRendered) && (
                 <a
                   href={previewMode === "video" ? renderVideo : renderImg}
                   download={
                     previewMode === "video"
-                      ? "v6_slider_video.mp4"
+                      ? "v6_walkthrough_video.mp4"
                       : "v6_render_4k.jpg"
                   }
                   target="_blank"
@@ -2480,95 +2493,100 @@ export default function SamplePluginRendererPage() {
               </div>
             )}
 
-            {/* ACTION ROW BENEATH CARDS */}
-            <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
-              {/* SMALL BLACK BUTTON: PROCESS COMPARISON VIDEO */}
-              <button
-                type="button"
-                onClick={handleProcessComparisonVideo}
-                disabled={isProcessingComparisonVideo}
-                className={cn(
-                  "flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-[#09090b] px-4 text-xs font-semibold text-zinc-300 shadow-xl transition-all duration-150 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white active:scale-95 disabled:opacity-60",
-                  isProcessingComparisonVideo &&
-                    "border-cyan-500/50 bg-cyan-950/20 text-cyan-300 ring-1 ring-cyan-500/30"
-                )}
-                title="Create animated comparison video with smooth slider sweeps"
-              >
-                {isProcessingComparisonVideo ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
-                    <span>Processing ({comparisonProgress}%)...</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Process</span>
-                  </>
-                )}
-              </button>
-
-              {/* DIRECT DOWNLOAD COMPARISON / WALKTHROUGH VIDEO BUTTON */}
-              {hasRenderedVideo && (
-                <a
-                  href={renderVideo}
-                  download="v6_walkthrough_video.mp4"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-emerald-500/50 bg-gradient-to-r from-emerald-950/80 to-zinc-950 px-4 text-xs font-bold text-emerald-300 shadow-xl transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white active:scale-95"
-                >
-                  <Download className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>Download Video (MP4)</span>
-                </a>
-              )}
-
-              {/* RE-RENDER WALKTHROUGH BUTTON IN VIDEO MODE */}
-              {previewMode === "video" && (
-                <button
-                  type="button"
-                  onClick={handleTriggerVideoWalkthrough}
-                  disabled={isVideoRendering}
-                  className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
-                >
-                  <RefreshCw
+            {/* ACTION ROW BENEATH CARDS - ONLY VISIBLE ONCE IMAGE HAS BEEN RENDERED */}
+            {hasRendered && (
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+                {/* SMALL BLACK BUTTON: PROCESS COMPARISON VIDEO (ONLY IN COMPARISON MODE) */}
+                {isComparing && (
+                  <button
+                    type="button"
+                    onClick={handleProcessComparisonVideo}
+                    disabled={isProcessingComparisonVideo}
                     className={cn(
-                      "h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110",
-                      isVideoRendering && "animate-spin"
+                      "flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-[#09090b] px-4 text-xs font-semibold text-zinc-300 shadow-xl transition-all duration-150 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white active:scale-95 disabled:opacity-60",
+                      isProcessingComparisonVideo &&
+                        "border-cyan-500/50 bg-cyan-950/20 text-cyan-300 ring-1 ring-cyan-500/30"
                     )}
-                  />
-                  <span>Re-Render Walkthrough</span>
-                </button>
-              )}
+                    title="Create animated comparison video with smooth slider sweeps"
+                  >
+                    {isProcessingComparisonVideo ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                        <span>Processing ({comparisonProgress}%)...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-3.5 w-3.5 text-cyan-400" />
+                        <span>Process</span>
+                      </>
+                    )}
+                  </button>
+                )}
 
-              {/* PLAY VIDEO BUTTON IF IN IMAGE MODE */}
-              {hasRenderedVideo && previewMode === "image" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsComparing(false);
-                    setPreviewMode("video");
-                  }}
-                  className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-cyan-500/40 bg-zinc-950 px-3.5 text-xs font-bold text-cyan-300 shadow-xl transition-all duration-150 hover:border-cyan-400 hover:bg-zinc-900 hover:text-white active:scale-95"
-                >
-                  <Film className="h-3.5 w-3.5 text-cyan-400" />
-                  <span>Play Video</span>
-                </button>
-              )}
+                {/* DIRECT DOWNLOAD WALKTHROUGH VIDEO BUTTON - ONLY IN VIDEO MODE AFTER RENDERING */}
+                {hasRenderedVideo && previewMode === "video" && (
+                  <a
+                    href={renderVideo}
+                    download="v6_walkthrough_video.mp4"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-emerald-500/50 bg-gradient-to-r from-emerald-950/80 to-zinc-950 px-4 text-xs font-bold text-emerald-300 shadow-xl transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white active:scale-95"
+                  >
+                    <Download className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Download Video (MP4)</span>
+                  </a>
+                )}
 
-              {previewMode === "image" && (
-                <button
-                  type="button"
-                  onClick={handleTriggerVideoWalkthrough}
-                  disabled={isVideoRendering}
-                  className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
-                >
-                  <Film className="h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110" />
-                  <span>3D Walkthrough Video</span>
-                  <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-indigo-300 uppercase">
-                    4K
-                  </span>
-                </button>
-              )}
-            </div>
+                {/* RE-RENDER WALKTHROUGH BUTTON IN VIDEO MODE */}
+                {hasRenderedVideo && previewMode === "video" && (
+                  <button
+                    type="button"
+                    onClick={handleTriggerVideoWalkthrough}
+                    disabled={isVideoRendering}
+                    className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
+                  >
+                    <RefreshCw
+                      className={cn(
+                        "h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110",
+                        isVideoRendering && "animate-spin"
+                      )}
+                    />
+                    <span>Re-Render Walkthrough</span>
+                  </button>
+                )}
+
+                {/* PLAY VIDEO BUTTON IF IN IMAGE MODE AND VIDEO ALREADY RENDERED */}
+                {hasRenderedVideo && previewMode === "image" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsComparing(false);
+                      setPreviewMode("video");
+                    }}
+                    className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-cyan-500/40 bg-zinc-950 px-3.5 text-xs font-bold text-cyan-300 shadow-xl transition-all duration-150 hover:border-cyan-400 hover:bg-zinc-900 hover:text-white active:scale-95"
+                  >
+                    <Film className="h-3.5 w-3.5 text-cyan-400" />
+                    <span>Play Video</span>
+                  </button>
+                )}
+
+                {/* 3D WALKTHROUGH VIDEO BUTTON - VISIBLE IN IMAGE MODE */}
+                {previewMode === "image" && (
+                  <button
+                    type="button"
+                    onClick={handleTriggerVideoWalkthrough}
+                    disabled={isVideoRendering}
+                    className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
+                  >
+                    <Film className="h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110" />
+                    <span>3D Walkthrough Video</span>
+                    <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[9px] font-extrabold tracking-wider text-indigo-300 uppercase">
+                      4K
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* BOTTOM-RIGHT: INTERACTIVE FOLDER GALLERY */}
