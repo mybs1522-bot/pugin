@@ -5165,25 +5165,16 @@
       const initials = getInitials(email);
       const licenseId = getHashLicenseId(email);
 
-      // 1. Header Elements
+      // 1. Header Elements (Always clean PRO ACTIVE on main page)
       const elInitials = document.getElementById("avatarInitials");
       const elHeaderEmail = document.getElementById("avatarHeaderEmail");
       const elHeaderBadge = document.getElementById("avatarHeaderPlanBadge");
 
       if (elInitials) elInitials.innerText = initials;
       if (elHeaderEmail) elHeaderEmail.innerText = email;
+      if (elHeaderBadge) elHeaderBadge.innerText = "PRO ACTIVE";
 
-      if (elHeaderBadge) {
-        if (state.isPaid) {
-          elHeaderBadge.innerText = "PRO ACTIVE";
-        } else if (state.isExpired) {
-          elHeaderBadge.innerText = "TRIAL EXPIRED";
-        } else {
-          elHeaderBadge.innerText = "TRIAL (" + state.trialRemaining + "/" + state.trialLimit + " LEFT)";
-        }
-      }
-
-      // 2. Modal Header & Profile Pane
+      // 2. Modal Header & Profile Pane (Clean professional profile representation)
       const elModalHeaderInitials = document.getElementById("modalHeaderAvatarInitials");
       const elModalHeaderEmail = document.getElementById("modalHeaderTitleEmail");
       const elProfileInitials = document.getElementById("profilePaneInitials");
@@ -5204,37 +5195,16 @@
       if (elProfileEmail) elProfileEmail.innerText = email;
       if (elLicenseId) elLicenseId.innerText = licenseId;
 
-      if (state.isPaid) {
-        if (elAvatarShield) elAvatarShield.innerText = "PRO";
-        if (elVerifiedBadge) elVerifiedBadge.innerText = "✓ Verified Pro Cloud License";
-        if (elSessionStatus) elSessionStatus.innerText = "● Active Pro Session";
-        if (elPlanTier) elPlanTier.innerText = "Unlimited 4K Photoreal Pro";
-        if (elGpuNode) elGpuNode.innerText = "● Dedicated RTX 4090 Cluster";
-        if (elStorageLabel) elStorageLabel.innerText = "Cloud Render Cache & Texture Storage";
-        if (elStorageCount) elStorageCount.innerText = "34.8 GB / 100 GB (Unlimited)";
-        if (elStorageFill) elStorageFill.style.width = "35%";
-      } else if (state.isExpired) {
-        if (elAvatarShield) elAvatarShield.innerText = "EXPIRED";
-        if (elVerifiedBadge) elVerifiedBadge.innerText = "Trial Expired (0 Renders Left)";
-        if (elSessionStatus) elSessionStatus.innerText = "● Upgrade Required";
-        if (elPlanTier) elPlanTier.innerText = "Free Trial Expired (Limit Reached)";
-        if (elGpuNode) elGpuNode.innerText = "● Inactive (Upgrade to Activate)";
-        if (elStorageLabel) elStorageLabel.innerText = "Free Trial Render Quota";
-        if (elStorageCount) elStorageCount.innerText = state.trialLimit + " of " + state.trialLimit + " Free Renders Used (100%)";
-        if (elStorageFill) elStorageFill.style.width = "100%";
-      } else {
-        if (elAvatarShield) elAvatarShield.innerText = "TRIAL";
-        if (elVerifiedBadge) elVerifiedBadge.innerText = "● Free Trial (" + state.trialRemaining + " of " + state.trialLimit + " Left)";
-        if (elSessionStatus) elSessionStatus.innerText = "● Trial Session Active";
-        if (elPlanTier) elPlanTier.innerText = "Free Trial (" + state.trialRemaining + " Renders Left)";
-        if (elGpuNode) elGpuNode.innerText = "● Standard Cloud GPU Node";
-        if (elStorageLabel) elStorageLabel.innerText = "Free Trial Render Quota";
-        if (elStorageCount) elStorageCount.innerText = state.trialUsed + " of " + state.trialLimit + " Free Renders Used";
-        const pct = Math.round((state.trialUsed / state.trialLimit) * 100);
-        if (elStorageFill) elStorageFill.style.width = pct + "%";
-      }
+      if (elAvatarShield) elAvatarShield.innerText = "PRO";
+      if (elVerifiedBadge) elVerifiedBadge.innerText = "✓ Verified Pro Cloud License";
+      if (elSessionStatus) elSessionStatus.innerText = "● Active Session";
+      if (elPlanTier) elPlanTier.innerText = "Unlimited 4K Photoreal Pro";
+      if (elGpuNode) elGpuNode.innerText = "● Dedicated RTX 4090 Cluster";
+      if (elStorageLabel) elStorageLabel.innerText = "Cloud Render Cache & Texture Storage";
+      if (elStorageCount) elStorageCount.innerText = "34.8 GB / 100 GB";
+      if (elStorageFill) elStorageFill.style.width = "35%";
 
-      // 3. Billing Tab Elements
+      // 3. Billing & Plan Tab Elements (Detailed plan & trial status lives here)
       const elBillingEmail = document.getElementById("billingEmailVal");
       const elBillingPlanName = document.getElementById("billingPlanName");
       const elBillingPlanPrice = document.getElementById("billingPlanPrice");
@@ -5278,7 +5248,7 @@
             "<div class=\"perk-item\">✓ Priority 24/7 Dedicated Support</div>";
         }
       } else {
-        // Free Trial or Expired State
+        // Free Trial or Expired State (Only displayed here in Billing & Plan)
         if (elBillingPlanName) elBillingPlanName.innerText = state.isExpired ? "Free Trial Expired" : "Free Trial Edition";
         if (elBillingPlanPrice) elBillingPlanPrice.innerHTML = "$0.00 <span class=\"billing-period\">/ " + (state.isExpired ? "0 Renders Left" : state.trialRemaining + " Free Renders Remaining") + "</span>";
         if (elBillingStatusPill) {
