@@ -336,7 +336,7 @@ function UnifiedTrialForm({
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 pt-1">
         {/* EMAIL ADDRESS (Hidden when inside plugin or when defaultEmail is already provided) */}
-        {!shouldHideEmailInput && (
+        {!shouldHideEmailInput ? (
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
               Email Address
@@ -350,6 +350,18 @@ function UnifiedTrialForm({
               required
               autoFocus
             />
+          </div>
+        ) : (
+          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-xs">
+            <span className="flex items-center gap-1.5 text-zinc-400">
+              <span>👤</span>
+              <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
+                Account
+              </span>
+            </span>
+            <span className="font-mono font-semibold text-white">
+              {email || defaultEmail}
+            </span>
           </div>
         )}
 

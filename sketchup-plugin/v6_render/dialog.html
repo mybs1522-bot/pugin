@@ -2051,6 +2051,15 @@
 
       <!-- STRIPE CARD ELEMENTS -->
       <form id="pluginProCheckoutForm" onsubmit="handlePluginProCheckoutSubmit(event)">
+        <!-- USER ACCOUNT EMAIL DISPLAY -->
+        <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.04); border:1px solid #27272a; border-radius:10px; padding:8px 12px; margin-bottom:12px;">
+          <span style="display:flex; align-items:center; gap:6px; font-size:11px; color:#a1a1aa;">
+            <span>👤</span>
+            <span style="font-weight:700; text-transform:uppercase; letter-spacing:0.04em; font-size:10px;">ACCOUNT</span>
+          </span>
+          <span id="checkoutUserEmailDisplay" style="font-size:12px; font-weight:700; color:#ffffff; font-family:'JetBrains Mono', monospace;"></span>
+        </div>
+
         <!-- CARD NUMBER -->
         <div style="margin-bottom:12px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -2982,6 +2991,10 @@
       // Open in-plugin direct card modal
       const proModal = document.getElementById('proCheckoutModal');
       if (proModal) {
+        const emailDisplayEl = document.getElementById('checkoutUserEmailDisplay');
+        if (emailDisplayEl) {
+          emailDisplayEl.innerText = activeEmail;
+        }
         proModal.style.display = 'flex';
         selectPluginCheckoutPlan('monthly');
         setTimeout(() => {

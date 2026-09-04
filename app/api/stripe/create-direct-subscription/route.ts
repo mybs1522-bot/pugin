@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
 import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
 import {
   setUserPaidStatus,
@@ -136,6 +137,21 @@ export async function POST(req: NextRequest) {
         source: "In-Plugin Direct Paid Pro Subscription (No Trial)",
       },
     });
+
+    // Check for 3D Secure / SCA requirement
+    const latestInvoice = sub.latest_invoice as any;
+    const paymentIntent = latestInvoice?.payment_intent;
+
+    if (paymentIntent && paymentIntent.status === "requires_action") {
+      return NextResponse.json({
+        success: true,
+        requiresAction: true,
+        clientSecret: paymentIntent.client_secret,
+        subscriptionId: sub.id,
+        customerId,
+        plan,
+      });
+    }
 
     // Check payment status of latest invoice
     if (
