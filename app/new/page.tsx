@@ -41,7 +41,6 @@ import {
   InteractiveFolderGallery,
   GalleryPhoto,
 } from "@/components/ui/interactive-folder-gallery";
-import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import {
   INTERIOR_SURFACES,
   INTERIOR_PBR_CATEGORIES,
@@ -238,8 +237,7 @@ export default function SamplePluginRendererPage() {
   const [authOtpCode, setAuthOtpCode] = useState<string>("");
   const [authStep, setAuthStep] = useState<1 | 2>(1);
   const [authStatusText, setAuthStatusText] = useState<string>("");
-  const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
-  const [isPaidUser, setIsPaidUser] = useState<boolean>(false);
+  const [isPaidUser, setIsPaidUser] = useState<boolean>(true);
 
   // Support Modal State
   const [isSupportModalOpen, setIsSupportModalOpen] = useState<boolean>(false);
@@ -449,7 +447,10 @@ export default function SamplePluginRendererPage() {
           },
         ]);
       }
-      if (finalVideo) setRenderVideo(finalVideo);
+      if (finalVideo) {
+        setRenderVideo(finalVideo);
+        setHasRenderedVideo(true);
+      }
       if (finalTitle) setSceneTitle(finalTitle);
     }
 
@@ -955,15 +956,26 @@ export default function SamplePluginRendererPage() {
     }
   };
 
-  const handleTriggerVideoWalkthrough = () => {
+  const handleTriggerVideoWalkthrough = async () => {
     if (isVideoRendering) return;
 
-    if (!isPaidUser) {
-      setIsProModalOpen(true);
-      return;
+    // Retrieve custom video from IndexedDB or storage if available
+    try {
+      const idbVideo = await getAsset("custom_render_video");
+      const storedVideo =
+        idbVideo ||
+        localStorage.getItem("custom_render_video") ||
+        sessionStorage.getItem("custom_render_video");
+      if (storedVideo) {
+        setRenderVideo(storedVideo);
+      }
+    } catch (e) {
+      console.warn("Storage retrieval:", e);
     }
 
     setIsVideoRendering(true);
+    setPreviewMode("video");
+    setIsComparing(false);
     setVideoProgress(15);
     setVideoStepText("Interpolating 3D Camera Bezier Path...");
     setStatusMessage("Rendering 3D camera walkthrough...");
@@ -971,17 +983,17 @@ export default function SamplePluginRendererPage() {
     setTimeout(() => {
       setVideoProgress(45);
       setVideoStepText("Synthesizing 60fps Volumetric Frames...");
-    }, 800);
+    }, 700);
 
     setTimeout(() => {
       setVideoProgress(78);
       setVideoStepText("Raytracing Dynamic Lighting & Reflections...");
-    }, 1600);
+    }, 1400);
 
     setTimeout(() => {
       setVideoProgress(95);
       setVideoStepText("Encoding 4K Cinema MP4 Video...");
-    }, 2400);
+    }, 2100);
 
     setTimeout(() => {
       setVideoProgress(100);
@@ -990,7 +1002,7 @@ export default function SamplePluginRendererPage() {
       setHasRenderedVideo(true);
       setPreviewMode("video");
       setStatusMessage("3D Video Walkthrough Ready!");
-    }, 3000);
+    }, 2800);
   };
 
   return (
@@ -2192,6 +2204,7 @@ export default function SamplePluginRendererPage() {
                     {/* VIDEO MODE */}
                     {previewMode === "video" && hasRenderedVideo ? (
                       <video
+                        key={renderVideo}
                         src={renderVideo}
                         controls
                         autoPlay
@@ -2498,7 +2511,7 @@ export default function SamplePluginRendererPage() {
               {hasRenderedVideo && (
                 <a
                   href={renderVideo}
-                  download="v6_comparison_video.mp4"
+                  download="v6_walkthrough_video.mp4"
                   target="_blank"
                   rel="noreferrer"
                   className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-emerald-500/50 bg-gradient-to-r from-emerald-950/80 to-zinc-950 px-4 text-xs font-bold text-emerald-300 shadow-xl transition-all duration-150 hover:border-emerald-400 hover:bg-emerald-900/60 hover:text-white active:scale-95"
@@ -2506,6 +2519,24 @@ export default function SamplePluginRendererPage() {
                   <Download className="h-3.5 w-3.5 text-emerald-400" />
                   <span>Download Video (MP4)</span>
                 </a>
+              )}
+
+              {/* RE-RENDER WALKTHROUGH BUTTON IN VIDEO MODE */}
+              {previewMode === "video" && (
+                <button
+                  type="button"
+                  onClick={handleTriggerVideoWalkthrough}
+                  disabled={isVideoRendering}
+                  className="group flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-indigo-500/40 bg-zinc-950 px-4 text-xs font-bold text-white shadow-xl transition-all duration-200 hover:border-indigo-400/70 hover:bg-zinc-900 hover:shadow-[0_0_16px_rgba(99,102,241,0.3)] active:scale-95 disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={cn(
+                      "h-3.5 w-3.5 text-indigo-400 transition-transform duration-200 group-hover:scale-110",
+                      isVideoRendering && "animate-spin"
+                    )}
+                  />
+                  <span>Re-Render Walkthrough</span>
+                </button>
               )}
 
               {/* PLAY VIDEO BUTTON IF IN IMAGE MODE */}
@@ -2523,7 +2554,7 @@ export default function SamplePluginRendererPage() {
                 </button>
               )}
 
-              {hasRendered && previewMode === "image" && (
+              {previewMode === "image" && (
                 <button
                   type="button"
                   onClick={handleTriggerVideoWalkthrough}
@@ -2809,46 +2840,6 @@ export default function SamplePluginRendererPage() {
           </div>
         )}
       </AnimatePresence>
-
-      {/* ACTIVATE PRO STRIPE MODAL (AUTOMATICALLY POPULATED WITH LOGGED-IN EMAIL) */}
-      <DownloadPricingModal
-        open={isProModalOpen}
-        onOpenChange={setIsProModalOpen}
-        defaultEmail={userEmail}
-        hideEmail={true}
-        mode="activate_pro"
-        onProActivated={() => {
-          setIsPaidUser(true);
-          localStorage.setItem("v6_is_paid", "true");
-          sessionStorage.setItem("v6_is_paid", "true");
-          setIsProModalOpen(false);
-          // Start video rendering immediately
-          setIsVideoRendering(true);
-          setVideoProgress(15);
-          setVideoStepText("Interpolating 3D Camera Bezier Path...");
-          setStatusMessage("Rendering 3D camera walkthrough...");
-          setTimeout(() => {
-            setVideoProgress(45);
-            setVideoStepText("Synthesizing 60fps Volumetric Frames...");
-          }, 800);
-          setTimeout(() => {
-            setVideoProgress(78);
-            setVideoStepText("Raytracing Dynamic Lighting & Reflections...");
-          }, 1600);
-          setTimeout(() => {
-            setVideoProgress(95);
-            setVideoStepText("Encoding 4K Cinema MP4 Video...");
-          }, 2400);
-          setTimeout(() => {
-            setVideoProgress(100);
-            setVideoStepText("Video Walkthrough Ready!");
-            setIsVideoRendering(false);
-            setHasRenderedVideo(true);
-            setPreviewMode("video");
-            setStatusMessage("3D Video Walkthrough Ready!");
-          }, 3000);
-        }}
-      />
     </div>
   );
 }
