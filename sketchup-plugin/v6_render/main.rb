@@ -40,6 +40,11 @@ module V6Render
         capture_and_send_to_js
       end
 
+      # Action callback from JS to open URLs in user's default external browser
+      @dialog.add_action_callback("open_external_url") do |action_context, url|
+        UI.openURL(url.to_s) if url && !url.to_s.empty?
+      end
+
       @dialog.show
     end
 

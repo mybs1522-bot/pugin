@@ -2725,75 +2725,114 @@
       modal.style.display = 'flex';
     }
 
+    function openExternalUrl(url) {
+      if (!url) return;
+      try {
+        if (window.sketchup && typeof window.sketchup.open_external_url === 'function') {
+          window.sketchup.open_external_url(url);
+          return;
+        }
+      } catch (e) {
+        console.warn('sketchup.open_external_url callback notice', e);
+      }
+      try {
+        const opened = window.open(url, '_blank');
+        if (!opened) {
+          window.location.href = url;
+        }
+      } catch (e) {
+        window.location.href = url;
+      }
+    }
+
+    function getUserEmail() {
+      if (typeof userEmail !== 'undefined' && userEmail) return userEmail.trim().toLowerCase();
+      const stored = localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || sessionStorage.getItem('v6_user_email');
+      if (stored) return stored.trim().toLowerCase();
+      return '';
+    }
+
     async function openProPlanCheckout(btnEl) {
-      const userEmail = getUserEmail();
-      if (!userEmail) {
-        promptForUserEmail();
+      const activeEmail = getUserEmail();
+      if (!activeEmail) {
+        const authModal = document.getElementById('authModal');
+        if (authModal) authModal.style.display = 'flex';
+        showStatus('Please log in with your email first.', 'error');
         return;
       }
 
       const originalBtnText = btnEl ? btnEl.innerHTML : null;
       if (btnEl) {
         btnEl.disabled = true;
-        btnEl.innerHTML = '⚡ Activating & Charging Card...';
+        btnEl.innerHTML = '⚡ Connecting to Stripe...';
       }
 
-      showStatus('⚡ Activating Pro plan and charging saved card on file...', 'loading');
+      showStatus('⚡ Connecting to Stripe payment gateway...', 'loading');
 
       try {
         const serverUrl = getLiveServerUrl();
-        const res = await fetch(serverUrl + '/api/stripe/activate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userEmail, plan: 'monthly' })
-        });
+        
+        // 1. Try 1-Click activation if user already has a card on file
+        let data = null;
+        try {
+          const res = await fetch(serverUrl + '/api/stripe/activate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: activeEmail, plan: 'monthly' })
+          });
+          data = await res.json();
+        } catch (netErr) {
+          console.warn('Activate endpoint fetch notice:', netErr);
+        }
 
-        const data = await res.json();
-        console.log('[1-CLICK ACTIVATE RESPONSE]', data);
-
-        if (data.success && data.isPaid) {
+        if (data && data.success && data.isPaid) {
           // 1-Click Success! Card was charged instantly off-session
           localStorage.setItem('v6_is_paid', 'true');
           localStorage.setItem('v6_plan_status', 'paid');
           localStorage.setItem('v6_payment_mode', 'Stripe Pro Active');
+          sessionStorage.setItem('v6_is_paid', 'true');
 
           // Close trial over modal
           const modal = document.getElementById('trialOverModal');
           if (modal) modal.style.display = 'none';
 
           // Reset trial over placeholder state in render viewport
-          resetTrialOverState();
+          if (typeof resetTrialOverState === 'function') resetTrialOverState();
 
           // Refresh account badge to Pro Active
-          renderUserAccountBadge();
+          if (typeof renderUserAccountBadge === 'function') renderUserAccountBadge();
 
           showStatus('🎉 ' + (data.message || 'Subscription successfully activated! Unlimited 4K renders unlocked.'), 'success');
-          alert('🎉 V6 Render Pro Activated!\n\nYour card on file has been charged and your account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
+          alert('🎉 V6 Render Pro Activated!\n\nYour account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
           return;
         }
 
-        if (data.needsCheckout && data.url) {
-          // No card on file yet — open Stripe Checkout to add payment method
-          showStatus('Opening secure Stripe Checkout...', 'loading');
-          if (window.sketchup) {
-            window.location.href = data.url;
-          } else {
-            window.open(data.url, '_blank');
-          }
+        if (data && data.needsCheckout && data.url) {
+          showStatus('✓ Opening secure Stripe Checkout in your browser...', 'loading');
+          openExternalUrl(data.url);
           return;
         }
 
-        if (data.error) {
-          showStatus('❌ ' + data.error, 'error');
-          alert('Could not activate plan: ' + data.error + '\nOpening checkout...');
-          const liveUrl = getLiveServerUrl() + '/#pricing';
-          window.open(liveUrl, '_blank');
+        // 2. Direct create-checkout fallback: Creates direct Stripe Checkout session with pre-filled email
+        showStatus('Opening secure Stripe Checkout...', 'loading');
+        const chkRes = await fetch(serverUrl + '/api/stripe/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: activeEmail, plan: 'monthly' })
+        });
+        const chkData = await chkRes.json();
+        if (chkData && chkData.url) {
+          showStatus('✓ Stripe Checkout opened in your browser.', 'success');
+          openExternalUrl(chkData.url);
+        } else {
+          // Final fallback to pricing section on site
+          openExternalUrl(serverUrl + '/#pricing?email=' + encodeURIComponent(activeEmail));
         }
       } catch (err) {
-        console.error('1-Click Activate Exception:', err);
-        showStatus('❌ Network error. Opening checkout...', 'error');
-        const liveUrl = getLiveServerUrl() + '/#pricing';
-        window.open(liveUrl, '_blank');
+        console.error('Pro plan checkout error:', err);
+        showStatus('Opening checkout in browser...', 'loading');
+        const liveUrl = getLiveServerUrl();
+        openExternalUrl(liveUrl + '/#pricing?email=' + encodeURIComponent(activeEmail));
       } finally {
         if (btnEl && originalBtnText) {
           btnEl.disabled = false;
