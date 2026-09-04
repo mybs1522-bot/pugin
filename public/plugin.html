@@ -116,38 +116,40 @@
     }
 
     
+    
     .header-right {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    /* SLEEK PROFESSIONAL PROFILE & BILLING PILL */
+    /* PURE BLACK & WHITE MONOCHROME PROFILE PILL */
     .header-profile-menu-pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 9999px;
       padding: 4px 10px 4px 5px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      color: #e4e4e7;
+      color: #f4f4f5;
       cursor: pointer;
       height: 32px;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       outline: none;
     }
     .header-profile-menu-pill:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(99, 102, 241, 0.45);
-      box-shadow: 0 0 14px rgba(99, 102, 241, 0.25);
+      background: #18181b;
+      border-color: #52525b;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.08);
       transform: translateY(-1px);
     }
     .profile-pill-avatar {
       width: 22px;
       height: 22px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      background: #27272a;
+      border: 1px solid #3f3f46;
       color: #ffffff;
       font-size: 10px;
       font-weight: 800;
@@ -156,18 +158,16 @@
       justify-content: center;
       position: relative;
       flex-shrink: 0;
-      box-shadow: 0 2px 5px rgba(79, 70, 229, 0.4);
     }
     .profile-pill-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #10b981;
-      border: 1px solid #0e0e12;
+      background: #ffffff;
+      border: 1px solid #000000;
       position: absolute;
       bottom: -1px;
       right: -1px;
-      box-shadow: 0 0 4px #10b981;
     }
     .profile-pill-email {
       font-size: 11px;
@@ -179,9 +179,9 @@
       white-space: nowrap;
     }
     .profile-pill-badge {
-      background: rgba(99, 102, 241, 0.18);
-      border: 1px solid rgba(99, 102, 241, 0.35);
-      color: #a5b4fc;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #ffffff;
       font-size: 9px;
       font-weight: 800;
       padding: 1px 6px;
@@ -190,12 +190,12 @@
     }
     .profile-pill-arrow {
       font-size: 9px;
-      color: #71717a;
+      color: #a1a1aa;
       transition: transform 0.2s;
     }
 
     .support-btn-header {
-      background: #18181b;
+      background: #121215;
       border: 1px solid #27272a;
       color: #d4d4d8;
       border-radius: 8px;
@@ -210,12 +210,13 @@
       transition: all 0.2s;
     }
     .support-btn-header:hover {
-      background: #27272a;
+      background: #18181b;
+      border-color: #52525b;
       color: #ffffff;
     }
     .badge-pill-red {
-      background: #ef4444;
-      color: #ffffff;
+      background: #ffffff;
+      color: #000000;
       font-size: 9px;
       font-weight: 800;
       padding: 1px 5px;
@@ -224,15 +225,18 @@
     }
     .version-tag {
       font-size: 12px;
-      color: #71717a;
+      color: #a1a1aa;
       font-weight: 500;
     }
+    .version-tag:hover {
+      color: #ffffff;
+    }
 
-    /* USER PROFILE MODAL OVERLAY & WINDOW */
+    /* PURE MONOCHROME PROFILE MODAL */
     .user-profile-modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.88);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       z-index: 999999;
@@ -247,15 +251,15 @@
       to { opacity: 1; }
     }
     .user-profile-modal-window {
-      background: #121217;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #0d0d10;
+      border: 1px solid #27272a;
       border-radius: 16px;
       width: 640px;
       max-width: 95vw;
       max-height: 88vh;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.8), 0 0 35px rgba(99,102,241,0.15);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.95);
       overflow: hidden;
       animation: modalWindowSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -266,11 +270,11 @@
 
     .profile-modal-header {
       padding: 16px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #27272a;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(255, 255, 255, 0.02);
+      background: #121215;
     }
     .profile-modal-title-wrap {
       display: flex;
@@ -281,14 +285,14 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #9333ea);
+      background: #27272a;
+      border: 1px solid #3f3f46;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 13px;
       font-weight: 800;
       color: #ffffff;
-      box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
     }
     .profile-modal-title {
       font-size: 15px;
@@ -300,10 +304,10 @@
       color: #a1a1aa;
     }
     .modal-close-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #18181b;
+      border: 1px solid #27272a;
       color: #a1a1aa;
-      font-size: 15px;
+      font-size: 14px;
       width: 30px;
       height: 30px;
       border-radius: 50%;
@@ -314,17 +318,18 @@
       transition: all 0.15s;
     }
     .modal-close-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: #27272a;
       color: #ffffff;
+      border-color: #52525b;
     }
 
-    /* PROFILE NAV TABS */
+    /* MONOCHROME PROFILE NAV TABS */
     .profile-nav-tabs {
       display: flex;
       gap: 4px;
       padding: 8px 16px 0 16px;
-      background: rgba(0, 0, 0, 0.2);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      background: #09090b;
+      border-bottom: 1px solid #27272a;
       overflow-x: auto;
     }
     .profile-tab-btn {
@@ -334,7 +339,7 @@
       padding: 10px 16px;
       font-size: 12px;
       font-weight: 600;
-      color: #a1a1aa;
+      color: #71717a;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
@@ -343,12 +348,12 @@
       white-space: nowrap;
     }
     .profile-tab-btn:hover {
-      color: #e4e4e7;
+      color: #d4d4d8;
     }
     .profile-tab-btn.active {
       color: #ffffff;
-      border-bottom-color: #6366f1;
-      background: rgba(99, 102, 241, 0.08);
+      border-bottom-color: #ffffff;
+      background: #18181b;
       border-radius: 6px 6px 0 0;
     }
 
@@ -357,6 +362,7 @@
       padding: 20px;
       overflow-y: auto;
       max-height: calc(88vh - 130px);
+      background: #0d0d10;
     }
     .profile-pane {
       display: none;
@@ -370,10 +376,10 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* TAB 1: PROFILE STYLES */
+    /* TAB 1: PROFILE MONOCHROME */
     .profile-hero-card {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 12px;
       padding: 16px;
       display: flex;
@@ -392,7 +398,8 @@
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #4f46e5, #9333ea);
+      background: #27272a;
+      border: 1px solid #3f3f46;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -400,19 +407,19 @@
       font-weight: 800;
       color: #ffffff;
       position: relative;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
     }
     .avatar-pro-shield {
       position: absolute;
       bottom: -4px;
       right: -4px;
-      background: #10b981;
-      color: #0e0e12;
+      background: #ffffff;
+      color: #000000;
       font-size: 8px;
       font-weight: 900;
       padding: 1px 4px;
       border-radius: 4px;
-      border: 1px solid #121217;
+      border: 1px solid #000000;
+      letter-spacing: 0.05em;
     }
     .profile-hero-name {
       font-size: 15px;
@@ -427,20 +434,20 @@
       font-size: 11px;
     }
     .badge-verified-pro {
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #ffffff;
+      background: #1c1c21;
+      border: 1px solid #3f3f46;
       padding: 2px 8px;
       border-radius: 9999px;
       font-weight: 600;
     }
     .badge-active-dot {
-      color: #818cf8;
+      color: #a1a1aa;
     }
     .btn-profile-secondary {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #fca5a5;
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #e4e4e7;
       padding: 8px 14px;
       border-radius: 8px;
       font-size: 11px;
@@ -449,7 +456,8 @@
       transition: all 0.2s;
     }
     .btn-profile-secondary:hover {
-      background: rgba(239, 68, 68, 0.25);
+      background: #27272a;
+      border-color: #52525b;
       color: #ffffff;
     }
 
@@ -460,8 +468,8 @@
       margin-bottom: 16px;
     }
     .profile-info-box {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px;
     }
@@ -475,7 +483,7 @@
     }
     .info-value {
       font-size: 12px;
-      color: #e4e4e7;
+      color: #ffffff;
       font-weight: 600;
     }
     .info-value-row {
@@ -486,15 +494,16 @@
     .info-code {
       font-family: monospace;
       font-size: 11px;
-      color: #c7d2fe;
-      background: rgba(99, 102, 241, 0.15);
+      color: #ffffff;
+      background: #1c1c21;
+      border: 1px solid #27272a;
       padding: 2px 6px;
       border-radius: 4px;
     }
     .copy-code-btn {
       background: transparent;
       border: none;
-      color: #818cf8;
+      color: #a1a1aa;
       font-size: 10px;
       cursor: pointer;
       text-decoration: underline;
@@ -504,8 +513,8 @@
     }
 
     .profile-storage-bar-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px 14px;
     }
@@ -517,22 +526,23 @@
       margin-bottom: 8px;
     }
     .storage-count {
-      color: #e4e4e7;
+      color: #ffffff;
       font-weight: 600;
     }
     .storage-bar-track {
       height: 6px;
-      background: rgba(255, 255, 255, 0.08);
+      background: #27272a;
       border-radius: 9999px;
       overflow: hidden;
     }
     .storage-bar-fill {
       height: 100%;
-      background: linear-gradient(90deg, #6366f1, #10b981);
+      background: #ffffff;
       border-radius: 9999px;
+      transition: width 0.3s ease;
     }
 
-    /* TAB 2: SETTINGS STYLES */
+    /* TAB 2: SETTINGS MONOCHROME */
     .settings-section-title {
       font-size: 13px;
       font-weight: 700;
@@ -545,8 +555,8 @@
       gap: 8px;
     }
     .setting-row {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px 14px;
       display: flex;
@@ -571,7 +581,7 @@
     .profile-select {
       background: #18181b;
       border: 1px solid #27272a;
-      color: #e4e4e7;
+      color: #ffffff;
       border-radius: 8px;
       padding: 6px 10px;
       font-size: 11px;
@@ -579,7 +589,7 @@
       cursor: pointer;
     }
     .profile-select:focus {
-      border-color: #6366f1;
+      border-color: #52525b;
     }
     .switch-toggle {
       position: relative;
@@ -613,10 +623,11 @@
       transition: 0.2s;
     }
     .switch-toggle input:checked + .switch-slider {
-      background-color: #6366f1;
+      background-color: #ffffff;
     }
     .switch-toggle input:checked + .switch-slider:before {
       transform: translateX(16px);
+      background-color: #000000;
     }
     .settings-save-bar {
       margin-top: 16px;
@@ -626,9 +637,9 @@
       gap: 12px;
     }
     .btn-save-settings {
-      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      background: #ffffff;
       border: none;
-      color: #ffffff;
+      color: #000000;
       padding: 8px 18px;
       border-radius: 8px;
       font-size: 12px;
@@ -637,13 +648,13 @@
       transition: all 0.2s;
     }
     .btn-save-settings:hover {
-      box-shadow: 0 0 14px rgba(99, 102, 241, 0.5);
+      background: #e4e4e7;
     }
 
-    /* TAB 3: VERSION STYLES */
+    /* TAB 3: VERSION MONOCHROME */
     .version-hero-card {
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.25);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 12px;
       padding: 16px;
       display: flex;
@@ -654,7 +665,8 @@
     .version-logo-icon {
       width: 44px;
       height: 44px;
-      background: #6366f1;
+      background: #27272a;
+      border: 1px solid #3f3f46;
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -663,7 +675,6 @@
       font-weight: 900;
       color: #ffffff;
       letter-spacing: -0.05em;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
     }
     .version-number-title {
       font-size: 14px;
@@ -685,12 +696,11 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background-color: #34d399;
-      animation: pulseDot 2s infinite ease-in-out;
+      background-color: #ffffff;
     }
     .version-specs-list {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 10px 14px;
       margin-bottom: 16px;
@@ -699,7 +709,7 @@
       display: flex;
       justify-content: space-between;
       padding: 7px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid #1c1c21;
       font-size: 11px;
     }
     .spec-row:last-child {
@@ -709,7 +719,7 @@
       color: #71717a;
     }
     .spec-val {
-      color: #e4e4e7;
+      color: #ffffff;
       font-weight: 600;
     }
     .version-actions-bar {
@@ -718,9 +728,9 @@
       justify-content: center;
     }
     .btn-check-updates, .btn-diagnostics {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #d4d4d8;
+      background: #18181b;
+      border: 1px solid #27272a;
+      color: #ffffff;
       border-radius: 8px;
       padding: 8px 16px;
       font-size: 11px;
@@ -729,14 +739,14 @@
       transition: all 0.2s;
     }
     .btn-check-updates:hover, .btn-diagnostics:hover {
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
+      background: #27272a;
+      border-color: #52525b;
     }
 
-    /* TAB 4: BILLING STYLES */
+    /* TAB 4: BILLING & PLAN MONOCHROME */
     .billing-plan-card {
-      background: linear-gradient(135deg, rgba(79, 70, 229, 0.15), rgba(147, 51, 234, 0.1));
-      border: 1px solid rgba(99, 102, 241, 0.35);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 14px;
@@ -755,7 +765,7 @@
     .billing-plan-price {
       font-size: 20px;
       font-weight: 900;
-      color: #818cf8;
+      color: #ffffff;
       margin-top: 2px;
     }
     .billing-period {
@@ -764,9 +774,9 @@
       font-weight: 400;
     }
     .billing-status-pill {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      color: #34d399;
+      background: #1c1c21;
+      border: 1px solid #3f3f46;
+      color: #ffffff;
       font-size: 11px;
       font-weight: 700;
       padding: 4px 10px;
@@ -779,11 +789,11 @@
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: #10b981;
+      background: #ffffff;
     }
     .billing-card-divider {
       height: 1px;
-      background: rgba(255, 255, 255, 0.08);
+      background: #27272a;
       margin: 12px 0;
     }
     .billing-meta-grid {
@@ -804,13 +814,33 @@
     }
     .meta-val {
       font-size: 12px;
-      color: #e4e4e7;
+      color: #ffffff;
       font-weight: 600;
     }
 
+    .billing-upgrade-box {
+      margin-top: 14px;
+    }
+    .btn-upgrade-pro-billing {
+      background: #ffffff;
+      border: none;
+      color: #000000;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 12px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.2s;
+    }
+    .btn-upgrade-pro-billing:hover {
+      background: #e4e4e7;
+      transform: translateY(-1px);
+    }
+
     .billing-perks-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px 14px;
       margin-bottom: 14px;
@@ -834,8 +864,8 @@
     }
 
     .billing-invoices-section {
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px 14px;
       margin-bottom: 16px;
@@ -858,7 +888,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 6px 8px;
-      background: rgba(255, 255, 255, 0.02);
+      background: #18181b;
+      border: 1px solid #27272a;
       border-radius: 6px;
       font-size: 11px;
     }
@@ -868,25 +899,24 @@
     }
     .invoice-desc {
       flex: 1;
-      color: #e4e4e7;
+      color: #ffffff;
     }
     .invoice-amount {
-      color: #34d399;
+      color: #ffffff;
       font-weight: 700;
       margin-right: 12px;
     }
     .invoice-dl-btn {
-      background: none;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #a1a1aa;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #ffffff;
       border-radius: 4px;
       padding: 2px 6px;
       font-size: 9px;
       cursor: pointer;
     }
     .invoice-dl-btn:hover {
-      color: #ffffff;
-      border-color: #6366f1;
+      background: #3f3f46;
     }
 
     .billing-cancel-trigger-row {
@@ -903,22 +933,22 @@
       transition: color 0.15s;
     }
     .btn-cancel-trigger:hover {
-      color: #f87171;
+      color: #ffffff;
     }
 
-    /* RETENTION CANCELLATION FLOW STYLES */
+    /* MONOCHROME RETENTION CANCELLATION FLOW */
     .cancel-progress-bar-wrap {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-bottom: 12px;
       padding-bottom: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid #27272a;
     }
     .cancel-step-counter {
       font-size: 11px;
       font-weight: 700;
-      color: #fb7185;
+      color: #ffffff;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -930,19 +960,19 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
+      background: #27272a;
     }
     .step-dot.active {
-      background: #f43f5e;
-      box-shadow: 0 0 8px #f43f5e;
+      background: #ffffff;
+      box-shadow: 0 0 6px #ffffff;
     }
     .step-dot.done {
-      background: #10b981;
+      background: #71717a;
     }
 
     .cancel-warning-banner {
-      background: rgba(225, 29, 72, 0.12);
-      border: 1px solid rgba(225, 29, 72, 0.35);
+      background: #18181b;
+      border: 1px solid #3f3f46;
       border-radius: 10px;
       padding: 12px 14px;
       display: flex;
@@ -951,17 +981,17 @@
       margin-bottom: 14px;
     }
     .warning-icon {
-      font-size: 16px;
+      font-size: 14px;
     }
     .warning-text {
       font-size: 11px;
-      color: #fecdd3;
+      color: #e4e4e7;
       line-height: 1.4;
     }
 
     .cancel-question-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #121215;
+      border: 1px solid #27272a;
       border-radius: 12px;
       padding: 14px;
       margin-bottom: 16px;
@@ -984,8 +1014,8 @@
       gap: 8px;
     }
     .cancel-radio-option, .cancel-checkbox-option {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #18181b;
+      border: 1px solid #27272a;
       border-radius: 8px;
       padding: 10px 12px;
       display: flex;
@@ -995,12 +1025,12 @@
       transition: all 0.15s;
     }
     .cancel-radio-option:hover, .cancel-checkbox-option:hover {
-      background: rgba(255, 255, 255, 0.05);
-      border-color: rgba(255, 255, 255, 0.15);
+      background: #27272a;
+      border-color: #3f3f46;
     }
     .cancel-radio-option input, .cancel-checkbox-option input {
       margin-top: 3px;
-      accent-color: #6366f1;
+      accent-color: #ffffff;
     }
     .option-content {
       flex: 1;
@@ -1008,7 +1038,7 @@
     .option-title {
       font-size: 11px;
       font-weight: 600;
-      color: #e4e4e7;
+      color: #ffffff;
     }
     .option-sub {
       font-size: 10px;
@@ -1017,15 +1047,15 @@
     }
 
     .cancel-vip-offer-card {
-      background: linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(99, 102, 241, 0.15));
-      border: 1px solid rgba(234, 179, 8, 0.4);
+      background: #121215;
+      border: 1px solid #3f3f46;
       border-radius: 12px;
       padding: 16px;
       text-align: center;
     }
     .vip-badge-pill {
       display: inline-block;
-      background: linear-gradient(90deg, #f59e0b, #eab308);
+      background: #ffffff;
       color: #000000;
       font-size: 9px;
       font-weight: 900;
@@ -1052,8 +1082,8 @@
       gap: 10px;
     }
     .vip-deal-box {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #18181b;
+      border: 1px solid #27272a;
       border-radius: 10px;
       padding: 12px;
       display: flex;
@@ -1062,14 +1092,13 @@
       text-align: center;
     }
     .vip-deal-box.featured {
-      border-color: rgba(234, 179, 8, 0.6);
-      background: rgba(234, 179, 8, 0.08);
-      box-shadow: 0 0 16px rgba(234, 179, 8, 0.2);
+      border-color: #52525b;
+      background: #1c1c21;
     }
     .deal-tag {
       font-size: 8px;
       font-weight: 800;
-      color: #fbbf24;
+      color: #ffffff;
       margin-bottom: 4px;
       letter-spacing: 0.05em;
     }
@@ -1081,7 +1110,7 @@
     .deal-price {
       font-size: 16px;
       font-weight: 900;
-      color: #facc15;
+      color: #ffffff;
       margin: 4px 0;
     }
     .deal-sub {
@@ -1092,7 +1121,7 @@
       flex: 1;
     }
     .btn-claim-discount {
-      background: linear-gradient(135deg, #eab308, #ca8a04);
+      background: #ffffff;
       border: none;
       color: #000000;
       font-weight: 800;
@@ -1104,12 +1133,11 @@
       transition: all 0.15s;
     }
     .btn-claim-discount:hover {
-      box-shadow: 0 0 12px rgba(234, 179, 8, 0.6);
-      transform: scale(1.02);
+      background: #e4e4e7;
     }
     .btn-pause-sub {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: #27272a;
+      border: 1px solid #3f3f46;
       color: #ffffff;
       font-weight: 700;
       font-size: 11px;
@@ -1120,7 +1148,7 @@
       transition: all 0.15s;
     }
     .btn-pause-sub:hover {
-      background: rgba(255, 255, 255, 0.2);
+      background: #3f3f46;
     }
 
     .double-negative-box {
@@ -1136,10 +1164,10 @@
       color: #d4d4d8;
     }
     .input-label code {
-      background: rgba(255, 255, 255, 0.1);
+      background: #27272a;
       padding: 1px 5px;
       border-radius: 4px;
-      color: #f43f5e;
+      color: #ffffff;
       font-weight: 700;
     }
     .cancel-text-input {
@@ -1153,7 +1181,7 @@
       outline: none;
     }
     .cancel-text-input:focus {
-      border-color: #f43f5e;
+      border-color: #ffffff;
     }
 
     .cancel-actions-row {
@@ -1164,9 +1192,9 @@
       margin-top: 10px;
     }
     .btn-cancel-keep-pro {
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #ffffff;
+      background: #ffffff;
+      border: none;
+      color: #000000;
       font-size: 13px;
       font-weight: 800;
       padding: 11px 20px;
@@ -1174,11 +1202,9 @@
       cursor: pointer;
       width: 100%;
       transition: all 0.2s;
-      box-shadow: 0 4px 18px rgba(79, 70, 229, 0.4);
     }
     .btn-cancel-keep-pro:hover {
-      box-shadow: 0 6px 24px rgba(79, 70, 229, 0.6);
-      transform: translateY(-1px);
+      background: #e4e4e7;
     }
     .btn-cancel-next-small {
       background: none;
@@ -1190,12 +1216,12 @@
       transition: color 0.15s;
     }
     .btn-cancel-next-small:hover {
-      color: #d4d4d8;
+      color: #ffffff;
     }
     .btn-finalize-cancel {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #f87171;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #ffffff;
       font-size: 12px;
       font-weight: 700;
       padding: 9px 16px;
@@ -1209,8 +1235,8 @@
       cursor: not-allowed;
     }
     .btn-finalize-cancel:not(:disabled):hover {
-      background: #dc2626;
-      color: #ffffff;
+      background: #27272a;
+      border-color: #ffffff;
     }
 
     /* FLOATING TOAST CONTAINER */
@@ -1227,7 +1253,7 @@
     }
     .v6-toast {
       background: #18181b;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid #3f3f46;
       border-radius: 10px;
       padding: 10px 18px;
       color: #ffffff;
@@ -1241,8 +1267,8 @@
       pointer-events: auto;
     }
     .v6-toast.success {
-      border-color: rgba(16, 185, 129, 0.5);
-      background: linear-gradient(135deg, #13241b, #18181b);
+      border-color: #52525b;
+      background: #1c1c21;
     }
     @keyframes toastSlideDown {
       from { opacity: 0; transform: translateY(-12px) scale(0.95); }
@@ -3130,7 +3156,7 @@
 
   <!-- TOP HEADER -->
   
-  <!-- USER PROFILE & STUDIO PREFERENCES MODAL -->
+    <!-- USER PROFILE & STUDIO PREFERENCES MODAL (PURE BLACK & WHITE MONOCHROME) -->
   <div id="userProfileModal" class="user-profile-modal-overlay" style="display:none;" onclick="if(event.target===this) closeUserProfileModal()">
     <div class="user-profile-modal-window">
       <!-- Modal Header -->
@@ -3141,7 +3167,7 @@
           </div>
           <div>
             <div class="profile-modal-title" id="modalHeaderTitleEmail">Account & Studio Settings</div>
-            <div class="profile-modal-subtitle">V6 Photoreal Engine • Pro Edition</div>
+            <div class="profile-modal-subtitle">V6 Photoreal Engine Studio</div>
           </div>
         </div>
         <button type="button" class="modal-close-btn" onclick="closeUserProfileModal()">✕</button>
@@ -3150,16 +3176,16 @@
       <!-- Navigation Tabs -->
       <div class="profile-nav-tabs">
         <button type="button" class="profile-tab-btn active" id="tabBtnProfile" onclick="switchProfileTab('profile')">
-          <span class="tab-icon">👤</span> Profile
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile
         </button>
         <button type="button" class="profile-tab-btn" id="tabBtnSettings" onclick="switchProfileTab('settings')">
-          <span class="tab-icon">⚙️</span> Settings
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings
         </button>
         <button type="button" class="profile-tab-btn" id="tabBtnVersion" onclick="switchProfileTab('version')">
-          <span class="tab-icon">ℹ️</span> Version
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Version
         </button>
         <button type="button" class="profile-tab-btn" id="tabBtnBilling" onclick="switchProfileTab('billing')">
-          <span class="tab-icon">💳</span> Billing & Plan
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Billing & Plan
         </button>
       </div>
 
@@ -3172,19 +3198,19 @@
             <div class="profile-hero-left">
               <div class="profile-large-avatar" id="profilePaneAvatar">
                 <span id="profilePaneInitials">US</span>
-                <span class="avatar-pro-shield">PRO</span>
+                <span class="avatar-pro-shield" id="avatarShieldBadge">PRO</span>
               </div>
               <div class="profile-hero-info">
                 <div class="profile-hero-name" id="profilePaneEmailDisplay">user@v6render.com</div>
                 <div class="profile-hero-status">
-                  <span class="badge-verified-pro">✓ Verified Pro Cloud License</span>
-                  <span class="badge-active-dot">● Active Session</span>
+                  <span class="badge-verified-pro" id="profileVerifiedStatusBadge">✓ Verified Pro Cloud License</span>
+                  <span class="badge-active-dot" id="profileSessionStatusText">● Active Session</span>
                 </div>
               </div>
             </div>
             <div class="profile-hero-actions">
               <button type="button" class="btn-profile-secondary" onclick="signOutUser()">
-                <span>🚪 Switch Account / Sign Out</span>
+                <span>Switch Account / Sign Out</span>
               </button>
             </div>
           </div>
@@ -3199,11 +3225,11 @@
             </div>
             <div class="profile-info-box">
               <div class="info-label">Plan Tier</div>
-              <div class="info-value"><span style="color:#a5b4fc; font-weight:700;">Unlimited 4K Photoreal Pro</span></div>
+              <div class="info-value" id="profilePlanTierValue">Unlimited 4K Photoreal Pro</div>
             </div>
             <div class="profile-info-box">
               <div class="info-label">Cloud GPU Node</div>
-              <div class="info-value"><span style="color:#34d399;">● Dedicated RTX 4090 Cluster</span></div>
+              <div class="info-value" id="profileGpuNodeValue">● Dedicated RTX 4090 Cluster</div>
             </div>
             <div class="profile-info-box">
               <div class="info-label">SketchUp Bridge</div>
@@ -3213,11 +3239,11 @@
 
           <div class="profile-storage-bar-card">
             <div class="storage-label-row">
-              <span>Cloud Render Cache & 4K Texture Storage</span>
-              <span class="storage-count">34.8 GB / 100 GB</span>
+              <span id="profileStorageLabel">Cloud Render Cache & Texture Storage</span>
+              <span class="storage-count" id="profileStorageCountDisplay">34.8 GB / 100 GB</span>
             </div>
             <div class="storage-bar-track">
-              <div class="storage-bar-fill" style="width: 35%;"></div>
+              <div class="storage-bar-fill" id="profileStorageBarFill" style="width: 35%;"></div>
             </div>
           </div>
         </div>
@@ -3311,7 +3337,7 @@
           </div>
 
           <div class="settings-save-bar">
-            <span id="settingsSaveStatus" style="font-size:12px; color:#34d399; display:none;">✓ Preferences saved automatically</span>
+            <span id="settingsSaveStatus" style="font-size:12px; color:#ffffff; display:none;">✓ Preferences saved automatically</span>
             <button type="button" class="btn-save-settings" onclick="savePluginPreferences(true)">Save Changes</button>
           </div>
         </div>
@@ -3322,10 +3348,10 @@
             <div class="version-logo-icon">V6</div>
             <div class="version-info-main">
               <div class="version-number-title">V6 Render Pro Studio</div>
-              <div class="version-build-tag">Version 6.4.2 Pro • Build 2026.09.04-HOTFIX</div>
+              <div class="version-build-tag">Version 6.4.2 Pro • Build 2026.09.04</div>
               <div class="version-status-row">
                 <span class="live-dot-green"></span>
-                <span style="color:#34d399; font-weight:600;">Latest Release Installed</span>
+                <span style="color:#ffffff; font-weight:600;">Latest Release Installed</span>
               </div>
             </div>
           </div>
@@ -3345,7 +3371,7 @@
             </div>
             <div class="spec-row">
               <span class="spec-name">Cloud API Status</span>
-              <span class="spec-val" style="color:#34d399;">● Connected (24ms Latency - SSL Encrypted)</span>
+              <span class="spec-val">● Connected (24ms Latency - SSL Encrypted)</span>
             </div>
             <div class="spec-row">
               <span class="spec-name">AI Core Diffusion Nodes</span>
@@ -3355,10 +3381,10 @@
 
           <div class="version-actions-bar">
             <button type="button" class="btn-check-updates" onclick="checkForUpdates()">
-              <span>🔄 Check for Updates</span>
+              <span>Check for Updates</span>
             </button>
             <button type="button" class="btn-diagnostics" onclick="exportDiagnosticsLog()">
-              <span>📋 Copy Diagnostic Logs</span>
+              <span>Copy Diagnostic Logs</span>
             </button>
           </div>
           <div id="updateStatusMsg" style="margin-top:10px; font-size:11px; text-align:center; color:#a1a1aa;"></div>
@@ -3382,12 +3408,12 @@
               <div class="billing-card-divider"></div>
               <div class="billing-meta-grid">
                 <div class="billing-meta-item">
-                  <span class="meta-label">Next Renewal Date</span>
+                  <span class="meta-label">Renewal / Expiry</span>
                   <span class="meta-val" id="billingRenewalDate">October 4, 2026</span>
                 </div>
                 <div class="billing-meta-item">
                   <span class="meta-label">Payment Method</span>
-                  <span class="meta-val" id="billingPaymentMethod">💳 Stripe SSL •••• 4242</span>
+                  <span class="meta-val" id="billingPaymentMethod">Stripe SSL •••• 4242</span>
                 </div>
                 <div class="billing-meta-item">
                   <span class="meta-label">Billing Contact</span>
@@ -3395,43 +3421,44 @@
                 </div>
                 <div class="billing-meta-item">
                   <span class="meta-label">Plan Tier</span>
-                  <span class="meta-val" style="color:#818cf8; font-weight:700;">Unlimited 4K Studio</span>
+                  <span class="meta-val" id="billingPlanTierVal">Unlimited 4K Studio</span>
                 </div>
+              </div>
+
+              <!-- Upgrade Button (Visible when on Free Trial or Expired) -->
+              <div class="billing-upgrade-box" id="billingUpgradeCtaContainer" style="display:none;">
+                <button type="button" class="btn-upgrade-pro-billing" id="btnUpgradeProBilling" onclick="closeUserProfileModal(); openProPlanCheckout();">
+                  Upgrade to Pro Unlimited ($20/mo)
+                </button>
               </div>
             </div>
 
             <div class="billing-perks-card">
-              <div class="perks-title">Your Active Pro Inclusions:</div>
-              <div class="perks-grid">
+              <div class="perks-title" id="billingPerksTitle">Your Active Plan Inclusions:</div>
+              <div class="perks-grid" id="billingPerksGrid">
                 <div class="perk-item">✓ Unlimited 4K Photorealistic Renders</div>
                 <div class="perk-item">✓ Ultra-Fast 3.5s Cloud GPU Diffusion</div>
                 <div class="perk-item">✓ 3D Video Orbit Camera Walkthroughs</div>
                 <div class="perk-item">✓ SketchUp Live Synchronizer</div>
                 <div class="perk-item">✓ High-Def PBR Material & Lighting Asset Library</div>
-                <div class="perk-item">✓ Priority 24/7 Dedicated Architectural Support</div>
+                <div class="perk-item">✓ Priority 24/7 Dedicated Support</div>
               </div>
             </div>
 
-            <div class="billing-invoices-section">
+            <div class="billing-invoices-section" id="billingInvoicesSection">
               <div class="invoices-title">Payment Receipts & Invoices</div>
               <div class="invoices-list" id="invoicesList">
                 <div class="invoice-item">
-                  <div class="invoice-date">Sep 04, 2026</div>
-                  <div class="invoice-desc">V6 Photoreal Pro Monthly Subscription</div>
+                  <div class="invoice-date">Current</div>
+                  <div class="invoice-desc">V6 Photoreal Pro Subscription</div>
                   <div class="invoice-amount">$20.00 Paid</div>
-                  <button type="button" class="invoice-dl-btn" onclick="downloadInvoiceReceipt('INV-2026-09')">PDF Receipt</button>
-                </div>
-                <div class="invoice-item">
-                  <div class="invoice-date">Aug 04, 2026</div>
-                  <div class="invoice-desc">V6 Photoreal Pro Monthly Subscription</div>
-                  <div class="invoice-amount">$20.00 Paid</div>
-                  <button type="button" class="invoice-dl-btn" onclick="downloadInvoiceReceipt('INV-2026-08')">PDF Receipt</button>
+                  <button type="button" class="invoice-dl-btn" onclick="downloadInvoiceReceipt('INV-2026')">Receipt</button>
                 </div>
               </div>
             </div>
 
-            <!-- Cancellation Trigger Button (Subdued Link) -->
-            <div class="billing-cancel-trigger-row">
+            <!-- Cancellation Trigger Button (Subdued Link, visible only for Pro users) -->
+            <div class="billing-cancel-trigger-row" id="billingCancelRow">
               <button type="button" class="btn-cancel-trigger" onclick="startCancellationFlow()">
                 Manage / Cancel Subscription
               </button>
@@ -3454,9 +3481,9 @@
               </div>
 
               <div class="cancel-warning-banner">
-                <div class="warning-icon">⚠️</div>
+                <div class="warning-icon">⚠</div>
                 <div class="warning-text">
-                  <b>CRITICAL WARNING:</b> Canceling your plan will immediately de-allocate your dedicated GPU cloud worker reservation, purge all 4K render texture cache lightmaps, and revert your renders to 480p watermarked resolution with 45-minute queue delays.
+                  <b>WARNING:</b> Canceling your plan will immediately de-allocate your dedicated GPU cloud worker reservation, purge all 4K render texture cache lightmaps, and revert your renders to 480p watermarked resolution with 45-minute queue delays.
                 </div>
               </div>
 
@@ -3491,7 +3518,7 @@
 
               <div class="cancel-actions-row">
                 <button type="button" class="btn-cancel-keep-pro" onclick="abortCancellation('Great choice! Your Pro benefits and dedicated GPU node remain fully active.')">
-                  ✨ Keep My Fast Pro Unlimited Access
+                  Keep My Fast Pro Unlimited Access
                 </button>
                 <button type="button" class="btn-cancel-next-small" onclick="advanceCancelStep(2)">
                   Proceed to Technical Diagnostic Matrix →
@@ -3556,7 +3583,7 @@
 
               <div class="cancel-actions-row">
                 <button type="button" class="btn-cancel-keep-pro" onclick="abortCancellation('System auto-tuned! Optimization complete. Pro features remain active.')">
-                  🚀 Auto-Tune System & Keep Pro Active
+                  Auto-Tune System & Keep Pro Active
                 </button>
                 <button type="button" class="btn-cancel-next-small" onclick="advanceCancelStep(3)">
                   Skip Optimization & Continue De-escalation →
@@ -3564,7 +3591,7 @@
               </div>
             </div>
 
-            <!-- STEP 3: Irresistible VIP Retention Perk (50% OFF Discount / Free 30-Day Pause) -->
+            <!-- STEP 3: Retention Perk (50% OFF Discount / Free 30-Day Pause) -->
             <div class="cancel-step-pane" id="cancelStep3" style="display:none;">
               <div class="cancel-progress-bar-wrap">
                 <div class="cancel-step-counter">Exclusive Architect Loyalty Perk (Step 3 of 4)</div>
@@ -3577,7 +3604,7 @@
               </div>
 
               <div class="cancel-vip-offer-card">
-                <div class="vip-badge-pill">👑 EXCLUSIVE ARCHITECT RETENTION OFFER</div>
+                <div class="vip-badge-pill">EXCLUSIVE RETENTION OFFER</div>
                 <div class="vip-offer-title">Don't leave your 3D architectural renders unfinished!</div>
                 <div class="vip-offer-desc">We value your studio and want to support your visualization work. Because you are an early VIP member, we have unlocked an unprecedented loyalty deal:</div>
                 
@@ -3588,7 +3615,7 @@
                     <div class="deal-price">$10.00 <span style="font-size:12px; color:#a1a1aa;">/ month (Save $30)</span></div>
                     <div class="deal-sub">Keep all unlimited 4K renders, 3D video walkthroughs & priority GPU nodes.</div>
                     <button type="button" class="btn-claim-discount" onclick="claimRetentionDiscount()">
-                      🎁 Claim 50% Discount & Stay
+                      Claim 50% Discount & Stay
                     </button>
                   </div>
 
@@ -3596,9 +3623,9 @@
                     <div class="deal-tag">ZERO COST</div>
                     <div class="deal-title">Pause Billing for 30 Days</div>
                     <div class="deal-price">$0.00 <span style="font-size:12px; color:#a1a1aa;">/ month</span></div>
-                    <div class="deal-sub">Take a break between client projects without losing your customized presets.</div>
+                    <div class="deal-sub">Take a break between client projects without losing your presets.</div>
                     <button type="button" class="btn-pause-sub" onclick="pauseSubscriptionFor30Days()">
-                      ⏸️ Pause for 30 Days (Free)
+                      Pause for 30 Days (Free)
                     </button>
                   </div>
                 </div>
@@ -3606,10 +3633,10 @@
 
               <div class="cancel-actions-row" style="margin-top:14px;">
                 <button type="button" class="btn-cancel-keep-pro" onclick="abortCancellation('Welcome back! Your Pro subscription continues without interruption.')">
-                  ✨ Keep Normal Pro Access ($20/mo)
+                  Keep Normal Pro Access ($20/mo)
                 </button>
                 <button type="button" class="btn-cancel-next-small" onclick="advanceCancelStep(4)">
-                  Decline VIP perks and proceed to final verification →
+                  Decline perks and proceed to final verification →
                 </button>
               </div>
             </div>
@@ -3631,9 +3658,9 @@
                 <div class="cancel-q-desc">To protect accounts from accidental deactivations, please verify that you understand the terms below:</div>
                 
                 <div class="double-negative-box">
-                  <label class="cancel-checkbox-option" style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25);">
+                  <label class="cancel-checkbox-option" style="background:#18181b; border:1px solid #3f3f46;">
                     <input type="checkbox" id="chkDoubleNegative" onchange="validateCancelConfirmation()">
-                    <span style="font-size:11px; color:#fca5a5;">
+                    <span style="font-size:11px; color:#ffffff;">
                       I do not disagree that I am not uninterested in forfeiting unlimited 4K high-resolution rendering, instant 3.5-second processing, and 3D camera animations.
                     </span>
                   </label>
@@ -3651,10 +3678,10 @@
 
               <div class="cancel-actions-row">
                 <button type="button" class="btn-cancel-keep-pro" onclick="abortCancellation('Phew! That was close. Your Pro benefits remain fully active.')">
-                  🛡️ Never Mind — Keep Pro Active
+                  Never Mind — Keep Pro Active
                 </button>
                 <button type="button" class="btn-finalize-cancel" id="btnFinalizeCancel" disabled onclick="executeSubscriptionCancellation()">
-                  ⚠️ Finalize Subscription Cancellation
+                  Finalize Subscription Cancellation
                 </button>
               </div>
             </div>
@@ -3666,26 +3693,22 @@
     </div>
   </div>
 
-  <!-- FLOATING TOAST CONTAINER -->
-  <div id="v6ToastContainer"></div>
-
-    <!-- TOP HEADER -->
+  <!-- TOP HEADER -->
   <header>
     <div class="header-brand">
-      <img src="/v6-logo.png" alt="V6 Render" style="width:24px; height:24px; object-fit:contain; filter:drop-shadow(0 0 8px rgba(99,102,241,0.5));" onerror="this.style.display='none'">
+      <img src="/v6-logo.png" alt="V6 Render" style="width:24px; height:24px; object-fit:contain; filter:grayscale(100%);" onerror="this.style.display='none'">
       <div class="brand-title">V6 Render</div>
       <div class="live-link-badge">
-        <span class="live-dot"></span>
+        <span class="live-dot" style="background:#ffffff; box-shadow:0 0 4px #ffffff;"></span>
         <span>Live SketchUp Link Active</span>
       </div>
     </div>
 
     <div class="header-right">
-      <!-- Professional Profile & Plan Menu Pill (where email and plan were originally) -->
       <button type="button" class="header-profile-menu-pill" id="btnProfileMenuPill" onclick="openUserProfileModal('profile')" title="Account, Settings & Billing">
         <div class="profile-pill-avatar" id="avatarCircle">
           <span id="avatarInitials">US</span>
-          <span class="profile-pill-dot" title="Pro License Active"></span>
+          <span class="profile-pill-dot" title="Account Status"></span>
         </div>
         <span class="profile-pill-email" id="avatarHeaderEmail">user@v6render.com</span>
         <span class="profile-pill-badge" id="avatarHeaderPlanBadge">PRO ACTIVE</span>
@@ -3693,7 +3716,7 @@
       </button>
 
       <button type="button" class="support-btn-header" id="btnSupportHeader" onclick="toggleSupportModal(true)">
-        <span>💬 Support</span>
+        <span>Support</span>
         <span class="badge-pill-red" id="supportBadgePill">1 New</span>
       </button>
 
@@ -4981,7 +5004,19 @@
     }
 
     
-        // ================= PROFILE MODAL & BILLING ENGINE =================
+            // ================= PROFILE MODAL & ACCURATE PRO / TRIAL STATUS SYNC =================
+    window.userAccountState = {
+      isPaid: false,
+      isTrial: true,
+      trialUsed: 0,
+      trialLimit: 3,
+      trialRemaining: 3,
+      planName: "Free Trial",
+      planPrice: "$0.00",
+      renewalDate: "No auto-charge",
+      paymentMethod: "None required"
+    };
+
     function getInitials(email) {
       if (!email) return "US";
       const clean = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, " ").trim();
@@ -5007,9 +5042,8 @@
       const modal = document.getElementById("userProfileModal");
       if (!modal) return;
       
-      updateHeaderUserBadge();
+      syncAccountStatus(true);
       loadPluginPreferences();
-      fetchBillingSubscriptionDetails();
 
       modal.style.display = "flex";
       switchProfileTab(tabName || "profile");
@@ -5037,78 +5071,246 @@
       }
     }
 
-    function updateHeaderUserBadge() {
+    // Authoritative status synchronization with backend Stripe & Trial registries
+    async function syncAccountStatus(forceFresh) {
       const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
-      const initials = getInitials(email);
-      const licenseId = getHashLicenseId(email);
+      const localKey = "v6_render_count_" + email.toLowerCase().trim();
+      const fallbackKey = "aisoft_render_count_" + email.toLowerCase().trim();
+      const localCount = parseInt(localStorage.getItem(localKey) || localStorage.getItem(fallbackKey) || "0", 10);
+      const serverUrl = (typeof getLiveServerUrl === "function") ? getLiveServerUrl() : "";
 
-      const elInitials = document.getElementById("avatarInitials");
-      const elHeaderEmail = document.getElementById("avatarHeaderEmail");
-      if (elInitials) elInitials.innerText = initials;
-      if (elHeaderEmail) elHeaderEmail.innerText = email;
+      let isPaid = localStorage.getItem("v6_is_paid") === "true";
+      let trialUsed = localCount;
+      let trialLimit = 3;
+      let trialAllowed = true;
+      let planDetails = {
+        name: "V6 Photoreal Pro Unlimited",
+        price: "$20.00",
+        interval: "/ month",
+        renewal: "October 4, 2026",
+        card: "Stripe SSL •••• 4242",
+        cancelAtPeriodEnd: false
+      };
 
-      const elModalHeaderInitials = document.getElementById("modalHeaderAvatarInitials");
-      const elModalHeaderEmail = document.getElementById("modalHeaderTitleEmail");
-      if (elModalHeaderInitials) elModalHeaderInitials.innerText = initials;
-      if (elModalHeaderEmail) elModalHeaderEmail.innerText = email;
-
-      const elProfileInitials = document.getElementById("profilePaneInitials");
-      const elProfileEmail = document.getElementById("profilePaneEmailDisplay");
-      const elLicenseId = document.getElementById("profileLicenseId");
-      if (elProfileInitials) elProfileInitials.innerText = initials;
-      if (elProfileEmail) elProfileEmail.innerText = email;
-      if (elLicenseId) elLicenseId.innerText = licenseId;
-
-      const elBillingEmail = document.getElementById("billingEmailVal");
-      if (elBillingEmail) elBillingEmail.innerText = email;
-    }
-    window.renderUserAccountBadge = updateHeaderUserBadge;
-
-    async function fetchBillingSubscriptionDetails() {
       try {
-        const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
-        const res = await fetch("/api/stripe/subscription?email=" + encodeURIComponent(email));
-        if (res.ok) {
-          const data = await res.json();
-          if (data.subscribed && data.status === "active") {
-            const planName = data.plan === "Yearly" ? "V6 Photoreal Pro Unlimited (Yearly Plan)" : "V6 Photoreal Pro Unlimited (Monthly Plan)";
-            const amount = data.amount ? "$" + (data.amount / 100).toFixed(2) : (data.plan === "Yearly" ? "$180.00" : "$20.00");
-            const interval = data.interval ? "/" + data.interval : (data.plan === "Yearly" ? "/year" : "/month");
-            
-            const elPlanName = document.getElementById("billingPlanName");
-            const elPlanPrice = document.getElementById("billingPlanPrice");
-            const elStatusPill = document.getElementById("billingStatusPill");
-            const elRenewalDate = document.getElementById("billingRenewalDate");
-            
-            if (elPlanName) elPlanName.innerText = planName;
-            if (elPlanPrice) elPlanPrice.innerHTML = amount + " <span class=\"billing-period\">" + interval + "</span>";
-            
-            if (data.cancelAtPeriodEnd) {
-              if (elStatusPill) {
-                elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#f59e0b;\"></span> Cancels at Period End";
-                elStatusPill.style.background = "rgba(245, 158, 11, 0.15)";
-                elStatusPill.style.borderColor = "rgba(245, 158, 11, 0.35)";
-                elStatusPill.style.color = "#fbbf24";
-              }
-            } else {
-              if (elStatusPill) {
-                elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#10b981;\"></span> Active (Auto-Renews)";
-                elStatusPill.style.background = "rgba(16, 185, 129, 0.15)";
-                elStatusPill.style.borderColor = "rgba(16, 185, 129, 0.35)";
-                elStatusPill.style.color = "#34d399";
-              }
+        // 1. Check authoritative trial-check endpoint
+        const trialRes = await fetch(serverUrl + "/api/trial-check?email=" + encodeURIComponent(email) + "&clientCount=" + localCount);
+        if (trialRes.ok) {
+          const trialData = await trialRes.json();
+          if (trialData.paid === true) {
+            isPaid = true;
+          } else {
+            isPaid = false;
+            trialAllowed = trialData.allowed !== false;
+            if (typeof trialData.imageCount === "number") trialUsed = trialData.imageCount;
+            if (typeof trialData.limit === "number") trialLimit = trialData.limit;
+          }
+        }
+      } catch (err) {
+        console.warn("Trial status check error:", err);
+      }
+
+      try {
+        // 2. Check Stripe live subscription status
+        const subRes = await fetch(serverUrl + "/api/stripe/subscription?email=" + encodeURIComponent(email));
+        if (subRes.ok) {
+          const subData = await subRes.json();
+          if (subData.subscribed && (subData.status === "active" || subData.status === "trialing")) {
+            isPaid = true;
+            planDetails.name = subData.plan === "Yearly" ? "V6 Photoreal Pro Unlimited (Yearly Plan)" : "V6 Photoreal Pro Unlimited (Monthly Plan)";
+            planDetails.price = subData.amount ? "$" + (subData.amount / 100).toFixed(2) : (subData.plan === "Yearly" ? "$180.00" : "$20.00");
+            planDetails.interval = subData.interval ? "/" + subData.interval : (subData.plan === "Yearly" ? "/year" : "/month");
+            planDetails.cancelAtPeriodEnd = !!subData.cancelAtPeriodEnd;
+            if (subData.currentPeriodEnd) {
+              const d = new Date(subData.currentPeriodEnd * 1000);
+              planDetails.renewal = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
             }
-            
-            if (data.currentPeriodEnd) {
-              const d = new Date(data.currentPeriodEnd * 1000);
-              if (elRenewalDate) elRenewalDate.innerText = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+          } else if (subData.subscribed === false) {
+            if (isPaid && localStorage.getItem("v6_is_paid") === "true") {
+              // keep local if explicitly set or reset
             }
           }
         }
       } catch (err) {
-        console.warn("Could not fetch live subscription details:", err);
+        console.warn("Stripe subscription check error:", err);
+      }
+
+      // Calculate real remaining renders
+      const trialRemaining = Math.max(0, trialLimit - trialUsed);
+      const isExpired = !isPaid && (trialRemaining <= 0 || !trialAllowed);
+
+      window.userAccountState = {
+        isPaid: isPaid,
+        isTrial: !isPaid,
+        isExpired: isExpired,
+        trialUsed: trialUsed,
+        trialLimit: trialLimit,
+        trialRemaining: trialRemaining,
+        planDetails: planDetails
+      };
+
+      if (isPaid) {
+        localStorage.setItem("v6_is_paid", "true");
+        localStorage.setItem("v6_plan_status", "paid");
+      } else {
+        localStorage.removeItem("v6_is_paid");
+        localStorage.setItem(localKey, trialUsed.toString());
+      }
+
+      renderAccountUI(email);
+    }
+
+    function renderAccountUI(email) {
+      const state = window.userAccountState;
+      const initials = getInitials(email);
+      const licenseId = getHashLicenseId(email);
+
+      // 1. Header Elements
+      const elInitials = document.getElementById("avatarInitials");
+      const elHeaderEmail = document.getElementById("avatarHeaderEmail");
+      const elHeaderBadge = document.getElementById("avatarHeaderPlanBadge");
+
+      if (elInitials) elInitials.innerText = initials;
+      if (elHeaderEmail) elHeaderEmail.innerText = email;
+
+      if (elHeaderBadge) {
+        if (state.isPaid) {
+          elHeaderBadge.innerText = "PRO ACTIVE";
+        } else if (state.isExpired) {
+          elHeaderBadge.innerText = "TRIAL EXPIRED";
+        } else {
+          elHeaderBadge.innerText = "TRIAL (" + state.trialRemaining + "/" + state.trialLimit + " LEFT)";
+        }
+      }
+
+      // 2. Modal Header & Profile Pane
+      const elModalHeaderInitials = document.getElementById("modalHeaderAvatarInitials");
+      const elModalHeaderEmail = document.getElementById("modalHeaderTitleEmail");
+      const elProfileInitials = document.getElementById("profilePaneInitials");
+      const elProfileEmail = document.getElementById("profilePaneEmailDisplay");
+      const elAvatarShield = document.getElementById("avatarShieldBadge");
+      const elVerifiedBadge = document.getElementById("profileVerifiedStatusBadge");
+      const elSessionStatus = document.getElementById("profileSessionStatusText");
+      const elLicenseId = document.getElementById("profileLicenseId");
+      const elPlanTier = document.getElementById("profilePlanTierValue");
+      const elGpuNode = document.getElementById("profileGpuNodeValue");
+      const elStorageLabel = document.getElementById("profileStorageLabel");
+      const elStorageCount = document.getElementById("profileStorageCountDisplay");
+      const elStorageFill = document.getElementById("profileStorageBarFill");
+
+      if (elModalHeaderInitials) elModalHeaderInitials.innerText = initials;
+      if (elModalHeaderEmail) elModalHeaderEmail.innerText = email;
+      if (elProfileInitials) elProfileInitials.innerText = initials;
+      if (elProfileEmail) elProfileEmail.innerText = email;
+      if (elLicenseId) elLicenseId.innerText = licenseId;
+
+      if (state.isPaid) {
+        if (elAvatarShield) elAvatarShield.innerText = "PRO";
+        if (elVerifiedBadge) elVerifiedBadge.innerText = "✓ Verified Pro Cloud License";
+        if (elSessionStatus) elSessionStatus.innerText = "● Active Pro Session";
+        if (elPlanTier) elPlanTier.innerText = "Unlimited 4K Photoreal Pro";
+        if (elGpuNode) elGpuNode.innerText = "● Dedicated RTX 4090 Cluster";
+        if (elStorageLabel) elStorageLabel.innerText = "Cloud Render Cache & Texture Storage";
+        if (elStorageCount) elStorageCount.innerText = "34.8 GB / 100 GB (Unlimited)";
+        if (elStorageFill) elStorageFill.style.width = "35%";
+      } else if (state.isExpired) {
+        if (elAvatarShield) elAvatarShield.innerText = "EXPIRED";
+        if (elVerifiedBadge) elVerifiedBadge.innerText = "Trial Expired (0 Renders Left)";
+        if (elSessionStatus) elSessionStatus.innerText = "● Upgrade Required";
+        if (elPlanTier) elPlanTier.innerText = "Free Trial Expired (Limit Reached)";
+        if (elGpuNode) elGpuNode.innerText = "● Inactive (Upgrade to Activate)";
+        if (elStorageLabel) elStorageLabel.innerText = "Free Trial Render Quota";
+        if (elStorageCount) elStorageCount.innerText = state.trialLimit + " of " + state.trialLimit + " Free Renders Used (100%)";
+        if (elStorageFill) elStorageFill.style.width = "100%";
+      } else {
+        if (elAvatarShield) elAvatarShield.innerText = "TRIAL";
+        if (elVerifiedBadge) elVerifiedBadge.innerText = "● Free Trial (" + state.trialRemaining + " of " + state.trialLimit + " Left)";
+        if (elSessionStatus) elSessionStatus.innerText = "● Trial Session Active";
+        if (elPlanTier) elPlanTier.innerText = "Free Trial (" + state.trialRemaining + " Renders Left)";
+        if (elGpuNode) elGpuNode.innerText = "● Standard Cloud GPU Node";
+        if (elStorageLabel) elStorageLabel.innerText = "Free Trial Render Quota";
+        if (elStorageCount) elStorageCount.innerText = state.trialUsed + " of " + state.trialLimit + " Free Renders Used";
+        const pct = Math.round((state.trialUsed / state.trialLimit) * 100);
+        if (elStorageFill) elStorageFill.style.width = pct + "%";
+      }
+
+      // 3. Billing Tab Elements
+      const elBillingEmail = document.getElementById("billingEmailVal");
+      const elBillingPlanName = document.getElementById("billingPlanName");
+      const elBillingPlanPrice = document.getElementById("billingPlanPrice");
+      const elBillingStatusPill = document.getElementById("billingStatusPill");
+      const elBillingRenewalDate = document.getElementById("billingRenewalDate");
+      const elBillingPaymentMethod = document.getElementById("billingPaymentMethod");
+      const elBillingPlanTierVal = document.getElementById("billingPlanTierVal");
+      const elBillingUpgradeBox = document.getElementById("billingUpgradeCtaContainer");
+      const elBtnUpgradeProBilling = document.getElementById("btnUpgradeProBilling");
+      const elBillingPerksTitle = document.getElementById("billingPerksTitle");
+      const elBillingPerksGrid = document.getElementById("billingPerksGrid");
+      const elBillingInvoices = document.getElementById("billingInvoicesSection");
+      const elBillingCancelRow = document.getElementById("billingCancelRow");
+
+      if (elBillingEmail) elBillingEmail.innerText = email;
+
+      if (state.isPaid) {
+        if (elBillingPlanName) elBillingPlanName.innerText = state.planDetails.name;
+        if (elBillingPlanPrice) elBillingPlanPrice.innerHTML = state.planDetails.price + " <span class=\"billing-period\">" + state.planDetails.interval + "</span>";
+        if (elBillingStatusPill) {
+          if (state.planDetails.cancelAtPeriodEnd) {
+            elBillingStatusPill.innerHTML = "<span class=\"pill-dot\"></span> Cancels at Period End";
+          } else {
+            elBillingStatusPill.innerHTML = "<span class=\"pill-dot\"></span> Active (Auto-Renews)";
+          }
+        }
+        if (elBillingRenewalDate) elBillingRenewalDate.innerText = state.planDetails.renewal;
+        if (elBillingPaymentMethod) elBillingPaymentMethod.innerText = state.planDetails.card;
+        if (elBillingPlanTierVal) elBillingPlanTierVal.innerText = "Unlimited 4K Studio";
+        if (elBillingUpgradeBox) elBillingUpgradeBox.style.display = "none";
+        if (elBillingInvoices) elBillingInvoices.style.display = "block";
+        if (elBillingCancelRow) elBillingCancelRow.style.display = "block";
+        if (elBillingPerksTitle) elBillingPerksTitle.innerText = "Your Active Pro Inclusions:";
+        if (elBillingPerksGrid) {
+          elBillingPerksGrid.innerHTML = 
+            "<div class=\"perk-item\">✓ Unlimited 4K Photorealistic Renders</div>" +
+            "<div class=\"perk-item\">✓ Ultra-Fast 3.5s Cloud GPU Diffusion</div>" +
+            "<div class=\"perk-item\">✓ 3D Video Orbit Camera Walkthroughs</div>" +
+            "<div class=\"perk-item\">✓ SketchUp Live Synchronizer</div>" +
+            "<div class=\"perk-item\">✓ High-Def PBR Material & Lighting Library</div>" +
+            "<div class=\"perk-item\">✓ Priority 24/7 Dedicated Support</div>";
+        }
+      } else {
+        // Free Trial or Expired State
+        if (elBillingPlanName) elBillingPlanName.innerText = state.isExpired ? "Free Trial Expired" : "Free Trial Edition";
+        if (elBillingPlanPrice) elBillingPlanPrice.innerHTML = "$0.00 <span class=\"billing-period\">/ " + (state.isExpired ? "0 Renders Left" : state.trialRemaining + " Free Renders Remaining") + "</span>";
+        if (elBillingStatusPill) {
+          elBillingStatusPill.innerHTML = state.isExpired 
+            ? "<span class=\"pill-dot\"></span> Limit Reached" 
+            : "<span class=\"pill-dot\"></span> " + state.trialRemaining + " Renders Remaining";
+        }
+        if (elBillingRenewalDate) elBillingRenewalDate.innerText = "No auto-charge (Trial mode)";
+        if (elBillingPaymentMethod) elBillingPaymentMethod.innerText = "No card required for trial";
+        if (elBillingPlanTierVal) elBillingPlanTierVal.innerText = state.isExpired ? "Trial Expired" : "Trial (" + state.trialRemaining + " Left)";
+        
+        if (elBillingUpgradeBox) elBillingUpgradeBox.style.display = "block";
+        if (elBtnUpgradeProBilling) {
+          elBtnUpgradeProBilling.innerText = state.isExpired ? "⚡ Unlock Unlimited 4K Renders ($20/mo)" : "⚡ Upgrade to Pro Unlimited ($20/mo)";
+        }
+        if (elBillingInvoices) elBillingInvoices.style.display = "none";
+        if (elBillingCancelRow) elBillingCancelRow.style.display = "none";
+        if (elBillingPerksTitle) elBillingPerksTitle.innerText = "Free Trial Features Included:";
+        if (elBillingPerksGrid) {
+          elBillingPerksGrid.innerHTML = 
+            "<div class=\"perk-item\">✓ 3 Full-Resolution 4K Photorealistic Renders</div>" +
+            "<div class=\"perk-item\">✓ Real-Time SketchUp Viewport Synchronizer</div>" +
+            "<div class=\"perk-item\">✓ WebGL PBR Wireframe & Lighting Pipeline</div>" +
+            "<div class=\"perk-item\">✓ Standard Cloud GPU Diffusion Queue</div>";
+        }
       }
     }
+
+    function updateHeaderUserBadge() {
+      syncAccountStatus(false);
+    }
+    window.renderUserAccountBadge = updateHeaderUserBadge;
 
     function savePluginPreferences(showToast) {
       const prefs = {
@@ -5127,7 +5329,7 @@
         setTimeout(function() { status.style.display = "none"; }, 2500);
       }
       if (showToast) {
-        showToastNotification("✓ Preferences saved successfully", "success");
+        showToastNotification("Preferences saved successfully", "success");
       }
     }
 
@@ -5150,9 +5352,9 @@
     function checkForUpdates() {
       const msg = document.getElementById("updateStatusMsg");
       if (msg) {
-        msg.innerHTML = "<span style=\"color:#6366f1;\">Connecting to V6 Render cloud release channel...</span>";
+        msg.innerHTML = "<span style=\"color:#ffffff;\">Connecting to V6 Render cloud release channel...</span>";
         setTimeout(function() {
-          msg.innerHTML = "<span style=\"color:#34d399; font-weight:700;\">✓ You are on the newest V6 Render Pro Studio build (v6.4.2 Pro). No updates needed.</span>";
+          msg.innerHTML = "<span style=\"color:#ffffff; font-weight:700;\">✓ You are on the newest V6 Render Pro Studio build (v6.4.2 Pro). No updates needed.</span>";
         }, 800);
       }
     }
@@ -5170,7 +5372,7 @@
         "Timestamp: " + new Date().toISOString();
       
       navigator.clipboard.writeText(diag).then(function() {
-        showToastNotification("📋 Diagnostic log copied to clipboard!", "success");
+        showToastNotification("Diagnostic log copied to clipboard", "success");
       }).catch(function() {
         showToastNotification("Diagnostics: " + diag.split("\n")[0], "info");
       });
@@ -5180,12 +5382,12 @@
       const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
       const id = getHashLicenseId(email);
       navigator.clipboard.writeText(id).then(function() {
-        showToastNotification("✓ License ID copied: " + id, "success");
+        showToastNotification("License ID copied: " + id, "success");
       });
     }
 
     function downloadInvoiceReceipt(invId) {
-      showToastNotification("📄 Downloading official receipt " + invId + "...", "info");
+      showToastNotification("Downloading official receipt " + invId + "...", "info");
     }
 
     // ================= CANCELLATION FLOW ENGINE =================
@@ -5199,155 +5401,122 @@
       }
     }
 
-    function advanceCancelStep(stepNum) {
+    function advanceCancelStep(stepNumber) {
       for (let i = 1; i <= 4; i++) {
         const pane = document.getElementById("cancelStep" + i);
-        if (pane) pane.style.display = (i === stepNum) ? "block" : "none";
-      }
-      if (stepNum === 4) {
-        validateCancelConfirmation();
+        if (pane) pane.style.display = (i === stepNumber) ? "block" : "none";
       }
     }
 
     function abortCancellation(msg) {
-      const cancelFlow = document.getElementById("cancellationFlowContainer");
+      const flow = document.getElementById("cancellationFlowContainer");
       const overview = document.getElementById("billingOverviewContainer");
-      if (cancelFlow) cancelFlow.style.display = "none";
+      if (flow) flow.style.display = "none";
       if (overview) overview.style.display = "block";
-
-      for (let i = 1; i <= 4; i++) {
-        const p = document.getElementById("cancelStep" + i);
-        if (p) p.style.display = (i === 1) ? "block" : "none";
-      }
-      const input = document.getElementById("txtCancelConfirm");
-      if (input) input.value = "";
-      const chk = document.getElementById("chkDoubleNegative");
-      if (chk) chk.checked = false;
-      const btn = document.getElementById("btnFinalizeCancel");
-      if (btn) btn.disabled = true;
-      const statusMsg = document.getElementById("cancelApiStatusMsg");
-      if (statusMsg) statusMsg.style.display = "none";
-
-      if (msg) {
-        showToastNotification(msg, "success");
-      }
+      showToastNotification(msg || "Pro subscription remains active.", "success");
     }
 
-    async function claimRetentionDiscount() {
-      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+    function claimRetentionDiscount() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
+      showToastNotification("Applying 50% discount to next 3 billing cycles...", "info");
       try {
         fetch("/api/stripe/cancel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email, action: "discount" })
         }).catch(function() {});
-      } catch (e) {}
+      } catch(e) {}
 
-      const elPlanPrice = document.getElementById("billingPlanPrice");
-      if (elPlanPrice) elPlanPrice.innerHTML = "$10.00 <span class=\"billing-period\">/ month (50% VIP Architect Perk)</span>";
-      
-      abortCancellation("🎉 Congratulations! 50% VIP Architect discount ($10/mo) applied for next 3 months. Your Pro access remains active!");
+      setTimeout(function() {
+        abortCancellation("🎉 50% Discount Applied! Your next 3 months will be billed at $10.00/mo.");
+      }, 900);
     }
 
-    async function pauseSubscriptionFor30Days() {
-      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+    function pauseSubscriptionFor30Days() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
+      showToastNotification("Scheduling 30-day billing holiday...", "info");
       try {
         fetch("/api/stripe/cancel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email, action: "pause" })
         }).catch(function() {});
-      } catch (e) {}
+      } catch(e) {}
 
-      const elStatusPill = document.getElementById("billingStatusPill");
-      if (elStatusPill) {
-        elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#38bdf8;\"></span> Paused for 30 Days";
-        elStatusPill.style.background = "rgba(56, 189, 248, 0.15)";
-        elStatusPill.style.borderColor = "rgba(56, 189, 248, 0.35)";
-        elStatusPill.style.color = "#7dd3fc";
-      }
-
-      abortCancellation("⏸️ Subscription paused for 30 days at zero charge! Your render presets and project assets are safely preserved.");
+      setTimeout(function() {
+        abortCancellation("⏸️ 30-Day Billing Pause Active. No charges will occur for 30 days.");
+      }, 900);
     }
 
     function validateCancelConfirmation() {
       const chk = document.getElementById("chkDoubleNegative");
-      const input = document.getElementById("txtCancelConfirm");
+      const txt = document.getElementById("txtCancelConfirm");
       const btn = document.getElementById("btnFinalizeCancel");
-      
+      if (!btn) return;
+
       const isChecked = chk && chk.checked;
-      const isTyped = input && input.value.trim().toUpperCase() === "CONFIRM-DEACTIVATE";
-      
-      if (btn) {
-        btn.disabled = !(isChecked && isTyped);
-      }
+      const isTyped = txt && txt.value.trim().toUpperCase() === "CONFIRM-DEACTIVATE";
+
+      btn.disabled = !(isChecked && isTyped);
     }
 
     async function executeSubscriptionCancellation() {
       const btn = document.getElementById("btnFinalizeCancel");
       const statusMsg = document.getElementById("cancelApiStatusMsg");
+      const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
+
       if (btn) btn.disabled = true;
       if (statusMsg) {
         statusMsg.style.display = "block";
-        statusMsg.style.background = "rgba(99,102,241,0.15)";
-        statusMsg.style.color = "#c7d2fe";
-        statusMsg.innerText = "Processing deactivation with cloud billing server...";
+        statusMsg.style.background = "#18181b";
+        statusMsg.style.color = "#ffffff";
+        statusMsg.innerText = "Transmitting deactivation request to Stripe API...";
       }
 
-      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
-      
       try {
         const res = await fetch("/api/stripe/cancel", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: email, action: "cancel" })
         });
-        const result = await res.json();
-        
-        if (statusMsg) {
-          statusMsg.style.background = "rgba(245, 158, 11, 0.15)";
-          statusMsg.style.color = "#fef08a";
-          statusMsg.innerText = "Subscription set to expire at the end of the billing period. Pro features remain active until then.";
-        }
-        
-        setTimeout(function() {
-          abortCancellation("Subscription deactivation scheduled. You will retain full Pro benefits until your billing period ends.");
-          const elStatusPill = document.getElementById("billingStatusPill");
-          if (elStatusPill) {
-            elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#f59e0b;\"></span> Cancels at Period End";
-            elStatusPill.style.background = "rgba(245, 158, 11, 0.15)";
-            elStatusPill.style.borderColor = "rgba(245, 158, 11, 0.35)";
-            elStatusPill.style.color = "#fbbf24";
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          if (statusMsg) {
+            statusMsg.style.background = "#18181b";
+            statusMsg.style.color = "#ffffff";
+            statusMsg.innerText = "Subscription canceled. Your Pro access remains active until the end of your billing cycle.";
           }
-        }, 2200);
+          showToastNotification("Subscription scheduled for cancellation at period end.", "info");
+          setTimeout(function() {
+            closeUserProfileModal();
+            syncAccountStatus(true);
+          }, 2500);
+        } else {
+          throw new Error(data.error || "Failed to process cancellation.");
+        }
       } catch (err) {
         if (statusMsg) {
-          statusMsg.style.background = "rgba(245, 158, 11, 0.15)";
-          statusMsg.style.color = "#fef08a";
-          statusMsg.innerText = "Cancellation request recorded. Your plan will not auto-renew.";
+          statusMsg.style.background = "#18181b";
+          statusMsg.style.color = "#ffffff";
+          statusMsg.innerText = "Notice: " + (err.message || "Cancellation error");
         }
-        setTimeout(function() {
-          abortCancellation("Cancellation scheduled for the end of the billing cycle.");
-        }, 2200);
+        if (btn) btn.disabled = false;
       }
     }
 
-    function showToastNotification(msg, type) {
-      let container = document.getElementById("v6ToastContainer");
-      if (!container) {
-        container = document.createElement("div");
-        container.id = "v6ToastContainer";
-        document.body.appendChild(container);
-      }
+    function showToastNotification(text, type) {
+      const container = document.getElementById("v6ToastContainer");
+      if (!container) return;
       const toast = document.createElement("div");
       toast.className = "v6-toast " + (type || "info");
-      toast.innerHTML = msg;
+      toast.innerText = text;
       container.appendChild(toast);
       setTimeout(function() {
-        toast.style.transition = "opacity 0.3s, transform 0.3s";
         toast.style.opacity = "0";
         toast.style.transform = "translateY(-10px)";
-        setTimeout(function() { toast.remove(); }, 300);
+        toast.style.transition = "all 0.25s";
+        setTimeout(function() { toast.remove(); }, 260);
       }, 3500);
     }
 
