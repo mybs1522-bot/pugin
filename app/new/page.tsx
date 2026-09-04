@@ -1,7 +1,7 @@
-import { getAsset } from "@/lib/storage";
-("use client");
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { getAsset } from "@/lib/storage";
 import { GLSLHills } from "@/components/ui/glsl-hills";
 import { SwipeToRender } from "@/components/ui/swipe-to-render";
 import Link from "next/link";
