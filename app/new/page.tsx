@@ -1989,7 +1989,10 @@ export default function SamplePluginRendererPage() {
         {/* RIGHT PREVIEW & VIEWPORT WORKSPACE */}
         <main className="relative flex flex-1 flex-col overflow-hidden bg-[#070709]">
           {/* GLSL ANIMATED 3D WIREFRAME HILLS SHADER BACKGROUND */}
-          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40 select-none">
+          <div
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden select-none"
+            style={{ opacity: 0.28 }}
+          >
             <GLSLHills
               width="100%"
               height="100%"
