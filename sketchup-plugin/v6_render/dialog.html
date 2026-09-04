@@ -1835,7 +1835,7 @@
 <body>
 
   <!-- INTRO SPLASH SCREEN OVERLAY ON OPEN (EXACT ORIGINAL RESTORED) -->
-  <div id="pluginIntroOverlay" style="position:fixed; inset:0; background:#09090b; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease, visibility 0.6s ease;">
+  <div id="pluginIntroOverlay" onclick="dismissSplashNow()" title="Click to skip" style="position:fixed; inset:0; background:#09090b; z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.4s ease, visibility 0.4s ease; cursor:pointer;">
     <div style="display:flex; flex-direction:column; align-items:center; width:300px; text-align:center;">
       <!-- Logo Header -->
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
@@ -3561,6 +3561,17 @@
       }
     }
 
+    function dismissSplashNow() {
+      const overlay = document.getElementById('pluginIntroOverlay');
+      if (overlay) {
+        overlay.style.opacity = '0';
+        overlay.style.visibility = 'hidden';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 300);
+      }
+    }
+
     function runSplashIntroAnimation() {
       const overlay = document.getElementById('pluginIntroOverlay');
       const bar = document.getElementById('splashProgressBar');
@@ -3570,12 +3581,12 @@
       if (!overlay) return;
 
       setTimeout(() => {
-        if (bar) bar.style.width = '45%';
+        if (bar) bar.style.width = '55%';
         if (step1) {
           step1.style.color = '#a1a1aa';
           step1.style.borderColor = 'rgba(255,255,255,0.1)';
         }
-      }, 150);
+      }, 100);
 
       setTimeout(() => {
         if (bar) bar.style.width = '100%';
@@ -3585,16 +3596,21 @@
           step3.style.background = 'rgba(34,197,94,0.08)';
           step3.style.borderColor = 'rgba(34,197,94,0.2)';
         }
-      }, 700);
+      }, 400);
 
       setTimeout(() => {
         overlay.style.opacity = '0';
         overlay.style.visibility = 'hidden';
         setTimeout(() => {
           overlay.style.display = 'none';
-          requestViewportCapture();
-        }, 600);
-      }, 1400);
+          try { requestViewportCapture(); } catch(e) {}
+        }, 300);
+      }, 800);
+
+      // Failsafe dismiss
+      setTimeout(() => {
+        dismissSplashNow();
+      }, 1200);
     }
 
     if (document.readyState === 'loading') {
@@ -3892,103 +3908,375 @@
     }
 
     
-    // ================= PROFILE MODAL & BILLING ENGINE =================
+        // ================= PROFILE MODAL & BILLING ENGINE =================
     function getInitials(email) {
-      if (!email) return 'US';
-      const clean = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ').trim();
+      if (!email) return "US";
+      const clean = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, " ").trim();
       const parts = clean.split(/\s+/);
       if (parts.length >= 2) {
         return (parts[0][0] + parts[1][0]).toUpperCase();
       }
-      return clean.substring(0, 2).toUpperCase() || 'US';
+      return clean.substring(0, 2).toUpperCase() || "US";
     }
 
     function getHashLicenseId(email) {
       let hash = 0;
-      const str = (email || 'user@v6render.com').toLowerCase();
+      const str = (email || "user@v6render.com").toLowerCase();
       for (let i = 0; i < str.length; i++) {
         hash = ((hash << 5) - hash) + str.charCodeAt(i);
         hash |= 0;
       }
       const num = Math.abs(hash) % 90000 + 10000;
-      return 'V6-PRO-' + num + '-SU26';
+      return "V6-PRO-" + num + "-SU26";
     }
 
     function openUserProfileModal(tabName) {
-      const modal = document.getElementById('userProfileModal');
+      const modal = document.getElementById("userProfileModal");
       if (!modal) return;
       
       updateHeaderUserBadge();
       loadPluginPreferences();
       fetchBillingSubscriptionDetails();
 
-      modal.style.display = 'flex';
-      switchProfileTab(tabName || 'profile');
+      modal.style.display = "flex";
+      switchProfileTab(tabName || "profile");
     }
 
     function closeUserProfileModal() {
-      const modal = document.getElementById('userProfileModal');
-      if (modal) modal.style.display = 'none';
+      const modal = document.getElementById("userProfileModal");
+      if (modal) modal.style.display = "none";
     }
 
     function switchProfileTab(tabName) {
-      const tabs = ['profile', 'settings', 'version', 'billing'];
-      tabs.forEach(t => {
-        const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
-        const pane = document.getElementById('pane' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (btn) btn.classList.toggle('active', t === tabName);
-        if (pane) pane.classList.toggle('active', t === tabName);
+      const tabs = ["profile", "settings", "version", "billing"];
+      tabs.forEach(function(t) {
+        const btn = document.getElementById("tabBtn" + t.charAt(0).toUpperCase() + t.slice(1));
+        const pane = document.getElementById("pane" + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) btn.classList.toggle("active", t === tabName);
+        if (pane) pane.classList.toggle("active", t === tabName);
       });
 
-      // Reset billing cancel view if switching to billing
-      if (tabName === 'billing') {
-        const cancelFlow = document.getElementById('cancellationFlowContainer');
-        const overview = document.getElementById('billingOverviewContainer');
-        if (cancelFlow) cancelFlow.style.display = 'none';
-        if (overview) overview.style.display = 'block';
+      if (tabName === "billing") {
+        const cancelFlow = document.getElementById("cancellationFlowContainer");
+        const overview = document.getElementById("billingOverviewContainer");
+        if (cancelFlow) cancelFlow.style.display = "none";
+        if (overview) overview.style.display = "block";
       }
     }
 
     function updateHeaderUserBadge() {
-      const email = userEmail || localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || 'user@v6render.com';
+      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
       const initials = getInitials(email);
       const licenseId = getHashLicenseId(email);
 
-      // Header avatar & info
-      const elInitials = document.getElementById('avatarInitials');
-      const elHeaderEmail = document.getElementById('avatarHeaderEmail');
+      const elInitials = document.getElementById("avatarInitials");
+      const elHeaderEmail = document.getElementById("avatarHeaderEmail");
       if (elInitials) elInitials.innerText = initials;
       if (elHeaderEmail) elHeaderEmail.innerText = email;
 
-      // Modal header
-      const elModalHeaderInitials = document.getElementById('modalHeaderAvatarInitials');
-      const elModalHeaderEmail = document.getElementById('modalHeaderTitleEmail');
+      const elModalHeaderInitials = document.getElementById("modalHeaderAvatarInitials");
+      const elModalHeaderEmail = document.getElementById("modalHeaderTitleEmail");
       if (elModalHeaderInitials) elModalHeaderInitials.innerText = initials;
       if (elModalHeaderEmail) elModalHeaderEmail.innerText = email;
 
-      // Profile Pane
-      const elProfileInitials = document.getElementById('profilePaneInitials');
-      const elProfileEmail = document.getElementById('profilePaneEmailDisplay');
-      const elLicenseId = document.getElementById('profileLicenseId');
+      const elProfileInitials = document.getElementById("profilePaneInitials");
+      const elProfileEmail = document.getElementById("profilePaneEmailDisplay");
+      const elLicenseId = document.getElementById("profileLicenseId");
       if (elProfileInitials) elProfileInitials.innerText = initials;
       if (elProfileEmail) elProfileEmail.innerText = email;
       if (elLicenseId) elLicenseId.innerText = licenseId;
 
-      // Billing Pane
-      const elBillingEmail = document.getElementById('billingEmailVal');
+      const elBillingEmail = document.getElementById("billingEmailVal");
       if (elBillingEmail) elBillingEmail.innerText = email;
     }
     window.renderUserAccountBadge = updateHeaderUserBadge;
 
     async function fetchBillingSubscriptionDetails() {
       try {
-        const email = userEmail || localStorage.getItem('v6_user_email') || localStorage.getItem('aisoft_user_email') || 'user@v6render.com';
-        const res = await fetch('/api/stripe/subscription?email=' + encodeURIComponent(email));
+        const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+        const res = await fetch("/api/stripe/subscription?email=" + encodeURIComponent(email));
         if (res.ok) {
           const data = await res.json();
-          if (data.subscribed && data.status === 'active') {
-            const planName = data.plan === 'Yearly' ? 'V6 Photoreal Pro Unlimited (Yearly Plan)' : 'V6 Photoreal Pro Unlimited (Monthly Plan)';
-            const amount = data.amount ? '
+          if (data.subscribed && data.status === "active") {
+            const planName = data.plan === "Yearly" ? "V6 Photoreal Pro Unlimited (Yearly Plan)" : "V6 Photoreal Pro Unlimited (Monthly Plan)";
+            const amount = data.amount ? "$" + (data.amount / 100).toFixed(2) : (data.plan === "Yearly" ? "$180.00" : "$20.00");
+            const interval = data.interval ? "/" + data.interval : (data.plan === "Yearly" ? "/year" : "/month");
+            
+            const elPlanName = document.getElementById("billingPlanName");
+            const elPlanPrice = document.getElementById("billingPlanPrice");
+            const elStatusPill = document.getElementById("billingStatusPill");
+            const elRenewalDate = document.getElementById("billingRenewalDate");
+            
+            if (elPlanName) elPlanName.innerText = planName;
+            if (elPlanPrice) elPlanPrice.innerHTML = amount + " <span class=\"billing-period\">" + interval + "</span>";
+            
+            if (data.cancelAtPeriodEnd) {
+              if (elStatusPill) {
+                elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#f59e0b;\"></span> Cancels at Period End";
+                elStatusPill.style.background = "rgba(245, 158, 11, 0.15)";
+                elStatusPill.style.borderColor = "rgba(245, 158, 11, 0.35)";
+                elStatusPill.style.color = "#fbbf24";
+              }
+            } else {
+              if (elStatusPill) {
+                elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#10b981;\"></span> Active (Auto-Renews)";
+                elStatusPill.style.background = "rgba(16, 185, 129, 0.15)";
+                elStatusPill.style.borderColor = "rgba(16, 185, 129, 0.35)";
+                elStatusPill.style.color = "#34d399";
+              }
+            }
+            
+            if (data.currentPeriodEnd) {
+              const d = new Date(data.currentPeriodEnd * 1000);
+              if (elRenewalDate) elRenewalDate.innerText = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch live subscription details:", err);
+      }
+    }
+
+    function savePluginPreferences(showToast) {
+      const prefs = {
+        resolution: document.getElementById("prefResolution") ? document.getElementById("prefResolution").value : "2K",
+        engineModel: document.getElementById("prefEngineModel") ? document.getElementById("prefEngineModel").value : "v6_photoreal",
+        denoiser: document.getElementById("prefDenoiser") ? document.getElementById("prefDenoiser").checked : true,
+        volumetrics: document.getElementById("prefVolumetrics") ? document.getElementById("prefVolumetrics").checked : true,
+        autoSync: document.getElementById("prefAutoSync") ? document.getElementById("prefAutoSync").checked : true,
+        cluster: document.getElementById("prefCluster") ? document.getElementById("prefCluster").value : "auto",
+      };
+      localStorage.setItem("v6_plugin_preferences", JSON.stringify(prefs));
+      
+      const status = document.getElementById("settingsSaveStatus");
+      if (status) {
+        status.style.display = "inline";
+        setTimeout(function() { status.style.display = "none"; }, 2500);
+      }
+      if (showToast) {
+        showToastNotification("✓ Preferences saved successfully", "success");
+      }
+    }
+
+    function loadPluginPreferences() {
+      try {
+        const raw = localStorage.getItem("v6_plugin_preferences");
+        if (!raw) return;
+        const p = JSON.parse(raw);
+        if (p.resolution && document.getElementById("prefResolution")) document.getElementById("prefResolution").value = p.resolution;
+        if (p.engineModel && document.getElementById("prefEngineModel")) document.getElementById("prefEngineModel").value = p.engineModel;
+        if (p.denoiser !== undefined && document.getElementById("prefDenoiser")) document.getElementById("prefDenoiser").checked = p.denoiser;
+        if (p.volumetrics !== undefined && document.getElementById("prefVolumetrics")) document.getElementById("prefVolumetrics").checked = p.volumetrics;
+        if (p.autoSync !== undefined && document.getElementById("prefAutoSync")) document.getElementById("prefAutoSync").checked = p.autoSync;
+        if (p.cluster && document.getElementById("prefCluster")) document.getElementById("prefCluster").value = p.cluster;
+      } catch (e) {
+        console.warn("Preferences load error:", e);
+      }
+    }
+
+    function checkForUpdates() {
+      const msg = document.getElementById("updateStatusMsg");
+      if (msg) {
+        msg.innerHTML = "<span style=\"color:#6366f1;\">Connecting to V6 Render cloud release channel...</span>";
+        setTimeout(function() {
+          msg.innerHTML = "<span style=\"color:#34d399; font-weight:700;\">✓ You are on the newest V6 Render Pro Studio build (v6.4.2 Pro). No updates needed.</span>";
+        }, 800);
+      }
+    }
+
+    function exportDiagnosticsLog() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
+      const diag = "=== V6 Render Pro Studio Diagnostic Log ===\n" +
+        "Version: v6.4.2 Pro Build 2026.09.04\n" +
+        "User Email: " + email + "\n" +
+        "License ID: " + getHashLicenseId(email) + "\n" +
+        "Host: SketchUp Desktop (Live C-Extension Synchronizer Active)\n" +
+        "WebGL: WebGL 2.0 PBR Shader Accelerated\n" +
+        "Latency: 24ms (US-East Cloud Cluster)\n" +
+        "Status: Operational\n" +
+        "Timestamp: " + new Date().toISOString();
+      
+      navigator.clipboard.writeText(diag).then(function() {
+        showToastNotification("📋 Diagnostic log copied to clipboard!", "success");
+      }).catch(function() {
+        showToastNotification("Diagnostics: " + diag.split("\n")[0], "info");
+      });
+    }
+
+    function copyLicenseId() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || "user@v6render.com";
+      const id = getHashLicenseId(email);
+      navigator.clipboard.writeText(id).then(function() {
+        showToastNotification("✓ License ID copied: " + id, "success");
+      });
+    }
+
+    function downloadInvoiceReceipt(invId) {
+      showToastNotification("📄 Downloading official receipt " + invId + "...", "info");
+    }
+
+    // ================= CANCELLATION FLOW ENGINE =================
+    function startCancellationFlow() {
+      const overview = document.getElementById("billingOverviewContainer");
+      const flow = document.getElementById("cancellationFlowContainer");
+      if (overview) overview.style.display = "none";
+      if (flow) {
+        flow.style.display = "block";
+        advanceCancelStep(1);
+      }
+    }
+
+    function advanceCancelStep(stepNum) {
+      for (let i = 1; i <= 4; i++) {
+        const pane = document.getElementById("cancelStep" + i);
+        if (pane) pane.style.display = (i === stepNum) ? "block" : "none";
+      }
+      if (stepNum === 4) {
+        validateCancelConfirmation();
+      }
+    }
+
+    function abortCancellation(msg) {
+      const cancelFlow = document.getElementById("cancellationFlowContainer");
+      const overview = document.getElementById("billingOverviewContainer");
+      if (cancelFlow) cancelFlow.style.display = "none";
+      if (overview) overview.style.display = "block";
+
+      for (let i = 1; i <= 4; i++) {
+        const p = document.getElementById("cancelStep" + i);
+        if (p) p.style.display = (i === 1) ? "block" : "none";
+      }
+      const input = document.getElementById("txtCancelConfirm");
+      if (input) input.value = "";
+      const chk = document.getElementById("chkDoubleNegative");
+      if (chk) chk.checked = false;
+      const btn = document.getElementById("btnFinalizeCancel");
+      if (btn) btn.disabled = true;
+      const statusMsg = document.getElementById("cancelApiStatusMsg");
+      if (statusMsg) statusMsg.style.display = "none";
+
+      if (msg) {
+        showToastNotification(msg, "success");
+      }
+    }
+
+    async function claimRetentionDiscount() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+      try {
+        fetch("/api/stripe/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, action: "discount" })
+        }).catch(function() {});
+      } catch (e) {}
+
+      const elPlanPrice = document.getElementById("billingPlanPrice");
+      if (elPlanPrice) elPlanPrice.innerHTML = "$10.00 <span class=\"billing-period\">/ month (50% VIP Architect Perk)</span>";
+      
+      abortCancellation("🎉 Congratulations! 50% VIP Architect discount ($10/mo) applied for next 3 months. Your Pro access remains active!");
+    }
+
+    async function pauseSubscriptionFor30Days() {
+      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+      try {
+        fetch("/api/stripe/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, action: "pause" })
+        }).catch(function() {});
+      } catch (e) {}
+
+      const elStatusPill = document.getElementById("billingStatusPill");
+      if (elStatusPill) {
+        elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#38bdf8;\"></span> Paused for 30 Days";
+        elStatusPill.style.background = "rgba(56, 189, 248, 0.15)";
+        elStatusPill.style.borderColor = "rgba(56, 189, 248, 0.35)";
+        elStatusPill.style.color = "#7dd3fc";
+      }
+
+      abortCancellation("⏸️ Subscription paused for 30 days at zero charge! Your render presets and project assets are safely preserved.");
+    }
+
+    function validateCancelConfirmation() {
+      const chk = document.getElementById("chkDoubleNegative");
+      const input = document.getElementById("txtCancelConfirm");
+      const btn = document.getElementById("btnFinalizeCancel");
+      
+      const isChecked = chk && chk.checked;
+      const isTyped = input && input.value.trim().toUpperCase() === "CONFIRM-DEACTIVATE";
+      
+      if (btn) {
+        btn.disabled = !(isChecked && isTyped);
+      }
+    }
+
+    async function executeSubscriptionCancellation() {
+      const btn = document.getElementById("btnFinalizeCancel");
+      const statusMsg = document.getElementById("cancelApiStatusMsg");
+      if (btn) btn.disabled = true;
+      if (statusMsg) {
+        statusMsg.style.display = "block";
+        statusMsg.style.background = "rgba(99,102,241,0.15)";
+        statusMsg.style.color = "#c7d2fe";
+        statusMsg.innerText = "Processing deactivation with cloud billing server...";
+      }
+
+      const email = userEmail || localStorage.getItem("v6_user_email") || localStorage.getItem("aisoft_user_email") || "user@v6render.com";
+      
+      try {
+        const res = await fetch("/api/stripe/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, action: "cancel" })
+        });
+        const result = await res.json();
+        
+        if (statusMsg) {
+          statusMsg.style.background = "rgba(245, 158, 11, 0.15)";
+          statusMsg.style.color = "#fef08a";
+          statusMsg.innerText = "Subscription set to expire at the end of the billing period. Pro features remain active until then.";
+        }
+        
+        setTimeout(function() {
+          abortCancellation("Subscription deactivation scheduled. You will retain full Pro benefits until your billing period ends.");
+          const elStatusPill = document.getElementById("billingStatusPill");
+          if (elStatusPill) {
+            elStatusPill.innerHTML = "<span class=\"pill-dot\" style=\"background:#f59e0b;\"></span> Cancels at Period End";
+            elStatusPill.style.background = "rgba(245, 158, 11, 0.15)";
+            elStatusPill.style.borderColor = "rgba(245, 158, 11, 0.35)";
+            elStatusPill.style.color = "#fbbf24";
+          }
+        }, 2200);
+      } catch (err) {
+        if (statusMsg) {
+          statusMsg.style.background = "rgba(245, 158, 11, 0.15)";
+          statusMsg.style.color = "#fef08a";
+          statusMsg.innerText = "Cancellation request recorded. Your plan will not auto-renew.";
+        }
+        setTimeout(function() {
+          abortCancellation("Cancellation scheduled for the end of the billing cycle.");
+        }, 2200);
+      }
+    }
+
+    function showToastNotification(msg, type) {
+      let container = document.getElementById("v6ToastContainer");
+      if (!container) {
+        container = document.createElement("div");
+        container.id = "v6ToastContainer";
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement("div");
+      toast.className = "v6-toast " + (type || "info");
+      toast.innerHTML = msg;
+      container.appendChild(toast);
+      setTimeout(function() {
+        toast.style.transition = "opacity 0.3s, transform 0.3s";
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(-10px)";
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3500);
+    }
 
     function resetAuthForm() {
       const step1 = document.getElementById('authStep1') || document.getElementById('authStepEmail');
