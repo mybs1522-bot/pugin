@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://js.stripe.com/v3/"></script>
 
   <style>
     :root {
@@ -2002,6 +2003,88 @@
     </div>
   </div>
 
+  <!-- IN-PLUGIN DIRECT PRO CHECKOUT MODAL (NO TRIAL - DIRECT PAYMENT) -->
+  <div id="proCheckoutModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); backdrop-filter:blur(12px); z-index:999999; align-items:center; justify-content:center;">
+    <div style="background:#09090b; border:1px solid rgba(255,255,255,0.18); border-radius:20px; width:440px; max-width:94vw; padding:24px 28px; text-align:left; box-shadow:0 25px 60px rgba(0,0,0,0.95); position:relative; color:#ffffff; font-family:'Inter', sans-serif;">
+      
+      <!-- CLOSE BUTTON -->
+      <button type="button" onclick="closeProCheckoutModal()" style="position:absolute; top:16px; right:16px; border:none; color:#a1a1aa; font-size:18px; cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:rgba(255,255,255,0.08);">✕</button>
+      
+      <!-- TOP PILL & HEADER -->
+      <div style="margin-bottom:16px;">
+        <div style="display:inline-flex; align-items:center; gap:6px; background:#18181b; border:1px solid #27272a; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:600; color:#e4e4e7; margin-bottom:10px;">
+          <span style="width:6px; height:6px; border-radius:50%; background:#ffffff; display:inline-block;"></span>
+          Native SketchUp Extension • Unlimited Renders
+        </div>
+        
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <h3 style="font-size:18px; font-weight:900; color:#ffffff; letter-spacing:-0.02em; margin:0;">Activate Pro Plan</h3>
+            <span style="font-size:20px;">⚡</span>
+          </div>
+          <span id="checkoutDuePill" style="background:#18181b; border:1px solid #27272a; border-radius:999px; padding:3px 10px; font-size:11px; font-weight:800; color:#ffffff; white-space:nowrap;">$20.00 Due Today</span>
+        </div>
+        <p style="font-size:11px; color:#a1a1aa; margin:4px 0 0 0;">Unlock 3D Video Walkthroughs & Unlimited 4K Photorealistic Renders</p>
+      </div>
+
+      <!-- PLAN SELECTOR -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;">
+        <div id="planMonthlyCard" onclick="selectPluginCheckoutPlan('monthly')" style="border:1px solid #ffffff; background:#18181b; border-radius:12px; padding:10px 12px; cursor:pointer; transition:all 0.15s ease;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:800; color:#ffffff; text-transform:uppercase;">PAY MONTHLY</span>
+            <span style="font-size:13px; font-weight:900; color:#ffffff;">$20<span style="font-size:10px; font-weight:normal; color:#a1a1aa;">/mo</span></span>
+          </div>
+          <div style="font-size:10px; color:#a1a1aa; margin-top:4px;">Instant Pro Access</div>
+        </div>
+
+        <div id="planYearlyCard" onclick="selectPluginCheckoutPlan('yearly')" style="border:1px solid #27272a; background:rgba(24,24,27,0.5); border-radius:12px; padding:10px 12px; cursor:pointer; position:relative; transition:all 0.15s ease;">
+          <span style="position:absolute; top:-8px; right:8px; background:#ffffff; color:#000000; font-size:8px; font-weight:900; padding:1px 6px; border-radius:999px; text-transform:uppercase;">25% OFF</span>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:800; color:#ffffff; text-transform:uppercase;">PAY YEARLY</span>
+            <span style="font-size:13px; font-weight:900; color:#ffffff;">$180<span style="font-size:10px; font-weight:normal; color:#a1a1aa;">/yr</span></span>
+          </div>
+          <div style="font-size:10px; color:#a1a1aa; margin-top:4px;">Instant Pro Access</div>
+        </div>
+      </div>
+
+      <!-- STRIPE CARD ELEMENTS -->
+      <form id="pluginProCheckoutForm" onsubmit="handlePluginProCheckoutSubmit(event)">
+        <!-- CARD NUMBER -->
+        <div style="margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="font-size:11px; font-weight:700; color:#d4d4d8; text-transform:uppercase; letter-spacing:0.04em;">CARD NUMBER</label>
+            <span style="font-size:10px; color:#a1a1aa; display:flex; align-items:center; gap:4px;">🔒 SSL Encrypted</span>
+          </div>
+          <div id="pluginCardNumber" style="background:#18181b; border:1px solid #27272a; border-radius:10px; padding:10px 12px;"></div>
+        </div>
+
+        <!-- EXPIRY & CVC -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#d4d4d8; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:6px;">EXPIRY DATE</label>
+            <div id="pluginCardExpiry" style="background:#18181b; border:1px solid #27272a; border-radius:10px; padding:10px 12px;"></div>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#d4d4d8; text-transform:uppercase; letter-spacing:0.04em; display:block; margin-bottom:6px;">CVC</label>
+            <div id="pluginCardCvc" style="background:#18181b; border:1px solid #27272a; border-radius:10px; padding:10px 12px;"></div>
+          </div>
+        </div>
+
+        <!-- ERROR MESSAGE -->
+        <div id="pluginCheckoutError" style="display:none; color:#f87171; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:8px 12px; font-size:11px; margin-bottom:12px;"></div>
+
+        <!-- SUBMIT BUTTON -->
+        <button id="btnPluginPayPro" type="submit" style="width:100%; background:#ffffff; color:#000000; border:none; border-radius:12px; height:46px; font-size:13px; font-weight:900; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 8px 25px rgba(255,255,255,0.2); transition:all 0.15s ease;">
+          ⚡ Pay $20 & Activate Pro
+        </button>
+
+        <p style="text-align:center; font-size:10px; color:#71717a; margin:10px 0 0 0;">
+          🔒 256-bit SSL Encrypted. Direct charge, cancel anytime.
+        </p>
+      </form>
+    </div>
+  </div>
+
   <!-- SUPPORT CHAT MODAL (EXACT ORIGINAL) -->
   <div id="supportModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:9999; align-items:center; justify-content:center;">
     <div style="background:#121215; border:1px solid rgba(255,255,255,0.15); border-radius:20px; width:480px; height:600px; max-height:92vh; display:flex; flex-direction:column; padding:20px; text-align:left; box-shadow:0 20px 50px rgba(0,0,0,0.8); position:relative;">
@@ -2752,7 +2835,136 @@
       return '';
     }
 
-    async function openProPlanCheckout(btnEl) {
+    let pluginStripe = null;
+    let pluginStripeElements = null;
+    let pluginCardNumber = null;
+    let pluginCardExpiry = null;
+    let pluginCardCvc = null;
+    let pluginSelectedPlan = 'monthly';
+    let isPluginStripeMounted = false;
+
+    function initPluginStripeElements() {
+      if (typeof Stripe === 'undefined') {
+        console.warn('Stripe.js not loaded yet, retrying...');
+        setTimeout(initPluginStripeElements, 300);
+        return;
+      }
+
+      if (!pluginStripe) {
+        pluginStripe = Stripe('pk_live_51PRJCsGGsoQTkhyv6OrT4zvnaaB5Y0MSSkTXi0ytj33oygsfW3dcu6aOFa9q3dr2mXYTCJErnFQJcOcyuDAsQd4B00lIAdclbB');
+      }
+
+      if (isPluginStripeMounted && pluginCardNumber) {
+        return;
+      }
+
+      const numEl = document.getElementById('pluginCardNumber');
+      const expEl = document.getElementById('pluginCardExpiry');
+      const cvcEl = document.getElementById('pluginCardCvc');
+
+      if (!numEl || !expEl || !cvcEl) return;
+
+      numEl.innerHTML = '';
+      expEl.innerHTML = '';
+      cvcEl.innerHTML = '';
+
+      pluginStripeElements = pluginStripe.elements();
+
+      const elementStyles = {
+        base: {
+          color: '#ffffff',
+          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          fontSmoothing: 'antialiased',
+          fontSize: '13px',
+          '::placeholder': {
+            color: '#71717a'
+          },
+          iconColor: '#ffffff'
+        },
+        invalid: {
+          color: '#f87171',
+          iconColor: '#f87171'
+        }
+      };
+
+      pluginCardNumber = pluginStripeElements.create('cardNumber', {
+        style: elementStyles,
+        showIcon: true
+      });
+      pluginCardNumber.mount('#pluginCardNumber');
+
+      pluginCardExpiry = pluginStripeElements.create('cardExpiry', {
+        style: elementStyles
+      });
+      pluginCardExpiry.mount('#pluginCardExpiry');
+
+      pluginCardCvc = pluginStripeElements.create('cardCvc', {
+        style: elementStyles
+      });
+      pluginCardCvc.mount('#pluginCardCvc');
+
+      const errorHandler = (event) => {
+        const errEl = document.getElementById('pluginCheckoutError');
+        if (!errEl) return;
+        if (event.error) {
+          errEl.innerText = event.error.message;
+          errEl.style.display = 'block';
+        } else {
+          errEl.style.display = 'none';
+          errEl.innerText = '';
+        }
+      };
+
+      pluginCardNumber.on('change', errorHandler);
+      pluginCardExpiry.on('change', errorHandler);
+      pluginCardCvc.on('change', errorHandler);
+
+      isPluginStripeMounted = true;
+    }
+
+    function selectPluginCheckoutPlan(plan) {
+      pluginSelectedPlan = plan;
+      const monthlyCard = document.getElementById('planMonthlyCard');
+      const yearlyCard = document.getElementById('planYearlyCard');
+      const duePill = document.getElementById('checkoutDuePill');
+      const payBtn = document.getElementById('btnPluginPayPro');
+
+      if (plan === 'yearly') {
+        if (monthlyCard) {
+          monthlyCard.style.borderColor = '#27272a';
+          monthlyCard.style.background = 'rgba(24,24,27,0.5)';
+        }
+        if (yearlyCard) {
+          yearlyCard.style.borderColor = '#ffffff';
+          yearlyCard.style.background = '#18181b';
+        }
+        if (duePill) duePill.innerText = '$180.00 Due Today';
+        if (payBtn) payBtn.innerHTML = '⚡ Pay $180 & Activate Pro';
+      } else {
+        if (monthlyCard) {
+          monthlyCard.style.borderColor = '#ffffff';
+          monthlyCard.style.background = '#18181b';
+        }
+        if (yearlyCard) {
+          yearlyCard.style.borderColor = '#27272a';
+          yearlyCard.style.background = 'rgba(24,24,27,0.5)';
+        }
+        if (duePill) duePill.innerText = '$20.00 Due Today';
+        if (payBtn) payBtn.innerHTML = '⚡ Pay $20 & Activate Pro';
+      }
+    }
+
+    function closeProCheckoutModal() {
+      const modal = document.getElementById('proCheckoutModal');
+      if (modal) modal.style.display = 'none';
+      const errEl = document.getElementById('pluginCheckoutError');
+      if (errEl) {
+        errEl.style.display = 'none';
+        errEl.innerText = '';
+      }
+    }
+
+    function openProPlanCheckout(btnEl) {
       const activeEmail = getUserEmail();
       if (!activeEmail) {
         const authModal = document.getElementById('authModal');
@@ -2761,82 +2973,119 @@
         return;
       }
 
-      const originalBtnText = btnEl ? btnEl.innerHTML : null;
-      if (btnEl) {
-        btnEl.disabled = true;
-        btnEl.innerHTML = '⚡ Connecting to Stripe...';
+      // Close trial over modal if open
+      const trialModal = document.getElementById('trialOverModal');
+      if (trialModal) trialModal.style.display = 'none';
+
+      // Open in-plugin direct card modal
+      const proModal = document.getElementById('proCheckoutModal');
+      if (proModal) {
+        proModal.style.display = 'flex';
+        selectPluginCheckoutPlan('monthly');
+        setTimeout(() => {
+          initPluginStripeElements();
+        }, 50);
+      }
+    }
+
+    async function handlePluginProCheckoutSubmit(event) {
+      if (event) event.preventDefault();
+
+      const activeEmail = getUserEmail();
+      if (!activeEmail) {
+        alert('Please log in with your email first.');
+        return;
       }
 
-      showStatus('⚡ Connecting to Stripe payment gateway...', 'loading');
+      const errEl = document.getElementById('pluginCheckoutError');
+      const payBtn = document.getElementById('btnPluginPayPro');
+      if (errEl) {
+        errEl.style.display = 'none';
+        errEl.innerText = '';
+      }
+
+      if (!pluginStripe || !pluginCardNumber) {
+        if (errEl) {
+          errEl.innerText = 'Payment gateway is initializing. Please try again in a few seconds.';
+          errEl.style.display = 'block';
+        }
+        return;
+      }
+
+      if (payBtn) {
+        payBtn.disabled = true;
+        payBtn.innerHTML = '⚡ Processing Payment...';
+      }
 
       try {
+        // Step 1: Create Stripe PaymentMethod
+        const pmResult = await pluginStripe.createPaymentMethod({
+          type: 'card',
+          card: pluginCardNumber,
+          billing_details: {
+            email: activeEmail
+          }
+        });
+
+        if (pmResult.error) {
+          throw new Error(pmResult.error.message || 'Invalid card details.');
+        }
+
+        const paymentMethodId = pmResult.paymentMethod.id;
+
+        // Step 2: Call direct subscription API (No trial - direct payment)
         const serverUrl = getLiveServerUrl();
-        
-        // 1. Try 1-Click activation if user already has a card on file
-        let data = null;
-        try {
-          const res = await fetch(serverUrl + '/api/stripe/activate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: activeEmail, plan: 'monthly' })
-          });
-          data = await res.json();
-        } catch (netErr) {
-          console.warn('Activate endpoint fetch notice:', netErr);
-        }
-
-        if (data && data.success && data.isPaid) {
-          // 1-Click Success! Card was charged instantly off-session
-          localStorage.setItem('v6_is_paid', 'true');
-          localStorage.setItem('v6_plan_status', 'paid');
-          localStorage.setItem('v6_payment_mode', 'Stripe Pro Active');
-          sessionStorage.setItem('v6_is_paid', 'true');
-
-          // Close trial over modal
-          const modal = document.getElementById('trialOverModal');
-          if (modal) modal.style.display = 'none';
-
-          // Reset trial over placeholder state in render viewport
-          if (typeof resetTrialOverState === 'function') resetTrialOverState();
-
-          // Refresh account badge to Pro Active
-          if (typeof renderUserAccountBadge === 'function') renderUserAccountBadge();
-
-          showStatus('🎉 ' + (data.message || 'Subscription successfully activated! Unlimited 4K renders unlocked.'), 'success');
-          alert('🎉 V6 Render Pro Activated!\n\nYour account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
-          return;
-        }
-
-        if (data && data.needsCheckout && data.url) {
-          showStatus('✓ Opening secure Stripe Checkout in your browser...', 'loading');
-          openExternalUrl(data.url);
-          return;
-        }
-
-        // 2. Direct create-checkout fallback: Creates direct Stripe Checkout session with pre-filled email
-        showStatus('Opening secure Stripe Checkout...', 'loading');
-        const chkRes = await fetch(serverUrl + '/api/stripe/create-checkout', {
+        const res = await fetch(serverUrl + '/api/stripe/create-direct-subscription', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: activeEmail, plan: 'monthly' })
+          body: JSON.stringify({
+            paymentMethodId: paymentMethodId,
+            email: activeEmail,
+            plan: pluginSelectedPlan
+          })
         });
-        const chkData = await chkRes.json();
-        if (chkData && chkData.url) {
-          showStatus('✓ Stripe Checkout opened in your browser.', 'success');
-          openExternalUrl(chkData.url);
-        } else {
-          // Final fallback to pricing section on site
-          openExternalUrl(serverUrl + '/#pricing?email=' + encodeURIComponent(activeEmail));
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || data.message || 'Payment failed. Please check your card details.');
         }
+
+        // Handle 3D Secure / SCA if required
+        if (data.requiresAction && data.clientSecret) {
+          const { error: confirmErr } = await pluginStripe.confirmCardPayment(data.clientSecret);
+          if (confirmErr) {
+            throw new Error(confirmErr.message || 'Card confirmation failed.');
+          }
+        }
+
+        // Step 3: Success! Update local storage & plugin state
+        localStorage.setItem('v6_is_paid', 'true');
+        localStorage.setItem('v6_plan_status', 'paid');
+        localStorage.setItem('v6_payment_mode', 'Stripe Pro Active');
+        sessionStorage.setItem('v6_is_paid', 'true');
+
+        // Reset trial over placeholder state in render viewport
+        if (typeof resetTrialOverState === 'function') resetTrialOverState();
+
+        // Refresh account badge to Pro Active
+        if (typeof renderUserAccountBadge === 'function') renderUserAccountBadge();
+
+        closeProCheckoutModal();
+
+        showStatus('🎉 Subscription activated! Unlimited 4K renders & 3D video unlocked.', 'success');
+        alert('🎉 V6 Render Pro Activated!\n\nYour account now has unlimited 4K photorealistic renders and 3D video walkthroughs.');
+
       } catch (err) {
-        console.error('Pro plan checkout error:', err);
-        showStatus('Opening checkout in browser...', 'loading');
-        const liveUrl = getLiveServerUrl();
-        openExternalUrl(liveUrl + '/#pricing?email=' + encodeURIComponent(activeEmail));
+        console.error('In-plugin checkout error:', err);
+        if (errEl) {
+          errEl.innerText = err.message || 'Payment processing failed. Please check your card details and try again.';
+          errEl.style.display = 'block';
+        }
       } finally {
-        if (btnEl && originalBtnText) {
-          btnEl.disabled = false;
-          btnEl.innerHTML = originalBtnText;
+        if (payBtn) {
+          payBtn.disabled = false;
+          selectPluginCheckoutPlan(pluginSelectedPlan);
         }
       }
     }

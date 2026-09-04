@@ -147,8 +147,13 @@ function UnifiedTrialForm({
 
       const paymentMethodId = confirmResult.setupIntent.payment_method;
 
-      // 3. Create 14-day free trial subscription in Stripe with saved card
-      const subRes = await fetch("/api/stripe/create-trial-subscription", {
+      // 3. If in activate_pro mode, create direct paid subscription (NO TRIAL). Otherwise create trial subscription.
+      const endpoint =
+        mode === "activate_pro"
+          ? "/api/stripe/create-direct-subscription"
+          : "/api/stripe/create-trial-subscription";
+
+      const subRes = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -164,7 +169,7 @@ function UnifiedTrialForm({
       const subData = await subRes.json();
       if (!subRes.ok || subData.error) {
         throw new Error(
-          subData.error || "Failed to establish trial subscription."
+          subData.error || "Failed to establish subscription payment."
         );
       }
 
@@ -172,10 +177,7 @@ function UnifiedTrialForm({
       try {
         localStorage.setItem("v6_is_paid", "true");
         localStorage.setItem("v6_plan_status", "paid");
-        localStorage.setItem(
-          "v6_payment_mode",
-          `Stripe 14-Day Free Trial (${selectedPlan})`
-        );
+        localStorage.setItem("v6_payment_mode", `Stripe Pro (${selectedPlan})`);
         sessionStorage.setItem("v6_is_paid", "true");
 
         const trialRecord = {
@@ -185,7 +187,7 @@ function UnifiedTrialForm({
           videoCount: 0,
           isPaid: true,
           status: "paid",
-          paymentMode: `Stripe 14-Day Free Trial (${selectedPlan})`,
+          paymentMode: `Stripe Pro (${selectedPlan})`,
           lastModelUsed: "google/nano-banana-pro",
           signedUpAt: new Date().toISOString(),
           lastLoginAt: new Date().toISOString(),
@@ -211,7 +213,7 @@ function UnifiedTrialForm({
 
       onSuccess(normEmail);
     } catch (err: any) {
-      console.error("Trial submission error:", err);
+      console.error("Payment submission error:", err);
       setErrorMessage(
         err.message ||
           "Something went wrong while verifying your card. Please check your details."
@@ -231,7 +233,7 @@ function UnifiedTrialForm({
         <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
           {mode === "activate_pro"
-            ? "V6 Render Pro • 14-Day Free Trial"
+            ? "Native SketchUp Extension • Unlimited Renders"
             : "Native SketchUp Extension • 2,000 Renders"}
         </div>
 
@@ -239,7 +241,7 @@ function UnifiedTrialForm({
           <div className="flex min-w-0 items-center gap-2.5">
             <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
               {mode === "activate_pro"
-                ? "Activate Pro"
+                ? "Activate Pro Plan"
                 : "Download Free Plugin"}
             </h3>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
@@ -253,7 +255,11 @@ function UnifiedTrialForm({
             </div>
           </div>
           <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-white">
-            $0.00 Due Today
+            {mode === "activate_pro"
+              ? selectedPlan === "monthly"
+                ? "$20.00 Due Today"
+                : "$180.00 Due Today"
+              : "$0.00 Due Today"}
           </span>
         </div>
         {mode === "activate_pro" && (
@@ -286,7 +292,7 @@ function UnifiedTrialForm({
             </span>
           </div>
           <span className="mt-1 text-[11px] font-medium whitespace-nowrap text-zinc-400">
-            14 Days Free
+            {mode === "activate_pro" ? "Instant Pro Access" : "14 Days Free"}
           </span>
         </button>
 
@@ -323,7 +329,7 @@ function UnifiedTrialForm({
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold whitespace-nowrap text-zinc-300">
-            14 Days Free
+            {mode === "activate_pro" ? "Instant Pro Access" : "14 Days Free"}
           </span>
         </button>
       </div>
@@ -401,14 +407,16 @@ function UnifiedTrialForm({
         >
           {loading ? (
             mode === "activate_pro" ? (
-              "Verifying Card & Activating Pro..."
+              "Processing Payment & Activating Pro..."
             ) : (
               "Verifying Card & Starting Trial..."
             )
           ) : mode === "activate_pro" ? (
             <>
               <Zap className="h-4 w-4 fill-black text-black" />
-              Activate Pro Plan ($0.00 Today)
+              {selectedPlan === "monthly"
+                ? "⚡ Pay $20 & Activate Pro"
+                : "⚡ Pay $180 & Activate Pro"}
             </>
           ) : (
             <>
@@ -420,7 +428,9 @@ function UnifiedTrialForm({
 
         <p className="text-center text-[11px] leading-relaxed text-zinc-400">
           <Lock className="mr-1 inline-block h-3 w-3 text-zinc-300" />
-          $0.00 charged today. 14 days free trial. Cancel anytime.
+          {mode === "activate_pro"
+            ? "🔒 256-bit SSL Encrypted. Direct charge, cancel anytime."
+            : "$0.00 charged today. 14 days free trial. Cancel anytime."}
         </p>
       </form>
     </div>
