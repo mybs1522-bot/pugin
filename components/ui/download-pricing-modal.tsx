@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import {
   AlertCircle,
   CreditCard,
   Calendar,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 import {
   Elements,
@@ -31,6 +33,10 @@ interface DownloadPricingModalProps {
   platform?: "windows" | "mac";
   windowsHref?: string;
   macHref?: string;
+  defaultEmail?: string;
+  hideEmail?: boolean;
+  mode?: "download" | "activate_pro";
+  onProActivated?: (email: string) => void;
 }
 
 const ELEMENT_STYLE = {
@@ -54,8 +60,14 @@ const ELEMENT_STYLE = {
 
 function UnifiedTrialForm({
   onSuccess,
+  defaultEmail = "",
+  hideEmail = false,
+  mode = "download",
 }: {
   onSuccess: (email: string) => void;
+  defaultEmail?: string;
+  hideEmail?: boolean;
+  mode?: "download" | "activate_pro";
 }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -63,15 +75,22 @@ function UnifiedTrialForm({
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
     "monthly"
   );
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail || "");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Keep email in sync if defaultEmail changes
+  useEffect(() => {
+    if (defaultEmail && !email) {
+      setEmail(defaultEmail);
+    }
+  }, [defaultEmail, email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
-    const normEmail = email.trim().toLowerCase();
+    const normEmail = (email || defaultEmail || "").trim().toLowerCase();
     if (!normEmail || !normEmail.includes("@")) {
       setErrorMessage("Please enter a valid email address.");
       return;
@@ -151,13 +170,21 @@ function UnifiedTrialForm({
 
       // 4. Save local state
       try {
+        localStorage.setItem("v6_is_paid", "true");
+        localStorage.setItem("v6_plan_status", "paid");
+        localStorage.setItem(
+          "v6_payment_mode",
+          `Stripe 14-Day Free Trial (${selectedPlan})`
+        );
+        sessionStorage.setItem("v6_is_paid", "true");
+
         const trialRecord = {
           email: normEmail,
           count: 0,
           imageCount: 0,
           videoCount: 0,
-          isPaid: false,
-          status: "trial",
+          isPaid: true,
+          status: "paid",
           paymentMode: `Stripe 14-Day Free Trial (${selectedPlan})`,
           lastModelUsed: "google/nano-banana-pro",
           signedUpAt: new Date().toISOString(),
@@ -172,13 +199,15 @@ function UnifiedTrialForm({
         }
       } catch {}
 
-      // 5. Trigger automatic download of .rbz
-      const downloadLink = document.createElement("a");
-      downloadLink.href = "/v6_render.rbz";
-      downloadLink.download = "v6_render.rbz";
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
+      // 5. If in download mode, trigger automatic download of .rbz (bypass if activating pro in plugin)
+      if (mode !== "activate_pro") {
+        const downloadLink = document.createElement("a");
+        downloadLink.href = "/v6_render.rbz";
+        downloadLink.download = "v6_render.rbz";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+      }
 
       onSuccess(normEmail);
     } catch (err: any) {
@@ -192,19 +221,26 @@ function UnifiedTrialForm({
     }
   };
 
+  const shouldHideEmailInput =
+    hideEmail || (!!defaultEmail && mode === "activate_pro");
+
   return (
     <div className="flex flex-col gap-4 bg-[#09090b] p-6 text-white sm:p-7">
       {/* Top Badge & Header */}
       <div className="space-y-2 text-left">
         <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-          Native SketchUp Extension • 2,000 Renders
+          {mode === "activate_pro"
+            ? "V6 Render Pro • 14-Day Free Trial"
+            : "Native SketchUp Extension • 2,000 Renders"}
         </div>
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2.5">
             <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
-              Download Free Plugin
+              {mode === "activate_pro"
+                ? "Activate Pro"
+                : "Download Free Plugin"}
             </h3>
             <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
               <Image
@@ -220,6 +256,11 @@ function UnifiedTrialForm({
             $0.00 Due Today
           </span>
         </div>
+        {mode === "activate_pro" && (
+          <p className="text-xs text-zinc-400">
+            Unlock 3D Video Walkthroughs & Unlimited 4K Photorealistic Renders
+          </p>
+        )}
       </div>
 
       {/* Side-by-Side Plan Selector (Monochrome Black & White Dark Theme) */}
@@ -288,21 +329,23 @@ function UnifiedTrialForm({
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 pt-1">
-        {/* EMAIL ADDRESS */}
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-            Email Address
-          </label>
-          <Input
-            type="email"
-            placeholder="architect@studio.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
-            required
-            autoFocus
-          />
-        </div>
+        {/* EMAIL ADDRESS (Hidden when inside plugin or when defaultEmail is already provided) */}
+        {!shouldHideEmailInput && (
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
+              Email Address
+            </label>
+            <Input
+              type="email"
+              placeholder="architect@studio.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
+              required
+              autoFocus
+            />
+          </div>
+        )}
 
         {/* CARD NUMBER */}
         <div className="space-y-1.5">
@@ -357,7 +400,16 @@ function UnifiedTrialForm({
           className="mt-1 h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-xl transition-all hover:bg-zinc-200"
         >
           {loading ? (
-            "Verifying Card & Starting Trial..."
+            mode === "activate_pro" ? (
+              "Verifying Card & Activating Pro..."
+            ) : (
+              "Verifying Card & Starting Trial..."
+            )
+          ) : mode === "activate_pro" ? (
+            <>
+              <Zap className="h-4 w-4 fill-black text-black" />
+              Activate Pro Plan ($0.00 Today)
+            </>
           ) : (
             <>
               <Download className="h-4 w-4 text-black" />
@@ -378,6 +430,10 @@ function UnifiedTrialForm({
 export function DownloadPricingModal({
   open,
   onOpenChange,
+  defaultEmail = "",
+  hideEmail = false,
+  mode = "download",
+  onProActivated,
 }: DownloadPricingModalProps) {
   const [done, setDone] = useState(false);
   const [confirmedEmail, setConfirmedEmail] = useState("");
@@ -385,6 +441,9 @@ export function DownloadPricingModal({
   const handleSuccess = (email: string) => {
     setConfirmedEmail(email);
     setDone(true);
+    if (onProActivated) {
+      onProActivated(email);
+    }
   };
 
   const handleManualDownload = () => {
@@ -409,7 +468,12 @@ export function DownloadPricingModal({
       <DialogContent className="max-w-[480px] overflow-hidden rounded-2xl border-zinc-800 bg-[#09090b] p-0 text-white shadow-2xl">
         {!done ? (
           <Elements stripe={getStripeClient()}>
-            <UnifiedTrialForm onSuccess={handleSuccess} />
+            <UnifiedTrialForm
+              onSuccess={handleSuccess}
+              defaultEmail={defaultEmail}
+              hideEmail={hideEmail}
+              mode={mode}
+            />
           </Elements>
         ) : (
           <div className="flex flex-col items-center gap-4 bg-[#09090b] p-6 text-center text-white sm:p-8">
@@ -418,37 +482,54 @@ export function DownloadPricingModal({
             </div>
             <div>
               <h3 className="text-xl font-bold text-white">
-                14-Day Free Trial Activated!
+                {mode === "activate_pro"
+                  ? "🎉 V6 Render Pro Activated!"
+                  : "14-Day Free Trial Activated!"}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
-                Your 14-day trial for{" "}
-                <span className="font-semibold text-white">
-                  {confirmedEmail}
-                </span>{" "}
-                has been set up with card securely on file (2,000 Renders
-                Included). Your download of{" "}
-                <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-zinc-200">
-                  v6_render.rbz
-                </code>{" "}
-                has started.
+                {mode === "activate_pro" ? (
+                  <>
+                    Your 14-day free trial has been activated for{" "}
+                    <span className="font-semibold text-white">
+                      {confirmedEmail || defaultEmail}
+                    </span>
+                    . Unlimited 4K photorealistic renders and 3D video
+                    walkthroughs are now unlocked.
+                  </>
+                ) : (
+                  <>
+                    Your 14-day trial for{" "}
+                    <span className="font-semibold text-white">
+                      {confirmedEmail}
+                    </span>{" "}
+                    has been set up with card securely on file (2,000 Renders
+                    Included). Your download of{" "}
+                    <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-zinc-200">
+                      v6_render.rbz
+                    </code>{" "}
+                    has started.
+                  </>
+                )}
               </p>
             </div>
 
             <div className="mt-2 w-full space-y-3">
-              <Button
-                onClick={handleManualDownload}
-                variant="outline"
-                className="w-full gap-2 border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800"
-              >
-                <Download className="h-4 w-4" />
-                Click here if download didn't start automatically
-              </Button>
+              {mode !== "activate_pro" && (
+                <Button
+                  onClick={handleManualDownload}
+                  variant="outline"
+                  className="w-full gap-2 border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800"
+                >
+                  <Download className="h-4 w-4" />
+                  Click here if download didn't start automatically
+                </Button>
+              )}
 
               <Button
                 onClick={() => onOpenChange(false)}
                 className="w-full bg-white font-bold text-black hover:bg-zinc-200"
               >
-                Done
+                {mode === "activate_pro" ? "⚡ Continue to 3D Video" : "Done"}
               </Button>
             </div>
           </div>

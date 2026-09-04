@@ -39,6 +39,7 @@ import {
   InteractiveFolderGallery,
   GalleryPhoto,
 } from "@/components/ui/interactive-folder-gallery";
+import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import {
   INTERIOR_SURFACES,
   INTERIOR_PBR_CATEGORIES,
@@ -235,6 +236,8 @@ export default function SamplePluginRendererPage() {
   const [authOtpCode, setAuthOtpCode] = useState<string>("");
   const [authStep, setAuthStep] = useState<1 | 2>(1);
   const [authStatusText, setAuthStatusText] = useState<string>("");
+  const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
+  const [isPaidUser, setIsPaidUser] = useState<boolean>(false);
 
   // Support Modal State
   const [isSupportModalOpen, setIsSupportModalOpen] = useState<boolean>(false);
@@ -399,6 +402,14 @@ export default function SamplePluginRendererPage() {
       sessionStorage.getItem("v6_user_email");
     if (savedEmail) {
       setUserEmail(savedEmail);
+    }
+
+    const isPaid =
+      localStorage.getItem("v6_is_paid") === "true" ||
+      sessionStorage.getItem("v6_is_paid") === "true" ||
+      localStorage.getItem("v6_plan_status") === "paid";
+    if (isPaid) {
+      setIsPaidUser(true);
     }
 
     const savedViewport =
@@ -930,6 +941,12 @@ export default function SamplePluginRendererPage() {
 
   const handleTriggerVideoWalkthrough = () => {
     if (isVideoRendering) return;
+
+    if (!isPaidUser) {
+      setIsProModalOpen(true);
+      return;
+    }
+
     setIsVideoRendering(true);
     setVideoProgress(15);
     setVideoStepText("Interpolating 3D Camera Bezier Path...");
@@ -2762,6 +2779,46 @@ export default function SamplePluginRendererPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ACTIVATE PRO STRIPE MODAL (AUTOMATICALLY POPULATED WITH LOGGED-IN EMAIL) */}
+      <DownloadPricingModal
+        open={isProModalOpen}
+        onOpenChange={setIsProModalOpen}
+        defaultEmail={userEmail}
+        hideEmail={true}
+        mode="activate_pro"
+        onProActivated={() => {
+          setIsPaidUser(true);
+          localStorage.setItem("v6_is_paid", "true");
+          sessionStorage.setItem("v6_is_paid", "true");
+          setIsProModalOpen(false);
+          // Start video rendering immediately
+          setIsVideoRendering(true);
+          setVideoProgress(15);
+          setVideoStepText("Interpolating 3D Camera Bezier Path...");
+          setStatusMessage("Rendering 3D camera walkthrough...");
+          setTimeout(() => {
+            setVideoProgress(45);
+            setVideoStepText("Synthesizing 60fps Volumetric Frames...");
+          }, 800);
+          setTimeout(() => {
+            setVideoProgress(78);
+            setVideoStepText("Raytracing Dynamic Lighting & Reflections...");
+          }, 1600);
+          setTimeout(() => {
+            setVideoProgress(95);
+            setVideoStepText("Encoding 4K Cinema MP4 Video...");
+          }, 2400);
+          setTimeout(() => {
+            setVideoProgress(100);
+            setVideoStepText("Video Walkthrough Ready!");
+            setIsVideoRendering(false);
+            setHasRenderedVideo(true);
+            setPreviewMode("video");
+            setStatusMessage("3D Video Walkthrough Ready!");
+          }, 3000);
+        }}
+      />
     </div>
   );
 }
