@@ -90,6 +90,7 @@ export default function LoadPluginImagesPage() {
   const [viewportImg, setViewportImg] = useState<string>("");
   const [renderImg, setRenderImg] = useState<string>("");
   const [renderVideo, setRenderVideo] = useState<string>("");
+  const [videoBlob, setVideoBlob] = useState<Blob | File | null>(null);
   const [sceneTitle, setSceneTitle] = useState<string>(
     "My SketchUp Project View"
   );
@@ -126,8 +127,14 @@ export default function LoadPluginImagesPage() {
         if (lsRender) setRenderImg(lsRender);
       }
 
-      if (idbVideo) setRenderVideo(idbVideo);
-      else {
+      if (idbVideo) {
+        if (idbVideo instanceof Blob || idbVideo instanceof File) {
+          setVideoBlob(idbVideo);
+          setRenderVideo(URL.createObjectURL(idbVideo));
+        } else if (typeof idbVideo === "string") {
+          setRenderVideo(idbVideo);
+        }
+      } else {
         const lsVideo =
           localStorage.getItem("custom_render_video") ||
           sessionStorage.getItem("custom_render_video");
@@ -154,6 +161,7 @@ export default function LoadPluginImagesPage() {
         alert("Please select or drop a valid video file (.mp4, .webm, etc.)");
         return;
       }
+      setVideoBlob(file);
       const url = URL.createObjectURL(file);
       setRenderVideo(url);
       return;
@@ -221,6 +229,7 @@ export default function LoadPluginImagesPage() {
     setViewportImg(sample.viewport);
     setRenderImg(sample.render);
     setRenderVideo(sample.video);
+    setVideoBlob(null);
     setSceneTitle(sample.title);
   };
 
@@ -233,7 +242,7 @@ export default function LoadPluginImagesPage() {
     }
 
     setIsSubmitting(true);
-    const videoToSave = renderVideo || DEFAULT_SAMPLE_VIDEO;
+    const videoToSave = videoBlob || renderVideo || DEFAULT_SAMPLE_VIDEO;
     const finalTitle = sceneTitle || "Custom SketchUp Render";
 
     try {

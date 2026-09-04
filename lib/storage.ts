@@ -28,7 +28,7 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function setAsset(key: string, value: string): Promise<void> {
+export async function setAsset(key: string, value: any): Promise<void> {
   try {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ export async function setAsset(key: string, value: string): Promise<void> {
   }
 }
 
-export async function getAsset(key: string): Promise<string | null> {
+export async function getAsset(key: string): Promise<any> {
   try {
     const db = await openDatabase();
     return new Promise((resolve, reject) => {

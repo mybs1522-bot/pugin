@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { getAsset } from "@/lib/storage";
+import { getAsset, setAsset } from "@/lib/storage";
 import { GLSLHills } from "@/components/ui/glsl-hills";
 import { SwipeToRender } from "@/components/ui/swipe-to-render";
 import Link from "next/link";
@@ -259,6 +259,8 @@ export default function SamplePluginRendererPage() {
   const [viewportImg, setViewportImg] = useState<string>(DEFAULT_VIEWPORT);
   const [renderImg, setRenderImg] = useState<string>(DEFAULT_RENDER);
   const [renderVideo, setRenderVideo] = useState<string>(DEFAULT_VIDEO);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoUploadInputRef = useRef<HTMLInputElement>(null);
   const [sceneTitle, setSceneTitle] = useState<string>(
     "SketchUp Active Viewport"
   );
@@ -447,7 +449,25 @@ export default function SamplePluginRendererPage() {
           },
         ]);
       }
-      if (finalVideo) {
+      if (idbVideo) {
+        if (idbVideo instanceof Blob || idbVideo instanceof File) {
+          try {
+            const freshUrl = URL.createObjectURL(idbVideo);
+            setRenderVideo(freshUrl);
+          } catch (e) {
+            console.warn("Could not create object URL for video blob:", e);
+          }
+        } else if (
+          typeof idbVideo === "string" &&
+          !idbVideo.startsWith("blob:")
+        ) {
+          setRenderVideo(idbVideo);
+        }
+      } else if (
+        finalVideo &&
+        typeof finalVideo === "string" &&
+        !finalVideo.startsWith("blob:")
+      ) {
         setRenderVideo(finalVideo);
       }
       if (finalTitle) setSceneTitle(finalTitle);
@@ -961,12 +981,20 @@ export default function SamplePluginRendererPage() {
     // Retrieve custom video from IndexedDB or storage if available
     try {
       const idbVideo = await getAsset("custom_render_video");
-      const storedVideo =
-        idbVideo ||
-        localStorage.getItem("custom_render_video") ||
-        sessionStorage.getItem("custom_render_video");
-      if (storedVideo) {
-        setRenderVideo(storedVideo);
+      if (idbVideo) {
+        if (idbVideo instanceof Blob || idbVideo instanceof File) {
+          try {
+            const freshUrl = URL.createObjectURL(idbVideo);
+            setRenderVideo(freshUrl);
+          } catch (e) {
+            console.warn("Could not create object URL for video blob:", e);
+          }
+        } else if (
+          typeof idbVideo === "string" &&
+          !idbVideo.startsWith("blob:")
+        ) {
+          setRenderVideo(idbVideo);
+        }
       }
     } catch (e) {
       console.warn("Storage retrieval:", e);
@@ -1015,7 +1043,33 @@ export default function SamplePluginRendererPage() {
       setHasRenderedVideo(true);
       setPreviewMode("video");
       setStatusMessage("3D Video Walkthrough Ready!");
+      if (videoRef.current) {
+        videoRef.current.currentTime = 0;
+        videoRef.current
+          .play()
+          .catch((e) => console.warn("Autoplay notice:", e));
+      }
     }, 3900);
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("video/")) {
+        alert("Please select a valid video file (.mp4, .webm)");
+        return;
+      }
+      try {
+        await setAsset("custom_render_video", file);
+        const url = URL.createObjectURL(file);
+        setRenderVideo(url);
+        setHasRenderedVideo(true);
+        setPreviewMode("video");
+        setStatusMessage("✓ Custom 3D Walkthrough video loaded!");
+      } catch (err) {
+        console.error("Video upload error:", err);
+      }
+    }
   };
 
   return (
@@ -2217,6 +2271,7 @@ export default function SamplePluginRendererPage() {
                     {/* VIDEO MODE */}
                     {previewMode === "video" && hasRenderedVideo ? (
                       <video
+                        ref={videoRef}
                         key={renderVideo}
                         src={renderVideo}
                         controls
@@ -2224,8 +2279,21 @@ export default function SamplePluginRendererPage() {
                         loop
                         muted
                         playsInline
+                        preload="auto"
                         className="h-full w-full object-contain p-1.5"
-                      />
+                        onError={() => {
+                          console.warn(
+                            "Video failed to load from source, falling back to default sample video"
+                          );
+                          if (renderVideo !== DEFAULT_VIDEO) {
+                            setRenderVideo(DEFAULT_VIDEO);
+                          }
+                        }}
+                      >
+                        <source src={renderVideo} type="video/mp4" />
+                        <source src={renderVideo} />
+                        Your browser does not support HTML5 video.
+                      </video>
                     ) : isVideoRendering ? (
                       <div className="flex max-w-sm flex-col items-center justify-center p-6 text-center">
                         <RefreshCw className="mb-3 h-8 w-8 animate-spin text-white" />
@@ -2537,6 +2605,15 @@ export default function SamplePluginRendererPage() {
                   </a>
                 )}
 
+                {/* HIDDEN VIDEO UPLOAD INPUT */}
+                <input
+                  ref={videoUploadInputRef}
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  onChange={handleVideoUpload}
+                />
+
                 {/* RE-RENDER WALKTHROUGH BUTTON IN VIDEO MODE */}
                 {hasRenderedVideo && previewMode === "video" && (
                   <button
@@ -2552,6 +2629,17 @@ export default function SamplePluginRendererPage() {
                       )}
                     />
                     <span>Re-Render Walkthrough</span>
+                  </button>
+                )}
+
+                {/* SWITCH TO IMAGE BUTTON IN VIDEO MODE */}
+                {hasRenderedVideo && previewMode === "video" && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("image")}
+                    className="flex h-8.5 cursor-pointer items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-950 px-3.5 text-xs font-semibold text-zinc-300 shadow-xl transition-all duration-150 hover:border-zinc-700 hover:bg-zinc-900 hover:text-white active:scale-95"
+                  >
+                    <span>🖼️ View 4K Image</span>
                   </button>
                 )}
 
