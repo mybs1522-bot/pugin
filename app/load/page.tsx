@@ -11,6 +11,7 @@ import {
   Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { setAsset, getAsset } from "@/lib/storage";
 
 const DEFAULT_SAMPLE_VIDEO =
   "https://assets.mixkit.co/videos/preview/mixkit-modern-apartment-architecture-and-interior-design-41484-large.mp4";
@@ -36,6 +37,54 @@ const DEFAULT_SAMPLES = [
   },
 ];
 
+// Helper to optimize large uploaded images using Canvas
+function compressImageDataUrl(
+  dataUrl: string,
+  maxDimension = 2560
+): Promise<string> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined" || !dataUrl.startsWith("data:image")) {
+      resolve(dataUrl);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (
+        width <= maxDimension &&
+        height <= maxDimension &&
+        dataUrl.length < 3000000
+      ) {
+        resolve(dataUrl);
+        return;
+      }
+      if (width > height) {
+        if (width > maxDimension) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        }
+      } else {
+        if (height > maxDimension) {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(dataUrl);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", 0.92));
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 export default function LoadPluginImagesPage() {
   const router = useRouter();
   const [viewportImg, setViewportImg] = useState<string>("");
@@ -44,6 +93,7 @@ export default function LoadPluginImagesPage() {
   const [sceneTitle, setSceneTitle] = useState<string>(
     "My SketchUp Project View"
   );
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [draggingZone, setDraggingZone] = useState<
     "viewport" | "render" | "video" | null
   >(null);
@@ -53,24 +103,47 @@ export default function LoadPluginImagesPage() {
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Load existing items if available
-    const savedViewport =
-      localStorage.getItem("custom_viewport_img") ||
-      sessionStorage.getItem("custom_viewport_img");
-    const savedRender =
-      localStorage.getItem("custom_render_img") ||
-      sessionStorage.getItem("custom_render_img");
-    const savedVideo =
-      localStorage.getItem("custom_render_video") ||
-      sessionStorage.getItem("custom_render_video");
-    const savedTitle =
-      localStorage.getItem("custom_scene_title") ||
-      sessionStorage.getItem("custom_scene_title");
+    async function loadSavedAssets() {
+      // 1. Try IndexedDB first (no quota limits)
+      const idbViewport = await getAsset("custom_viewport_img");
+      const idbRender = await getAsset("custom_render_img");
+      const idbVideo = await getAsset("custom_render_video");
+      const idbTitle = await getAsset("custom_scene_title");
 
-    if (savedViewport) setViewportImg(savedViewport);
-    if (savedRender) setRenderImg(savedRender);
-    if (savedVideo) setRenderVideo(savedVideo);
-    if (savedTitle) setSceneTitle(savedTitle);
+      if (idbViewport) setViewportImg(idbViewport);
+      else {
+        const lsViewport =
+          localStorage.getItem("custom_viewport_img") ||
+          sessionStorage.getItem("custom_viewport_img");
+        if (lsViewport) setViewportImg(lsViewport);
+      }
+
+      if (idbRender) setRenderImg(idbRender);
+      else {
+        const lsRender =
+          localStorage.getItem("custom_render_img") ||
+          sessionStorage.getItem("custom_render_img");
+        if (lsRender) setRenderImg(lsRender);
+      }
+
+      if (idbVideo) setRenderVideo(idbVideo);
+      else {
+        const lsVideo =
+          localStorage.getItem("custom_render_video") ||
+          sessionStorage.getItem("custom_render_video");
+        if (lsVideo) setRenderVideo(lsVideo);
+      }
+
+      if (idbTitle) setSceneTitle(idbTitle);
+      else {
+        const lsTitle =
+          localStorage.getItem("custom_scene_title") ||
+          sessionStorage.getItem("custom_scene_title");
+        if (lsTitle) setSceneTitle(lsTitle);
+      }
+    }
+
+    loadSavedAssets();
   }, []);
 
   const processFile = (file: File, type: "viewport" | "render" | "video") => {
@@ -94,12 +167,13 @@ export default function LoadPluginImagesPage() {
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
+    reader.onload = async (event) => {
+      const rawResult = event.target?.result as string;
+      const optimized = await compressImageDataUrl(rawResult);
       if (type === "viewport") {
-        setViewportImg(result);
+        setViewportImg(optimized);
       } else {
-        setRenderImg(result);
+        setRenderImg(optimized);
       }
     };
     reader.readAsDataURL(file);
@@ -150,7 +224,7 @@ export default function LoadPluginImagesPage() {
     setSceneTitle(sample.title);
   };
 
-  const handleLaunchStudio = () => {
+  const handleLaunchStudio = async () => {
     if (!viewportImg || !renderImg) {
       alert(
         "Please upload both the SketchUp Viewport Image and the 4K Render Image before launching."
@@ -158,27 +232,27 @@ export default function LoadPluginImagesPage() {
       return;
     }
 
+    setIsSubmitting(true);
     const videoToSave = renderVideo || DEFAULT_SAMPLE_VIDEO;
+    const finalTitle = sceneTitle || "Custom SketchUp Render";
 
     try {
-      localStorage.setItem("custom_viewport_img", viewportImg);
-      localStorage.setItem("custom_render_img", renderImg);
-      localStorage.setItem("custom_render_video", videoToSave);
-      localStorage.setItem(
-        "custom_scene_title",
-        sceneTitle || "Custom SketchUp Render"
-      );
-    } catch (err) {
-      sessionStorage.setItem("custom_viewport_img", viewportImg);
-      sessionStorage.setItem("custom_render_img", renderImg);
-      sessionStorage.setItem("custom_render_video", videoToSave);
-      sessionStorage.setItem(
-        "custom_scene_title",
-        sceneTitle || "Custom SketchUp Render"
-      );
-    }
+      // 1. Save to high-capacity IndexedDB (No 5MB storage limit)
+      await setAsset("custom_viewport_img", viewportImg);
+      await setAsset("custom_render_img", renderImg);
+      await setAsset("custom_render_video", videoToSave);
+      await setAsset("custom_scene_title", finalTitle);
 
-    router.push("/new");
+      // 2. Safe non-blocking sync for short keys (swallow any QuotaExceededError)
+      try {
+        localStorage.setItem("custom_scene_title", finalTitle);
+      } catch (_) {}
+
+      router.push("/new");
+    } catch (err) {
+      console.error("Launch studio storage error:", err);
+      router.push("/new");
+    }
   };
 
   return (
@@ -211,7 +285,7 @@ export default function LoadPluginImagesPage() {
         {/* TOP TITLE */}
         <div className="space-y-1.5 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-zinc-900/80 px-3 py-1 text-xs font-semibold text-zinc-300">
-            <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+            <Sparkles className="h-3.5 w-3.5 text-white" />
             <span>Interactive Custom Simulation Setup</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white md:text-3xl">
@@ -262,7 +336,7 @@ export default function LoadPluginImagesPage() {
               className={cn(
                 "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
                 draggingZone === "viewport"
-                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  ? "scale-[1.02] border-white bg-zinc-900 ring-4 ring-white/10"
                   : viewportImg
                     ? "border-zinc-700 hover:border-zinc-500"
                     : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
@@ -291,7 +365,7 @@ export default function LoadPluginImagesPage() {
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
                       draggingZone === "viewport" &&
-                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                        "scale-110 border-white bg-zinc-800 text-white"
                     )}
                   >
                     <Upload className="h-5 w-5" />
@@ -351,7 +425,7 @@ export default function LoadPluginImagesPage() {
               className={cn(
                 "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
                 draggingZone === "render"
-                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  ? "scale-[1.02] border-white bg-zinc-900 ring-4 ring-white/10"
                   : renderImg
                     ? "border-zinc-700 hover:border-zinc-500"
                     : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
@@ -380,7 +454,7 @@ export default function LoadPluginImagesPage() {
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
                       draggingZone === "render" &&
-                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                        "scale-110 border-white bg-zinc-800 text-white"
                     )}
                   >
                     <ImageIcon className="h-5 w-5" />
@@ -440,7 +514,7 @@ export default function LoadPluginImagesPage() {
               className={cn(
                 "group relative flex h-56 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-zinc-950 transition-all duration-200",
                 draggingZone === "video"
-                  ? "scale-[1.02] border-indigo-500 bg-indigo-950/30 ring-4 ring-indigo-500/20"
+                  ? "scale-[1.02] border-white bg-zinc-900 ring-4 ring-white/10"
                   : renderVideo
                     ? "border-zinc-700 hover:border-zinc-500"
                     : "border-zinc-800 hover:border-zinc-600 hover:bg-zinc-900/40"
@@ -472,7 +546,7 @@ export default function LoadPluginImagesPage() {
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-400 transition-all group-hover:text-white",
                       draggingZone === "video" &&
-                        "scale-110 border-indigo-500 bg-indigo-900/60 text-white"
+                        "scale-110 border-white bg-zinc-800 text-white"
                     )}
                   >
                     <Film className="h-5 w-5" />
@@ -530,10 +604,15 @@ export default function LoadPluginImagesPage() {
 
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={handleLaunchStudio}
-            className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-8 text-sm font-black text-black shadow-2xl transition-all hover:bg-zinc-200 sm:w-auto"
+            className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-8 text-sm font-black text-black shadow-2xl transition-all hover:bg-zinc-200 disabled:opacity-50 sm:w-auto"
           >
-            <span>Launch Plugin Studio (/new)</span>
+            <span>
+              {isSubmitting
+                ? "Loading Studio..."
+                : "Launch Plugin Studio (/new)"}
+            </span>
             <ArrowRight className="h-4 w-4 text-black" />
           </button>
         </div>

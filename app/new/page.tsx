@@ -1,4 +1,5 @@
-"use client";
+import { getAsset } from "@/lib/storage";
+("use client");
 
 import React, { useState, useEffect, useRef } from "react";
 import { GLSLHills } from "@/components/ui/glsl-hills";
@@ -413,32 +414,46 @@ export default function SamplePluginRendererPage() {
       setIsPaidUser(true);
     }
 
-    const savedViewport =
-      localStorage.getItem("custom_viewport_img") ||
-      sessionStorage.getItem("custom_viewport_img");
-    const savedRender =
-      localStorage.getItem("custom_render_img") ||
-      sessionStorage.getItem("custom_render_img");
-    const savedVideo =
-      localStorage.getItem("custom_render_video") ||
-      sessionStorage.getItem("custom_render_video");
-    const savedTitle =
-      localStorage.getItem("custom_scene_title") ||
-      sessionStorage.getItem("custom_scene_title");
+    async function loadCustomAssets() {
+      // Check IndexedDB first (no 5MB quota restrictions)
+      const idbViewport = await getAsset("custom_viewport_img");
+      const idbRender = await getAsset("custom_render_img");
+      const idbVideo = await getAsset("custom_render_video");
+      const idbTitle = await getAsset("custom_scene_title");
 
-    if (savedViewport) setViewportImg(savedViewport);
-    if (savedRender) {
-      setRenderImg(savedRender);
-      setGalleryPhotos([
-        {
-          id: Date.now(),
-          image: savedRender,
-          title: savedTitle || "4K Master Render",
-        },
-      ]);
+      const finalViewport =
+        idbViewport ||
+        localStorage.getItem("custom_viewport_img") ||
+        sessionStorage.getItem("custom_viewport_img");
+      const finalRender =
+        idbRender ||
+        localStorage.getItem("custom_render_img") ||
+        sessionStorage.getItem("custom_render_img");
+      const finalVideo =
+        idbVideo ||
+        localStorage.getItem("custom_render_video") ||
+        sessionStorage.getItem("custom_render_video");
+      const finalTitle =
+        idbTitle ||
+        localStorage.getItem("custom_scene_title") ||
+        sessionStorage.getItem("custom_scene_title");
+
+      if (finalViewport) setViewportImg(finalViewport);
+      if (finalRender) {
+        setRenderImg(finalRender);
+        setGalleryPhotos([
+          {
+            id: Date.now(),
+            image: finalRender,
+            title: finalTitle || "4K Master Render",
+          },
+        ]);
+      }
+      if (finalVideo) setRenderVideo(finalVideo);
+      if (finalTitle) setSceneTitle(finalTitle);
     }
-    if (savedVideo) setRenderVideo(savedVideo);
-    if (savedTitle) setSceneTitle(savedTitle);
+
+    loadCustomAssets();
   }, []);
 
   // Startup / Boot Splash Screen Intro Animation
