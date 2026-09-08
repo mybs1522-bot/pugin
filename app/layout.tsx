@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProvider } from "@/components/session-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SwRegister } from "@/components/sw-register";
+import { FacebookPixel } from "@/components/facebook-pixel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </ThemeProvider>
         </SessionProvider>
         <SwRegister />
+        <FacebookPixel />
         <Analytics />
       </body>
     </html>
