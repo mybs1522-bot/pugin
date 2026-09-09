@@ -9,6 +9,9 @@ export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
 
   if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+    console.error(
+      "[Stripe Webhook] Missing stripe-signature header or STRIPE_WEBHOOK_SECRET env variable"
+    );
     return NextResponse.json(
       { error: "Missing webhook signature or secret" },
       { status: 400 }
@@ -24,47 +27,93 @@ export async function POST(req: NextRequest) {
     );
   } catch (err: any) {
     console.error(
-      "[Webhook Error] Signature verification failed:",
+      "[Stripe Webhook Error] Signature verification failed:",
       err?.message
     );
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
+  console.log(
+    `[Stripe Webhook] Received verified event: ${event.type} (ID: ${event.id})`
+  );
+
   try {
     switch (event.type) {
-      // 1. Checkout Session Completed (New Trial or Direct Subscription Started)
+      // 1. Checkout Session Completed (Customer completed hosted checkout for trial or pro)
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        const customerEmail =
+        const customerEmail = (
           session.customer_details?.email ||
           session.customer_email ||
           (session.metadata && session.metadata.email) ||
-          null;
+          ""
+        )
+          .trim()
+          .toLowerCase();
 
-        if (customerEmail) {
+        if (customerEmail && customerEmail.includes("@")) {
+          const plan = (session.metadata && session.metadata.plan) || "monthly";
+          const modeLabel = `Stripe 14-Day Free Trial (${plan})`;
+
           console.log(
-            `[Stripe Webhook] Checkout completed for: ${customerEmail}`
+            `[Stripe Webhook] New checkout for: ${customerEmail}, plan: ${plan}`
           );
-          await setUserPaidStatus(
-            customerEmail,
-            true,
-            "Stripe Trial / Pro Started"
-          );
-          await setUserStatus(customerEmail, "paid", "Stripe Trial Started");
+          await setUserPaidStatus(customerEmail, true, modeLabel);
+          await setUserStatus(customerEmail, "paid", modeLabel);
 
-          // Send Welcome Email with Download Link & 3-Step SketchUp Install Guide
-          const plan = (session.metadata && session.metadata.plan) || "Monthly";
+          // Dispatch Welcome Email with plugin download link
           sendWelcomeDownloadEmail(customerEmail, plan).catch((err) =>
-            console.warn("[Stripe Webhook] Welcome email error:", err)
+            console.warn(
+              "[Stripe Webhook] Welcome email dispatch warning:",
+              err
+            )
           );
         }
         break;
       }
 
-      // 2. Recurring or Trial-End Invoice Payment Succeeded
+      // 2. Subscription Created or Updated (Trial status or recurring changes)
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        const customerEmail = (
+          (sub.metadata && sub.metadata.email) ||
+          (typeof sub.customer === "string"
+            ? (
+                (await stripe.customers.retrieve(
+                  sub.customer
+                )) as Stripe.Customer
+              ).email
+            : null) ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+        if (customerEmail && customerEmail.includes("@")) {
+          const isTrialing = sub.status === "trialing";
+          const isActive = sub.status === "active" || isTrialing;
+          const statusMode = isTrialing
+            ? "Stripe 14-Day Free Trial"
+            : "Stripe Pro Subscription";
+
+          console.log(
+            `[Stripe Webhook] Subscription ${event.type}: ${customerEmail}, status: ${sub.status}`
+          );
+          await setUserPaidStatus(customerEmail, isActive, statusMode);
+          await setUserStatus(
+            customerEmail,
+            isActive ? "paid" : "cancelled",
+            statusMode
+          );
+        }
+        break;
+      }
+
+      // 3. Invoice Payment Succeeded (Initial $0.00 trial invoice or recurring renewal)
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
-        const customerEmail =
+        const customerEmail = (
           invoice.customer_email ||
           (typeof invoice.customer === "string"
             ? (
@@ -72,11 +121,15 @@ export async function POST(req: NextRequest) {
                   invoice.customer
                 )) as Stripe.Customer
               ).email
-            : null);
+            : null) ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
 
-        if (customerEmail) {
+        if (customerEmail && customerEmail.includes("@")) {
           console.log(
-            `[Stripe Webhook] Payment succeeded for: ${customerEmail}`
+            `[Stripe Webhook] Invoice payment succeeded for: ${customerEmail}`
           );
           await setUserPaidStatus(
             customerEmail,
@@ -92,10 +145,10 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 3. Renewal Failed (Empty Card / Insufficient Funds / Expired Card)
+      // 4. Invoice Payment Failed (Card empty / declined / expired)
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
-        const customerEmail =
+        const customerEmail = (
           invoice.customer_email ||
           (typeof invoice.customer === "string"
             ? (
@@ -103,16 +156,20 @@ export async function POST(req: NextRequest) {
                   invoice.customer
                 )) as Stripe.Customer
               ).email
-            : null);
+            : null) ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
 
-        if (customerEmail) {
+        if (customerEmail && customerEmail.includes("@")) {
           console.warn(
-            `[Stripe Webhook - Anti-Fraud] Payment failed (insufficient funds/declined) for: ${customerEmail}`
+            `[Stripe Webhook] Invoice payment failed for: ${customerEmail}`
           );
           await setUserPaidStatus(
             customerEmail,
             false,
-            "Payment Failed (Card Empty/Declined)"
+            "Payment Failed (Card Declined)"
           );
           await setUserStatus(
             customerEmail,
@@ -123,10 +180,10 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 4. Subscription Deleted or Canceled
+      // 5. Subscription Deleted or Canceled
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
-        const customerEmail =
+        const customerEmail = (
           (sub.metadata && sub.metadata.email) ||
           (typeof sub.customer === "string"
             ? (
@@ -134,11 +191,15 @@ export async function POST(req: NextRequest) {
                   sub.customer
                 )) as Stripe.Customer
               ).email
-            : null);
+            : null) ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
 
-        if (customerEmail) {
+        if (customerEmail && customerEmail.includes("@")) {
           console.log(
-            `[Stripe Webhook] Subscription deleted for: ${customerEmail}`
+            `[Stripe Webhook] Subscription canceled/deleted for: ${customerEmail}`
           );
           await setUserPaidStatus(customerEmail, false, "Subscription Deleted");
           await setUserStatus(customerEmail, "cancelled", "Subscription Ended");
@@ -146,11 +207,11 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 5. Chargeback or Fraud Claim Initiated
+      // 6. Charge Dispute / Fraud Created
       case "charge.dispute.created": {
         const dispute = event.data.object as Stripe.Dispute;
         console.error(
-          `[Stripe Webhook - Fraud Dispute] Dispute ID: ${dispute.id}, Amount: ${dispute.amount}`
+          `[Stripe Webhook - Fraud Alert] Dispute ID: ${dispute.id}, Amount: ${dispute.amount}`
         );
         break;
       }
