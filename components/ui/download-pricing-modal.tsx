@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
@@ -11,20 +11,11 @@ import {
   Lock,
   ShieldCheck,
   AlertCircle,
-  CreditCard,
-  Calendar,
   Sparkles,
   Zap,
+  ArrowRight,
+  Check,
 } from "lucide-react";
-import {
-  Elements,
-  CardNumberElement,
-  CardExpiryElement,
-  CardCvcElement,
-  useStripe,
-  useElements,
-} from "@stripe/react-stripe-js";
-import { getStripeClient } from "@/lib/stripe-client";
 import { cn } from "@/lib/utils";
 
 interface DownloadPricingModalProps {
@@ -39,39 +30,13 @@ interface DownloadPricingModalProps {
   onProActivated?: (email: string) => void;
 }
 
-const ELEMENT_STYLE = {
-  style: {
-    base: {
-      color: "#ffffff",
-      fontFamily: "'Inter', system-ui, -apple-system, sans-serif",
-      fontSmoothing: "antialiased",
-      fontSize: "14px",
-      "::placeholder": {
-        color: "#71717a",
-      },
-      iconColor: "#ffffff",
-    },
-    invalid: {
-      color: "#f87171",
-      iconColor: "#f87171",
-    },
-  },
-};
-
-function UnifiedTrialForm({
-  onSuccess,
+export function DownloadPricingModal({
+  open,
+  onOpenChange,
   defaultEmail = "",
   hideEmail = false,
   mode = "download",
-}: {
-  onSuccess: (email: string) => void;
-  defaultEmail?: string;
-  hideEmail?: boolean;
-  mode?: "download" | "activate_pro";
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-
+}: DownloadPricingModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
     "monthly"
   );
@@ -86,7 +51,7 @@ function UnifiedTrialForm({
     }
   }, [defaultEmail, email]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -96,129 +61,38 @@ function UnifiedTrialForm({
       return;
     }
 
-    if (!stripe || !elements) {
-      setErrorMessage(
-        "Stripe payment gateway is initializing. Please wait a moment."
-      );
-      return;
-    }
-
-    const cardNumberElement = elements.getElement(CardNumberElement);
-    if (!cardNumberElement) {
-      setErrorMessage("Please enter your card number.");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // 1. Request SetupIntent from backend to securely save card off-session
-      const setupRes = await fetch("/api/stripe/setup-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normEmail }),
-      });
-
-      const setupData = await setupRes.json();
-      if (!setupRes.ok || !setupData.clientSecret) {
-        throw new Error(
-          setupData.error || "Failed to initialize secure card setup."
-        );
-      }
-
-      // 2. Confirm Card Setup with Stripe ($0 charged today, cardholder name bypassed)
-      const confirmResult = await stripe.confirmCardSetup(
-        setupData.clientSecret,
-        {
-          payment_method: {
-            card: cardNumberElement,
-            billing_details: {
-              email: normEmail,
-            },
-          },
-        }
-      );
-
-      if (confirmResult.error) {
-        throw new Error(
-          confirmResult.error.message || "Card verification failed."
-        );
-      }
-
-      const paymentMethodId = confirmResult.setupIntent.payment_method;
-
-      // 3. If in activate_pro mode, create direct paid subscription (NO TRIAL). Otherwise create trial subscription.
-      const endpoint =
-        mode === "activate_pro"
-          ? "/api/stripe/create-direct-subscription"
-          : "/api/stripe/create-trial-subscription";
-
-      const subRes = await fetch(endpoint, {
+      const res = await fetch("/api/stripe/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: normEmail,
-          paymentMethodId:
-            typeof paymentMethodId === "string"
-              ? paymentMethodId
-              : paymentMethodId?.id,
           plan: selectedPlan,
+          mode: mode,
         }),
       });
 
-      const subData = await subRes.json();
-      if (!subRes.ok || subData.error) {
-        throw new Error(
-          subData.error || "Failed to establish subscription payment."
-        );
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Failed to initialize Stripe checkout.");
       }
 
-      // 4. Save local state
+      // Store intent/email in local storage for seamless sync upon return
       try {
-        localStorage.setItem("v6_is_paid", "true");
-        localStorage.setItem("v6_plan_status", "paid");
-        localStorage.setItem("v6_payment_mode", `Stripe Pro (${selectedPlan})`);
-        sessionStorage.setItem("v6_is_paid", "true");
-
-        const trialRecord = {
-          email: normEmail,
-          count: 0,
-          imageCount: 0,
-          videoCount: 0,
-          isPaid: true,
-          status: "paid",
-          paymentMode: `Stripe Pro (${selectedPlan})`,
-          lastModelUsed: "google/nano-banana-pro",
-          signedUpAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString(),
-          lastActiveAt: new Date().toISOString(),
-        };
-        const stored = localStorage.getItem("pugin_trials_list");
-        const list = stored ? JSON.parse(stored) : [];
-        if (!list.some((u: any) => u.email.toLowerCase() === normEmail)) {
-          list.unshift(trialRecord);
-          localStorage.setItem("pugin_trials_list", JSON.stringify(list));
-        }
+        localStorage.setItem("v6_pending_checkout_email", normEmail);
+        localStorage.setItem("v6_pending_plan", selectedPlan);
       } catch {}
 
-      // 5. If in download mode, trigger automatic download of .rbz (bypass if activating pro in plugin)
-      if (mode !== "activate_pro") {
-        const downloadLink = document.createElement("a");
-        downloadLink.href = "/v6_render.rbz";
-        downloadLink.download = "v6_render.rbz";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-      }
-
-      onSuccess(normEmail);
+      // Redirect user directly to Stripe Hosted Checkout
+      window.location.href = data.url;
     } catch (err: any) {
-      console.error("Payment submission error:", err);
+      console.error("Stripe checkout redirection error:", err);
       setErrorMessage(
-        err.message ||
-          "Something went wrong while verifying your card. Please check your details."
+        err.message || "Failed to connect to Stripe. Please try again."
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -227,330 +101,207 @@ function UnifiedTrialForm({
     hideEmail || (!!defaultEmail && mode === "activate_pro");
 
   return (
-    <div className="flex flex-col gap-4 bg-[#09090b] p-6 text-white sm:p-7">
-      {/* Top Badge & Header */}
-      <div className="space-y-2 text-left">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-          {mode === "activate_pro"
-            ? "Native SketchUp Extension • Unlimited Renders"
-            : "Native SketchUp Extension • 2,000 Renders"}
-        </div>
-
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
-              {mode === "activate_pro"
-                ? "Activate Pro Plan"
-                : "Download Free Plugin"}
-            </h3>
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
-              <Image
-                src="/sketchup-logo.png"
-                alt="SketchUp Logo"
-                width={48}
-                height={48}
-                className="h-8 w-8 animate-[spin_8s_linear_infinite] object-contain sm:h-9 sm:w-9"
-              />
-            </div>
-          </div>
-          <span className="shrink-0 rounded-full border border-zinc-700 bg-zinc-900 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-white">
-            {mode === "activate_pro"
-              ? selectedPlan === "monthly"
-                ? "$20.00 Due Today"
-                : "$180.00 Due Today"
-              : "$0.00 Due Today"}
-          </span>
-        </div>
-        {mode === "activate_pro" && (
-          <p className="text-xs text-zinc-400">
-            Unlock 3D Video Walkthroughs & Unlimited 4K Photorealistic Renders
-          </p>
-        )}
-      </div>
-
-      {/* Side-by-Side Plan Selector (Monochrome Black & White Dark Theme) */}
-      <div className="grid grid-cols-2 gap-2.5 pt-1 sm:gap-3">
-        {/* Monthly Card */}
-        <button
-          type="button"
-          onClick={() => setSelectedPlan("monthly")}
-          className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-2.5 text-left transition-all sm:p-3",
-            selectedPlan === "monthly"
-              ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
-              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
-          )}
-        >
-          <div className="flex w-full items-center justify-between gap-1">
-            <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
-              Pay Monthly
-            </span>
-            <span className="text-sm font-black whitespace-nowrap text-white">
-              $20
-              <span className="text-[10px] font-normal text-zinc-400">/mo</span>
-            </span>
-          </div>
-          <span className="mt-1 text-[11px] font-medium whitespace-nowrap text-zinc-400">
-            {mode === "activate_pro" ? "Instant Pro Access" : "14 Days Free"}
-          </span>
-        </button>
-
-        {/* Yearly Card */}
-        <button
-          type="button"
-          onClick={() => setSelectedPlan("yearly")}
-          className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-2.5 text-left transition-all sm:p-3",
-            selectedPlan === "yearly"
-              ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
-              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
-          )}
-        >
-          <div className="absolute -top-2.5 right-2">
-            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider whitespace-nowrap text-black uppercase shadow-sm">
-              25% OFF
-            </span>
-          </div>
-          <div className="flex w-full items-center justify-between gap-1">
-            <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
-              Pay Yearly
-            </span>
-            <div className="flex items-baseline gap-1 whitespace-nowrap">
-              <span className="text-[10px] text-zinc-500 line-through">
-                $240
-              </span>
-              <span className="text-sm font-black text-white">
-                $180
-                <span className="text-[10px] font-normal text-zinc-400">
-                  /yr
-                </span>
-              </span>
-            </div>
-          </div>
-          <span className="mt-1 text-[11px] font-semibold whitespace-nowrap text-zinc-300">
-            {mode === "activate_pro" ? "Instant Pro Access" : "14 Days Free"}
-          </span>
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3.5 pt-1">
-        {/* EMAIL ADDRESS (Hidden when inside plugin or when defaultEmail is already provided) */}
-        {!shouldHideEmailInput ? (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-              Email Address
-            </label>
-            <Input
-              type="email"
-              placeholder="architect@studio.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
-              required
-              autoFocus
-            />
-          </div>
-        ) : (
-          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-xs">
-            <span className="flex items-center gap-1.5 text-zinc-400">
-              <span>👤</span>
-              <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                Account
-              </span>
-            </span>
-            <span className="font-mono font-semibold text-white">
-              {email || defaultEmail}
-            </span>
-          </div>
-        )}
-
-        {/* CARD NUMBER */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-              Card Number
-            </label>
-            <span className="flex items-center gap-1 text-[10px] text-zinc-400">
-              <ShieldCheck className="h-3 w-3 text-zinc-300" /> SSL Encrypted
-            </span>
-          </div>
-          <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
-            <CreditCard className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
-            <CardNumberElement options={ELEMENT_STYLE} />
-          </div>
-        </div>
-
-        {/* EXPIRY DATE & CVC */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-              Expiry Date
-            </label>
-            <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
-              <Calendar className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
-              <CardExpiryElement options={ELEMENT_STYLE} />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
-              CVC
-            </label>
-            <div className="relative rounded-lg border border-zinc-800 bg-zinc-900/90 p-2.5 pl-10 focus-within:border-white focus-within:ring-1 focus-within:ring-white">
-              <Lock className="absolute top-2.5 left-3 h-4 w-4 text-zinc-400" />
-              <CardCvcElement options={ELEMENT_STYLE} />
-            </div>
-          </div>
-        </div>
-
-        {errorMessage && (
-          <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* SUBMIT CTA (Black & White High Contrast) */}
-        <Button
-          type="submit"
-          size="lg"
-          disabled={loading || !stripe}
-          className="mt-1 h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-xl transition-all hover:bg-zinc-200"
-        >
-          {loading ? (
-            mode === "activate_pro" ? (
-              "Activating Pro..."
-            ) : (
-              "Verifying Card & Starting Trial..."
-            )
-          ) : mode === "activate_pro" ? (
-            "Activate Pro"
-          ) : (
-            <>
-              <Download className="h-4 w-4 text-black" />
-              Download Plugin
-            </>
-          )}
-        </Button>
-
-        <p className="text-center text-[11px] leading-relaxed text-zinc-400">
-          <Lock className="mr-1 inline-block h-3 w-3 text-zinc-300" />
-          {mode === "activate_pro"
-            ? "🔒 256-bit SSL Encrypted. Direct charge, cancel anytime."
-            : "$0.00 charged today. 14 days free trial. Cancel anytime."}
-        </p>
-      </form>
-    </div>
-  );
-}
-
-export function DownloadPricingModal({
-  open,
-  onOpenChange,
-  defaultEmail = "",
-  hideEmail = false,
-  mode = "download",
-  onProActivated,
-}: DownloadPricingModalProps) {
-  const [done, setDone] = useState(false);
-  const [confirmedEmail, setConfirmedEmail] = useState("");
-
-  const handleSuccess = (email: string) => {
-    setConfirmedEmail(email);
-    setDone(true);
-    if (onProActivated) {
-      onProActivated(email);
-    }
-  };
-
-  const handleManualDownload = () => {
-    const downloadLink = document.createElement("a");
-    downloadLink.href = "/v6_render.rbz";
-    downloadLink.download = "v6_render.rbz";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  };
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(val) => {
-        onOpenChange(val);
-        if (!val) {
-          setTimeout(() => setDone(false), 300);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[480px] overflow-hidden rounded-2xl border-zinc-800 bg-[#09090b] p-0 text-white shadow-2xl">
-        {!done ? (
-          <Elements stripe={getStripeClient()}>
-            <UnifiedTrialForm
-              onSuccess={handleSuccess}
-              defaultEmail={defaultEmail}
-              hideEmail={hideEmail}
-              mode={mode}
-            />
-          </Elements>
-        ) : (
-          <div className="flex flex-col items-center gap-4 bg-[#09090b] p-6 text-center text-white sm:p-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-white">
-              <CheckCircle2 className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h3 className="text-xl font-bold text-white">
-                {mode === "activate_pro"
-                  ? "🎉 V6 Render Pro Activated!"
-                  : "14-Day Free Trial Activated!"}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-zinc-400">
-                {mode === "activate_pro" ? (
-                  <>
-                    Your 14-day free trial has been activated for{" "}
-                    <span className="font-semibold text-white">
-                      {confirmedEmail || defaultEmail}
-                    </span>
-                    . Unlimited 4K photorealistic renders and 3D video
-                    walkthroughs are now unlocked.
-                  </>
-                ) : (
-                  <>
-                    Your 14-day trial for{" "}
-                    <span className="font-semibold text-white">
-                      {confirmedEmail}
-                    </span>{" "}
-                    has been set up with card securely on file (2,000 Renders
-                    Included). Your download of{" "}
-                    <code className="rounded bg-zinc-900 px-1.5 py-0.5 font-mono text-zinc-200">
-                      v6_render.rbz
-                    </code>{" "}
-                    has started.
-                  </>
-                )}
-              </p>
+        <div className="flex flex-col gap-4 bg-[#09090b] p-6 text-white sm:p-7">
+          {/* Top Badge & Header */}
+          <div className="space-y-2 text-left">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-200">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+              {mode === "activate_pro"
+                ? "Native SketchUp Extension • Unlimited Renders"
+                : "14-Day Free Trial • Unlimited Renders"}
             </div>
 
-            <div className="mt-2 w-full space-y-3">
-              {mode !== "activate_pro" && (
-                <Button
-                  onClick={handleManualDownload}
-                  variant="outline"
-                  className="w-full gap-2 border-zinc-800 bg-zinc-900 text-white hover:bg-zinc-800"
-                >
-                  <Download className="h-4 w-4" />
-                  Click here if download didn't start automatically
-                </Button>
-              )}
-
-              <Button
-                onClick={() => onOpenChange(false)}
-                className="w-full bg-white font-bold text-black hover:bg-zinc-200"
-              >
-                {mode === "activate_pro" ? "⚡ Continue to 3D Video" : "Done"}
-              </Button>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2.5">
+                <h3 className="text-base font-black tracking-tight whitespace-nowrap text-white sm:text-lg md:text-xl">
+                  {mode === "activate_pro"
+                    ? "Activate Pro Plan"
+                    : "Start Free Trial & Download"}
+                </h3>
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
+                  <Image
+                    src="/sketchup-logo.png"
+                    alt="SketchUp Logo"
+                    width={48}
+                    height={48}
+                    className="h-8 w-8 animate-[spin_8s_linear_infinite] object-contain sm:h-9 sm:w-9"
+                  />
+                </div>
+              </div>
+              <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-emerald-400">
+                $0.00 Due Today
+              </span>
             </div>
+            <p className="text-xs text-zinc-400">
+              {mode === "activate_pro"
+                ? "Unlock 3D Video Walkthroughs & Unlimited 4K Photorealistic Renders."
+                : "Full access to all 20+ architectural styles. No charge until your 14-day trial ends."}
+            </p>
           </div>
-        )}
+
+          {/* Plan Selector */}
+          <div className="grid grid-cols-2 gap-2.5 pt-1 sm:gap-3">
+            {/* Monthly Card */}
+            <button
+              type="button"
+              onClick={() => setSelectedPlan("monthly")}
+              className={cn(
+                "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+                selectedPlan === "monthly"
+                  ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+                  : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
+              )}
+            >
+              <div className="flex w-full items-center justify-between gap-1">
+                <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
+                  Pay Monthly
+                </span>
+                <span className="text-sm font-black whitespace-nowrap text-white">
+                  $20
+                  <span className="text-[10px] font-normal text-zinc-400">
+                    /mo
+                  </span>
+                </span>
+              </div>
+              <span className="mt-1.5 text-[11px] font-medium whitespace-nowrap text-emerald-400">
+                14 Days Free
+              </span>
+            </button>
+
+            {/* Yearly Card */}
+            <button
+              type="button"
+              onClick={() => setSelectedPlan("yearly")}
+              className={cn(
+                "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
+                selectedPlan === "yearly"
+                  ? "border-white bg-zinc-900 text-white shadow-lg ring-1 ring-white"
+                  : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
+              )}
+            >
+              <div className="absolute -top-2.5 right-2">
+                <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black tracking-wider whitespace-nowrap text-black uppercase shadow-sm">
+                  Save 25%
+                </span>
+              </div>
+              <div className="flex w-full items-center justify-between gap-1">
+                <span className="text-[11px] font-bold tracking-wider whitespace-nowrap text-white uppercase sm:text-xs">
+                  Pay Yearly
+                </span>
+                <div className="flex items-baseline gap-1 whitespace-nowrap">
+                  <span className="text-[10px] text-zinc-500 line-through">
+                    $240
+                  </span>
+                  <span className="text-sm font-black text-white">
+                    $180
+                    <span className="text-[10px] font-normal text-zinc-400">
+                      /yr
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <span className="mt-1.5 text-[11px] font-medium whitespace-nowrap text-emerald-400">
+                14 Days Free
+              </span>
+            </button>
+          </div>
+
+          {/* Key Features List */}
+          <div className="space-y-1.5 rounded-xl border border-zinc-800/80 bg-zinc-900/40 p-3">
+            {[
+              "Unlimited 4K photorealistic SketchUp renders",
+              "100% geometry & camera preservation",
+              "3D video walkthrough generator",
+              "14-day free trial · Cancel anytime with 1-click",
+            ].map((feature, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-2 text-xs text-zinc-300"
+              >
+                <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                <span>{feature}</span>
+              </div>
+            ))}
+          </div>
+
+          <form
+            onSubmit={handleCheckout}
+            className="flex flex-col gap-3.5 pt-1"
+          >
+            {/* EMAIL ADDRESS */}
+            {!shouldHideEmailInput ? (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold tracking-wider text-zinc-300 uppercase">
+                  Email Address for Account
+                </label>
+                <Input
+                  type="email"
+                  placeholder="architect@studio.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 border-zinc-800 bg-zinc-900/90 text-sm text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
+                  required
+                  autoFocus
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-xs">
+                <span className="flex items-center gap-1.5 text-zinc-400">
+                  <span>👤</span>
+                  <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
+                    Account Email
+                  </span>
+                </span>
+                <span className="font-mono font-semibold text-white">
+                  {email || defaultEmail}
+                </span>
+              </div>
+            )}
+
+            {errorMessage && (
+              <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
+            {/* TRUST BADGE / STRIPE NOTICE */}
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-zinc-800/80 bg-zinc-950 px-3 py-2 text-xs text-zinc-400">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <span>
+                Checkout is securely hosted on <strong>Stripe</strong>
+              </span>
+            </div>
+
+            {/* SUBMIT CTA */}
+            <Button
+              type="submit"
+              size="lg"
+              disabled={loading}
+              className="mt-1 h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-xl transition-all hover:bg-zinc-200"
+            >
+              {loading ? (
+                "Redirecting to Stripe..."
+              ) : (
+                <>
+                  <span>Continue to Secure Stripe Checkout</span>
+                  <ArrowRight className="h-4 w-4 text-black" />
+                </>
+              )}
+            </Button>
+
+            <div className="flex items-center justify-center gap-3 text-[11px] text-zinc-400">
+              <span className="flex items-center gap-1">
+                <Lock className="h-3 w-3 text-zinc-400" /> 256-Bit SSL
+                Encryption
+              </span>
+              <span>•</span>
+              <span>Apple Pay & Google Pay Supported</span>
+            </div>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

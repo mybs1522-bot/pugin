@@ -36,10 +36,28 @@ async function triggerDownload(url: string) {
 function SubscribedToast() {
   const searchParams = useSearchParams();
   useEffect(() => {
-    if (searchParams.get("subscribed") === "1") {
+    const isSubscribed =
+      searchParams.get("subscribed") === "1" ||
+      searchParams.get("trial_activated") === "1" ||
+      searchParams.get("pro_activated") === "1";
+
+    if (isSubscribed) {
       toast.success(
-        "Welcome! Your 3-day free trial has started. You have 10 renders included."
+        "🎉 Welcome! Your 14-day free trial has started. Unlimited renders unlocked!"
       );
+      try {
+        localStorage.setItem("v6_is_paid", "true");
+        localStorage.setItem("v6_plan_status", "paid");
+      } catch {}
+    }
+
+    if (searchParams.get("download") === "1") {
+      const a = document.createElement("a");
+      a.href = "/v6_render.rbz";
+      a.download = "v6_render.rbz";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   }, [searchParams]);
   return null;

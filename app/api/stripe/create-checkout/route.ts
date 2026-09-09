@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
@@ -64,23 +64,30 @@ export async function POST(req: NextRequest) {
       process.env.NEXTAUTH_URL ||
       "https://www.avada.space";
 
+    const isActivatePro = body?.mode === "activate_pro" || body?.noTrial;
+
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customerId,
-      payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      subscription_data: hadPreviousSubscription
-        ? {}
-        : {
-            trial_period_days: trialDays,
-            description: "V6 Render Pro 14-Day Free Trial",
-          },
+      subscription_data:
+        hadPreviousSubscription || isActivatePro
+          ? {}
+          : {
+              trial_period_days: trialDays,
+              description: "V6 Render Pro 14-Day Free Trial",
+            },
       allow_promotion_codes: true,
-      success_url: `${origin}/render?session_id={CHECKOUT_SESSION_ID}&trial_activated=1`,
+      billing_address_collection: "auto",
+      success_url:
+        body?.mode === "activate_pro"
+          ? `${origin}/render?session_id={CHECKOUT_SESSION_ID}&pro_activated=1`
+          : `${origin}/render?session_id={CHECKOUT_SESSION_ID}&trial_activated=1&download=1`,
       cancel_url: `${origin}/`,
       metadata: {
         email,
         plan,
+        mode: body?.mode || "download",
       },
     });
 
