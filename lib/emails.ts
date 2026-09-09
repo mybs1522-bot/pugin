@@ -1,7 +1,7 @@
-﻿import { Resend } from "resend";
+import { Resend } from "resend";
 
 const RESEND_FALLBACK = Buffer.from(
-  "cmVfMkZidmpnaTlfUUZZZWtLOTV6VXJtTU5xWWd5elV6VjRY",
+  "cmVfVVNyV3ZxZXFfRFEybkc3NFRaNkRTazJIRWNFQTNTekpI",
   "base64"
 ).toString("utf-8");
 
