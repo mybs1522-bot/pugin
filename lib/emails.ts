@@ -1,5 +1,4 @@
 ﻿import { Resend } from "resend";
-import nodemailer from "nodemailer";
 
 const RESEND_FALLBACK = Buffer.from(
   "cmVfMkZidmpnaTlfUUZZZWtLOTV6VXJtTU5xWWd5elV6VjRY",
@@ -10,14 +9,12 @@ export const getEmailConfig = () => {
   const resendKey = process.env.RESEND_API_KEY || RESEND_FALLBACK;
   const fromEmail =
     process.env.RESEND_FROM_EMAIL || "V6 Render <onboarding@resend.dev>";
-  const gmailUser = process.env.GMAIL_USER || "mybs1522@gmail.com";
-  const gmailPass = process.env.GMAIL_APP_PASSWORD || "agqarxxzmghwychm";
 
-  return { resendKey, fromEmail, gmailUser, gmailPass };
+  return { resendKey, fromEmail };
 };
 
 /**
- * Send email using Resend with automatic Gmail SMTP fallback
+ * Send email strictly via Resend API
  */
 export async function sendEmail({
   to,
@@ -28,68 +25,48 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  const { resendKey, fromEmail, gmailUser, gmailPass } = getEmailConfig();
+  const { resendKey, fromEmail } = getEmailConfig();
   const normalisedTo = to.trim().toLowerCase();
-  let sent = false;
-  let serviceUsed = "";
-  let lastError = "";
 
-  // 1. Primary: Resend
-  if (resendKey) {
-    try {
-      const resend = new Resend(resendKey);
-      const res = await resend.emails.send({
-        from: fromEmail,
-        to: normalisedTo,
-        subject,
-        html,
-      });
-
-      if (!res.error) {
-        sent = true;
-        serviceUsed = "Resend";
-        console.log(`[Email] Sent via Resend to ${normalisedTo}`);
-        return { success: true, service: "Resend", id: res.data?.id };
-      } else {
-        lastError = (res.error as any).message || "Resend API error";
-        console.warn(`[Email] Resend error:`, lastError);
-      }
-    } catch (err: any) {
-      lastError = err?.message || String(err);
-      console.warn(`[Email] Resend exception:`, lastError);
-    }
+  if (!resendKey) {
+    console.error("[Email Error] Missing RESEND_API_KEY");
+    return { success: false, error: "Missing RESEND_API_KEY configuration" };
   }
 
-  // 2. Fallback: Gmail SMTP
-  if (!sent && gmailUser && gmailPass) {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: gmailUser, pass: gmailPass },
-      });
+  try {
+    const resend = new Resend(resendKey);
+    const res = await resend.emails.send({
+      from: fromEmail,
+      to: normalisedTo,
+      subject,
+      html,
+    });
 
-      const info = await transporter.sendMail({
-        from: `"V6 Render" <${gmailUser}>`,
-        to: normalisedTo,
-        subject,
-        html,
-      });
-
-      sent = true;
-      serviceUsed = "Gmail SMTP Fallback";
-      console.log(`[Email] Sent via Gmail SMTP to ${normalisedTo}`);
-      return { success: true, service: "Gmail SMTP", id: info.messageId };
-    } catch (err: any) {
-      lastError = err?.message || String(err);
-      console.error(`[Email] Gmail SMTP exception:`, lastError);
+    if (res.error) {
+      const errorMsg = (res.error as any).message || "Resend API error";
+      console.error(
+        `[Email Error] Resend failed for ${normalisedTo}:`,
+        errorMsg
+      );
+      return { success: false, error: errorMsg };
     }
-  }
 
-  return { success: sent, service: serviceUsed, error: lastError };
+    console.log(
+      `[Email Success] Delivered via Resend to ${normalisedTo} (ID: ${res.data?.id})`
+    );
+    return { success: true, service: "Resend", id: res.data?.id };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err);
+    console.error(
+      `[Email Error] Resend exception for ${normalisedTo}:`,
+      errorMsg
+    );
+    return { success: false, error: errorMsg };
+  }
 }
 
 /**
- * Send 4-Digit OTP Code Email
+ * Send 4-Digit OTP Code Email via Resend
  */
 export async function sendOtpEmail(email: string, code: string) {
   const html = `
@@ -142,7 +119,7 @@ export async function sendOtpEmail(email: string, code: string) {
 }
 
 /**
- * Send Welcome Email with Download Link & 3-Step SketchUp Install Guide
+ * Send Welcome Email with Download Link & 3-Step SketchUp Install Guide via Resend
  */
 export async function sendWelcomeDownloadEmail(
   email: string,
