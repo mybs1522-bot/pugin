@@ -5,7 +5,12 @@ import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    let session: any = null;
+    try {
+      session = await getServerSession(authOptions);
+    } catch (sessionErr) {
+      console.warn("Could not retrieve session for checkout:", sessionErr);
+    }
     const body = await req.json().catch(() => ({}));
     const email = (session?.user?.email || body?.email || "")
       .trim()
