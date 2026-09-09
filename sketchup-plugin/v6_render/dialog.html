@@ -2982,16 +2982,19 @@
 
       <!-- Step 1: Email Input -->
       <div id="authStep1">
-        <input type="email" id="authEmail" placeholder="your.name@gmail.com" style="margin-bottom:12px; padding:10px 14px; font-size:13px; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
+        <input type="email" id="authEmail" placeholder="your.name@gmail.com" onkeydown="if(event.key==='Enter') sendOtpCode()" style="margin-bottom:12px; padding:10px 14px; font-size:13px; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
         <button class="btn-create-render" id="btnSendOtp" onclick="sendOtpCode()" style="margin-top:0; height:42px; font-size:12px;">Send 4-Digit Code</button>
       </div>
 
       <!-- Step 2: 4-Digit OTP Code Input -->
       <div id="authStep2" style="display:none;">
         <p style="font-size:11px; color:#38bdf8; margin-bottom:10px;" id="otpNotice">4-digit code sent to your email!</p>
-        <input type="text" id="authOtpCode" placeholder="••••" maxlength="4" style="margin-bottom:12px; padding:10px 14px; font-size:22px; letter-spacing:10px; text-align:center; font-weight:800; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
+        <input type="text" id="authOtpCode" placeholder="••••" maxlength="4" onkeydown="if(event.key==='Enter') verifyOtpCode()" oninput="if(this.value.trim().length===4) verifyOtpCode()" style="margin-bottom:12px; padding:10px 14px; font-size:22px; letter-spacing:10px; text-align:center; font-weight:800; width:100%; background:#09090b; border:1px solid #27272a; border-radius:10px; color:#fff; outline:none;" required />
         <button class="btn-create-render" id="btnVerifyOtp" onclick="verifyOtpCode()" style="margin-top:0; height:42px; font-size:12px;">Verify & Activate PC</button>
-        <button onclick="resetAuthForm()" style="background:transparent; border:none; color:#a1a1aa; font-size:11px; margin-top:12px; cursor:pointer; text-decoration:underline;">Use a different email</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+          <button id="btnResendOtp" onclick="sendOtpCode()" style="background:transparent; border:none; color:#38bdf8; font-size:11px; cursor:pointer; text-decoration:underline;">Resend Code</button>
+          <button onclick="resetAuthForm()" style="background:transparent; border:none; color:#a1a1aa; font-size:11px; cursor:pointer; text-decoration:underline;">Use different email</button>
+        </div>
       </div>
 
       <div id="authStatus" style="margin-top:14px; font-size:11px; display:none; padding:8px; border-radius:8px;"></div>
@@ -5521,6 +5524,31 @@
       }
     }
 
+    let resendTimerInterval = null;
+    function startResendTimer() {
+      const btn = document.getElementById('btnResendOtp');
+      if (!btn) return;
+      let seconds = 30;
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+      btn.innerText = `Resend in ${seconds}s`;
+      
+      clearInterval(resendTimerInterval);
+      resendTimerInterval = setInterval(() => {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(resendTimerInterval);
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.innerText = 'Resend Code';
+        } else {
+          btn.innerText = `Resend in ${seconds}s`;
+        }
+      }, 1000);
+    }
+
     async function sendOtpCode() {
       const emailInput = document.getElementById('authEmail').value.trim();
       if (!emailInput || !emailInput.includes('@')) {
@@ -5528,12 +5556,13 @@
         return;
       }
 
-      document.getElementById('btnSendOtp').disabled = true;
+      const btnSend = document.getElementById('btnSendOtp');
+      if (btnSend) btnSend.disabled = true;
       showAuthStatus('Sending 4-digit code to your email...', 'loading');
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
-        : 'https://pugin-five.vercel.app';
+        : 'https://www.avada.space';
 
       try {
         const response = await fetch(targetUrl + '/api/auth/otp-send', {
@@ -5556,32 +5585,37 @@
           if (notice) notice.innerText = '4-digit code sent to ' + emailInput + '!';
           
           showAuthStatus('✓ 4-digit code sent! Please check your inbox.', 'success');
+          startResendTimer();
           const codeInput = document.getElementById('authOtpCode');
-          if (codeInput) codeInput.focus();
+          if (codeInput) {
+            codeInput.value = '';
+            codeInput.focus();
+          }
         } else {
           showAuthStatus('❌ ' + (data.error || 'Failed to send code.'), 'error');
-          document.getElementById('btnSendOtp').disabled = false;
+          if (btnSend) btnSend.disabled = false;
         }
       } catch (err) {
         console.error('OTP Send error:', err);
-        showAuthStatus('❌ Connection error sending code.', 'error');
-        document.getElementById('btnSendOtp').disabled = false;
+        showAuthStatus('❌ Connection error sending code. Please check your internet.', 'error');
+        if (btnSend) btnSend.disabled = false;
       }
     }
 
     async function verifyOtpCode() {
       const codeInput = document.getElementById('authOtpCode').value.trim();
-      if (!codeInput) {
-        showAuthStatus('Please enter the 4-digit code.', 'error');
+      if (!codeInput || codeInput.length !== 4) {
+        showAuthStatus('Please enter the full 4-digit code.', 'error');
         return;
       }
 
-      document.getElementById('btnVerifyOtp').disabled = true;
+      const btnVerify = document.getElementById('btnVerifyOtp');
+      if (btnVerify) btnVerify.disabled = true;
       showAuthStatus('Verifying 4-digit code...', 'loading');
 
       const targetUrl = (currentServerUrl && currentServerUrl.startsWith('http')) 
         ? currentServerUrl 
-        : 'https://pugin-five.vercel.app';
+        : 'https://www.avada.space';
 
       try {
         const response = await fetch(targetUrl + '/api/auth/otp-verify', {
@@ -5610,6 +5644,7 @@
           }
 
           showAuthStatus('✓ PC Verified & Activated!', 'success');
+          clearInterval(resendTimerInterval);
           setTimeout(() => {
             document.getElementById('authModal').style.display = 'none';
             updateHeaderUserBadge();
@@ -5619,11 +5654,11 @@
           }, 800);
         } else {
           showAuthStatus('❌ ' + (data.error || 'Invalid 4-digit code.'), 'error');
-          document.getElementById('btnVerifyOtp').disabled = false;
+          if (btnVerify) btnVerify.disabled = false;
         }
       } catch (err) {
         showAuthStatus('❌ Verification error.', 'error');
-        document.getElementById('btnVerifyOtp').disabled = false;
+        if (btnVerify) btnVerify.disabled = false;
       }
     }
 

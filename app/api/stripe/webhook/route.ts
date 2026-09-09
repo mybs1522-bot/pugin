@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import Stripe from "stripe";
 import { setUserPaidStatus, setUserStatus } from "@/lib/usage";
+import { sendWelcomeDownloadEmail } from "@/lib/emails";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -31,7 +32,36 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
-      // 1. Recurring or Trial-End Invoice Payment Succeeded
+      // 1. Checkout Session Completed (New Trial or Direct Subscription Started)
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const customerEmail =
+          session.customer_details?.email ||
+          session.customer_email ||
+          (session.metadata && session.metadata.email) ||
+          null;
+
+        if (customerEmail) {
+          console.log(
+            `[Stripe Webhook] Checkout completed for: ${customerEmail}`
+          );
+          await setUserPaidStatus(
+            customerEmail,
+            true,
+            "Stripe Trial / Pro Started"
+          );
+          await setUserStatus(customerEmail, "paid", "Stripe Trial Started");
+
+          // Send Welcome Email with Download Link & 3-Step SketchUp Install Guide
+          const plan = (session.metadata && session.metadata.plan) || "Monthly";
+          sendWelcomeDownloadEmail(customerEmail, plan).catch((err) =>
+            console.warn("[Stripe Webhook] Welcome email error:", err)
+          );
+        }
+        break;
+      }
+
+      // 2. Recurring or Trial-End Invoice Payment Succeeded
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerEmail =
@@ -62,7 +92,7 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 2. Renewal Failed (Empty Card / Insufficient Funds / Expired Card)
+      // 3. Renewal Failed (Empty Card / Insufficient Funds / Expired Card)
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const customerEmail =
@@ -79,7 +109,6 @@ export async function POST(req: NextRequest) {
           console.warn(
             `[Stripe Webhook - Anti-Fraud] Payment failed (insufficient funds/declined) for: ${customerEmail}`
           );
-          // Revoke access immediately to prevent free-riding on empty cards
           await setUserPaidStatus(
             customerEmail,
             false,
@@ -94,7 +123,7 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 3. Subscription Deleted or Canceled
+      // 4. Subscription Deleted or Canceled
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
         const customerEmail =
@@ -117,7 +146,7 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // 4. Chargeback or Fraud Claim Initiated
+      // 5. Chargeback or Fraud Claim Initiated
       case "charge.dispute.created": {
         const dispute = event.data.object as Stripe.Dispute;
         console.error(
