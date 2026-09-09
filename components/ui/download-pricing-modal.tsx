@@ -68,22 +68,24 @@ export function DownloadPricingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-[420px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[440px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
         <DialogTitle className="sr-only">Download Plugin Free</DialogTitle>
         <div className="flex flex-col gap-4 p-5 text-white sm:p-6">
-          {/* Header */}
+          {/* Header with spinning SketchUp logo */}
           <div className="flex items-center justify-between gap-2 pt-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-black tracking-tight text-white">
-                Start Free Trial
+            <div className="flex items-center gap-2.5">
+              <h3 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+                {mode === "activate_pro"
+                  ? "Activate Pro Plan"
+                  : "Start Free Trial"}
               </h3>
-              <div className="relative h-5 w-5 shrink-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center sm:h-9 sm:w-9">
                 <Image
                   src="/sketchup-logo.png"
                   alt="SketchUp Logo"
-                  width={20}
-                  height={20}
-                  className="object-contain"
+                  width={48}
+                  height={48}
+                  className="h-8 w-8 animate-[spin_8s_linear_infinite] object-contain sm:h-9 sm:w-9"
                   priority
                 />
               </div>
