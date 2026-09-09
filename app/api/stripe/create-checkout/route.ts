@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
@@ -72,6 +72,12 @@ export async function POST(req: NextRequest) {
             },
       allow_promotion_codes: true,
       billing_address_collection: "auto",
+      custom_text: {
+        submit: {
+          message:
+            "Start your 14-day free trial ($0.00 today). You will get instant access to download the SketchUp plugin.",
+        },
+      },
       success_url:
         body?.mode === "activate_pro"
           ? `${origin}/render?session_id={CHECKOUT_SESSION_ID}&pro_activated=1`
