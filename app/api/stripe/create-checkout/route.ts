@@ -11,13 +11,6 @@ export async function POST(req: NextRequest) {
       .trim()
       .toLowerCase();
 
-    if (!email || !email.includes("@")) {
-      return NextResponse.json(
-        { error: "Valid email address is required" },
-        { status: 400 }
-      );
-    }
-
     const plan: PlanKey =
       body?.plan && PLANS[body.plan as PlanKey]
         ? (body.plan as PlanKey)
@@ -31,31 +24,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Find or create Stripe customer
-    const existing = await stripe.customers.list({ email, limit: 1 });
-    let customerId: string;
+    let customerId: string | undefined = undefined;
     let hadPreviousSubscription = false;
 
-    if (existing.data.length > 0) {
-      customerId = existing.data[0].id;
-      const prevSubs = await stripe.subscriptions.list({
-        customer: customerId,
-        status: "all",
-        limit: 5,
-      });
-      hadPreviousSubscription = prevSubs.data.some(
-        (s) =>
-          s.status === "active" ||
-          s.status === "past_due" ||
-          s.status === "canceled"
-      );
-    } else {
-      const customer = await stripe.customers.create({
-        email,
-        name: session?.user?.name ?? undefined,
-        metadata: { source: "V6 Render Web / Plugin" },
-      });
-      customerId = customer.id;
+    if (email && email.includes("@")) {
+      const existing = await stripe.customers.list({ email, limit: 1 });
+      if (existing.data.length > 0) {
+        customerId = existing.data[0].id;
+        const prevSubs = await stripe.subscriptions.list({
+          customer: customerId,
+          status: "all",
+          limit: 5,
+        });
+        hadPreviousSubscription = prevSubs.data.some(
+          (s) =>
+            s.status === "active" ||
+            s.status === "past_due" ||
+            s.status === "canceled"
+        );
+      } else {
+        const customer = await stripe.customers.create({
+          email,
+          name: session?.user?.name ?? undefined,
+          metadata: { source: "V6 Render Web / Plugin" },
+        });
+        customerId = customer.id;
+      }
     }
 
     const origin =
@@ -66,8 +60,7 @@ export async function POST(req: NextRequest) {
 
     const isActivatePro = body?.mode === "activate_pro" || body?.noTrial;
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customerId,
+    const sessionParams: any = {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       subscription_data:
@@ -85,11 +78,20 @@ export async function POST(req: NextRequest) {
           : `${origin}/render?session_id={CHECKOUT_SESSION_ID}&trial_activated=1&download=1`,
       cancel_url: `${origin}/`,
       metadata: {
-        email,
+        email: email || "collected_at_checkout",
         plan,
         mode: body?.mode || "download",
       },
-    });
+    };
+
+    if (customerId) {
+      sessionParams.customer = customerId;
+    } else if (email && email.includes("@")) {
+      sessionParams.customer_email = email;
+    }
+
+    const checkoutSession =
+      await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({
       url: checkoutSession.url,
