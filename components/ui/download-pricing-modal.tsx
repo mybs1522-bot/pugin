@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Lock, AlertCircle, Check, Zap } from "lucide-react";
+import { Download, Lock, AlertCircle, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface DownloadPricingModalProps {
@@ -52,12 +52,10 @@ export function DownloadPricingModal({
         throw new Error(data.error || "Failed to initialize checkout.");
       }
 
-      // Store chosen plan for sync on return
       try {
         localStorage.setItem("v6_pending_plan", selectedPlan);
       } catch {}
 
-      // Fast direct redirect to hosted checkout
       window.location.href = data.url;
     } catch (err: any) {
       console.error("Checkout redirection error:", err);
@@ -70,46 +68,29 @@ export function DownloadPricingModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-[440px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[420px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
         <DialogTitle className="sr-only">Download Plugin Free</DialogTitle>
         <div className="flex flex-col gap-4 p-5 text-white sm:p-6">
           {/* Header */}
-          <div className="space-y-2 text-left">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/90 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              {mode === "activate_pro"
-                ? "Native SketchUp Extension • Pro Access"
-                : "14-Day Free Trial • Full Access"}
-            </div>
-
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-black tracking-tight text-white sm:text-xl">
-                  {mode === "activate_pro"
-                    ? "Activate Pro Plan"
-                    : "Start Free Trial"}
-                </h3>
-                <div className="relative h-6 w-6 shrink-0">
-                  <Image
-                    src="/sketchup-logo.png"
-                    alt="SketchUp Logo"
-                    width={24}
-                    height={24}
-                    className="object-contain"
-                    priority
-                  />
-                </div>
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-black tracking-tight text-white">
+                Start Free Trial
+              </h3>
+              <div className="relative h-5 w-5 shrink-0">
+                <Image
+                  src="/sketchup-logo.png"
+                  alt="SketchUp Logo"
+                  width={20}
+                  height={20}
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
-                $0.00 Due Today
-              </span>
             </div>
-
-            <p className="text-xs leading-relaxed text-zinc-400">
-              {mode === "activate_pro"
-                ? "Unlock 3D Video Walkthroughs & Photorealistic 4K Renders."
-                : "Full access to all 20+ architectural styles. No charge until your 14-day trial ends."}
-            </p>
+            <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
+              $0.00 Due Today
+            </span>
           </div>
 
           {/* Plan Selector */}
@@ -127,7 +108,7 @@ export function DownloadPricingModal({
             >
               <div className="flex w-full items-center justify-between gap-1">
                 <span className="text-[11px] font-bold tracking-wider text-white uppercase">
-                  Pay Monthly
+                  Monthly
                 </span>
                 <span className="text-sm font-black text-white">
                   $20
@@ -159,7 +140,7 @@ export function DownloadPricingModal({
               </div>
               <div className="flex w-full items-center justify-between gap-1">
                 <span className="text-[11px] font-bold tracking-wider text-white uppercase">
-                  Pay Yearly
+                  Yearly
                 </span>
                 <div className="flex items-baseline gap-1">
                   <span className="text-[10px] text-zinc-500 line-through">
@@ -179,13 +160,12 @@ export function DownloadPricingModal({
             </button>
           </div>
 
-          {/* Key Features List */}
+          {/* Simple Features List */}
           <div className="space-y-2 rounded-xl border border-zinc-800/80 bg-zinc-900/30 p-3">
             {[
               "Photorealistic 4K SketchUp renders",
               "100% geometry & camera preservation",
               "3D video walkthrough generator",
-              "14-day free trial · Cancel anytime in 1-click",
             ].map((feature, idx) => (
               <div
                 key={idx}
@@ -216,7 +196,7 @@ export function DownloadPricingModal({
             className="h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-lg transition-all hover:bg-zinc-200 active:scale-[0.99]"
           >
             {loading ? (
-              "Starting Download & Trial..."
+              "Redirecting to Checkout..."
             ) : (
               <>
                 <Download className="h-4 w-4 text-black" strokeWidth={2.5} />
@@ -225,13 +205,11 @@ export function DownloadPricingModal({
             )}
           </Button>
 
-          {/* Footer Security Badges */}
-          <div className="flex items-center justify-center gap-2.5 text-center text-[11px] text-zinc-400">
+          {/* Footer */}
+          <div className="flex items-center justify-center gap-2 text-center text-[11px] text-zinc-400">
             <span className="flex items-center gap-1">
               <Lock className="h-3 w-3 text-zinc-400" /> 256-Bit SSL
             </span>
-            <span>•</span>
-            <span>Apple Pay & Google Pay</span>
             <span>•</span>
             <span>Cancel Anytime</span>
           </div>
