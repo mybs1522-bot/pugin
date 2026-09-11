@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         try {
           const resend = new Resend(resendKey);
           await resend.emails.send({
-            from: "V6 Support <onboarding@resend.dev>",
+            from: "V6 Support <support@avada.space>",
             to: ticket.email,
             subject: `💬 New Support Reply: V6 Render Studio [${ticket.category}]`,
             html: `

@@ -8,7 +8,7 @@ const RESEND_FALLBACK = Buffer.from(
 export const getEmailConfig = () => {
   const resendKey = process.env.RESEND_API_KEY || RESEND_FALLBACK;
   const fromEmail =
-    process.env.RESEND_FROM_EMAIL || "V6 Render <onboarding@resend.dev>";
+    process.env.RESEND_FROM_EMAIL || "V6 Render <noreply@avada.space>";
 
   return { resendKey, fromEmail };
 };
