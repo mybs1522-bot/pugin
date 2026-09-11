@@ -209,9 +209,9 @@ const MarqueeItem = () => (
     <span className="text-primary/60">✦</span>
     <span>TRUE ARCHITECTURAL PBR LIGHTING</span>{" "}
     <span className="text-secondary/60">✦</span>
-    <span>4K PRESENTATIONS & 3D WALKTHROUGHS</span>{" "}
+    <span>4K RENDERS & 3D WALKTHROUGHS</span>{" "}
     <span className="text-primary/60">✦</span>
-    <span>LOVED BY 32,000+ DESIGNERS</span>{" "}
+    <span>LOVED BY 8,700+ DESIGNERS</span>{" "}
     <span className="text-secondary/60">✦</span>
   </div>
 );
@@ -392,10 +392,14 @@ export function CinematicFooter({
             >
               Ultra-Real Image & Video Renders in Few Clicks.
             </h2>
-            <p className="text-muted-foreground mb-3 max-w-xl text-center text-sm leading-relaxed sm:mb-6 sm:max-w-2xl sm:text-lg lg:text-xl">
-              100% exact CAD geometry lock. Zero GPU hardware required. Render
-              presentation-ready 4K stills and 3D walkthroughs directly from
-              your SketchUp viewport.
+            <p className="mb-3 max-w-xl text-center text-sm leading-relaxed text-zinc-800 sm:mb-6 sm:max-w-2xl sm:text-lg lg:text-xl dark:text-zinc-200">
+              Supercharge Your SketchUp Workflow. Only Render engine in the
+              world that helps{" "}
+              <span className="rounded-md bg-amber-300/40 px-1.5 py-0.5 font-bold text-zinc-950 dark:bg-amber-400/20 dark:text-amber-200">
+                Sketchup Users
+              </span>{" "}
+              render Photorealistic Images and Videos exactly like they need
+              with Ultra Real Textures and Materials.
             </p>
 
             {/* Available For Both buttons */}

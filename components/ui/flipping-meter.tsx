@@ -50,26 +50,16 @@ function SplitFlapDigit({ digit }: { digit: string }) {
   );
 }
 
+import { useSharedUserCount } from "@/lib/user-counter";
+
 export function FlippingMeter() {
-  const [count, setCount] = useState(8776);
-  const [mounted, setMounted] = useState(false);
+  const count = useSharedUserCount();
   const { scrollY } = useScroll();
 
   // Stays fully visible in hero (0-400px), then smoothly fades away (400px-700px)
   const opacity = useTransform(scrollY, [0, 400, 700], [1, 1, 0]);
   const y = useTransform(scrollY, [0, 400, 700], [0, 0, 14]);
   const scale = useTransform(scrollY, [0, 400, 700], [1, 1, 0.94]);
-
-  useEffect(() => {
-    setMounted(true);
-    const interval = setInterval(() => {
-      // Increase by 1-2 every 8 seconds
-      const increment = Math.floor(Math.random() * 2) + 1; // 1 or 2
-      setCount((prev) => prev + increment);
-    }, 8000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const formatted = count.toLocaleString("en-US");
 

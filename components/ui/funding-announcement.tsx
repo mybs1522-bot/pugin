@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { Zap, TrendingUp, Clock } from "lucide-react";
 import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
+import { PlatformBadge } from "@/components/ui/platform-icons";
 
 const renderData = [
   { month: "Nov", renders: 1200 },
@@ -153,14 +154,25 @@ export function FundingAnnouncement() {
               </div>
             </div>
 
-            {/* CTA */}
-            <Button
-              size="lg"
-              onClick={() => setPricingOpen(true)}
-              className="w-full cursor-pointer text-sm font-bold sm:w-fit sm:px-8 sm:text-base"
-            >
-              Start 14-Day Free Trial — Lock Discount Forever ↗
-            </Button>
+            <div className="flex flex-col items-start gap-2 pt-1">
+              <PlatformBadge />
+              <motion.button
+                onClick={() => setPricingOpen(true)}
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{
+                  duration: 2.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ y: 2, scale: 0.99 }}
+                className="group relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-b-[4px] border-zinc-700/80 border-b-black bg-gradient-to-b from-zinc-800 via-zinc-900 to-zinc-950 px-6 py-2.5 text-xs font-bold tracking-wide text-white shadow-[0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.25)] transition-all select-none hover:shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:brightness-110 active:border-b-[2px] active:shadow-[0_2px_8px_rgba(0,0,0,0.2)] sm:rounded-2xl sm:px-8 sm:py-3 sm:text-sm"
+              >
+                <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                  Download Plugin Free
+                </span>
+              </motion.button>
+            </div>
             <p className="text-muted-foreground -mt-2 text-[11px] sm:-mt-3 sm:text-xs">
               $0.00 due today · Instant plugin download · Cancel anytime with 1
               click

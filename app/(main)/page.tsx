@@ -21,6 +21,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GoogleAuth } from "@/components/google-auth";
+import { AnimatedLogo } from "@/components/animated-logo";
+import { SectionCTA } from "@/components/ui/section-cta";
 
 const CinematicFooter = dynamic(
   () => import("@/components/ui/motion-footer").then((m) => m.CinematicFooter),
@@ -133,14 +135,7 @@ export default function HomePage() {
         <nav className="dark:bg-background/80 sticky top-0 z-50 border-b bg-white/80 backdrop-blur-sm">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-1.5 sm:px-6 sm:py-2 lg:px-12 xl:px-16">
             <Link href="/" className="flex items-center">
-              <Image
-                src="/v6-logo.png"
-                alt="V6 Logo"
-                width={90}
-                height={60}
-                className="h-11 w-auto object-contain sm:h-13 md:h-14"
-                priority
-              />
+              <AnimatedLogo />
             </Link>
             <div className="text-muted-foreground hidden items-center gap-6 text-sm sm:flex">
               <Link
@@ -179,7 +174,7 @@ export default function HomePage() {
           >
             <div className="mb-4 text-center sm:mb-10 lg:mb-16">
               <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                From SketchUp to 4K Presentation in 3 Steps
+                From SketchUp to 4K Renders in 3 Steps
               </h2>
               <p className="text-muted-foreground mt-1.5 text-xs sm:mt-2 sm:text-base lg:mt-3 lg:text-lg">
                 No render queues, complex node graphs, or export bottlenecks.
@@ -213,6 +208,9 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* ── CTA after How It Works ────────────────────── */}
+          <SectionCTA />
+
           {/* ── Stats dashboard ───────────────────────────────── */}
           <StatsDashboard />
 
@@ -220,6 +218,9 @@ export default function HomePage() {
           <div className="flex justify-center py-1 sm:py-3">
             <BeforeAfterCards />
           </div>
+
+          {/* ── CTA after Before/After ────────────────────── */}
+          <SectionCTA />
 
           {/* ── Features Grid Section ────────────────────────── */}
           <section id="features" className="space-y-3.5 sm:space-y-8">
@@ -259,6 +260,9 @@ export default function HomePage() {
             </div>
           </section>
 
+          {/* ── CTA after Features ────────────────────────── */}
+          <SectionCTA />
+
           {/* ── Funding announcement (Pricing Offer) ───────────── */}
           <div id="pricing">
             <FundingAnnouncement />
@@ -269,6 +273,9 @@ export default function HomePage() {
 
           {/* ── Testimonials ──────────────────────────────── */}
           <TestimonialsSection />
+
+          {/* ── Final CTA before Footer ───────────────────── */}
+          <SectionCTA className="pt-2 pb-4 sm:pb-8" />
         </div>
       </div>
 

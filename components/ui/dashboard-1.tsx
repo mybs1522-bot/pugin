@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlatformBadge } from "@/components/ui/platform-icons";
 
 interface ActivityStat {
   label: string;
@@ -237,13 +238,25 @@ export const MarketingDashboard = React.forwardRef<
                 {cta.text}
               </p>
             </div>
-            <Button
-              onClick={cta.onButtonClick}
-              className="w-full shrink-0 text-xs sm:w-auto sm:text-sm"
-            >
-              {cta.buttonText}
-              <ArrowRight className="ml-1.5 h-3.5 w-3.5 sm:ml-2 sm:h-4 sm:w-4" />
-            </Button>
+            <div className="flex shrink-0 flex-col items-center gap-2 sm:items-end">
+              <PlatformBadge />
+              <motion.button
+                onClick={cta.onButtonClick}
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{
+                  duration: 2.8,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ y: 2, scale: 0.99 }}
+                className="group relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-b-[4px] border-zinc-700/80 border-b-black bg-gradient-to-b from-zinc-800 via-zinc-900 to-zinc-950 px-6 py-2.5 text-xs font-bold tracking-wide text-white shadow-[0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.25)] transition-all select-none hover:shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:brightness-110 active:border-b-[2px] active:shadow-[0_2px_8px_rgba(0,0,0,0.2)] sm:rounded-2xl sm:px-8 sm:py-3 sm:text-sm"
+              >
+                <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
+                  {cta.buttonText}
+                </span>
+              </motion.button>
+            </div>
           </div>
         </motion.div>
       </motion.div>

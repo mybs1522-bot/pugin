@@ -1,52 +1,20 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { MarketingDashboard } from "@/components/ui/dashboard-1";
 import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
+import { useSharedUserCount } from "@/lib/user-counter";
 
 export function StatsDashboard() {
   const [pricingOpen, setPricingOpen] = useState(false);
-  const [userCount, setUserCount] = useState(32550);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    let timeout: ReturnType<typeof setTimeout>;
-    let active = false;
-    const schedule = () => {
-      if (!active) return;
-      const delay = 2500 + Math.random() * 2000;
-      timeout = setTimeout(() => {
-        setUserCount((n) => n + Math.floor(Math.random() * 2) + 2);
-        schedule();
-      }, delay);
-    };
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !active) {
-          active = true;
-          schedule();
-        } else if (!entry.isIntersecting) {
-          active = false;
-          clearTimeout(timeout);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    observer.observe(el);
-    return () => {
-      observer.disconnect();
-      clearTimeout(timeout);
-    };
-  }, []);
+  const userCount = useSharedUserCount();
 
   return (
     <>
       <DownloadPricingModal open={pricingOpen} onOpenChange={setPricingOpen} />
-      <div ref={containerRef} className="flex justify-center">
+      <div className="flex justify-center">
         <MarketingDashboard
-          title="Loved by 32,000+ SketchUp Designers in 90+ Countries"
+          title="Loved by 8,700+ SketchUp Designers in 90+ Countries"
           team={{
             memberCount: userCount,
             label: "Active Users",
@@ -75,7 +43,7 @@ export function StatsDashboard() {
           }}
           cta={{
             text: "Win more client pitches and save 10+ hours per revision with instant 4K architectural rendering",
-            buttonText: "Start 14-Day Free Trial ($0 Today)",
+            buttonText: "Download Plugin Free",
             onButtonClick: () => setPricingOpen(true),
           }}
         />
