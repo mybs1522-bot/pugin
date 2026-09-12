@@ -18,7 +18,18 @@ const renderData = [
   { month: "Apr", renders: 58000 },
 ];
 
-const DEADLINE = new Date("2026-04-27T23:59:59Z").getTime();
+function getDeadline(): number {
+  if (typeof window === "undefined") return Date.now() + 15 * 86400000;
+  const key = "v6_offer_deadline";
+  const stored = localStorage.getItem(key);
+  if (stored) {
+    const val = Number(stored);
+    if (val > Date.now()) return val;
+  }
+  const deadline = Date.now() + 15 * 86400000;
+  localStorage.setItem(key, String(deadline));
+  return deadline;
+}
 
 function useCountdown(target: number) {
   const [remaining, setRemaining] = useState(() =>
@@ -44,7 +55,8 @@ function Pad({ n }: { n: number }) {
 
 export function FundingAnnouncement() {
   const [pricingOpen, setPricingOpen] = useState(false);
-  const { d, h, m, s } = useCountdown(DEADLINE);
+  const [deadline] = useState(() => getDeadline());
+  const { d, h, m, s } = useCountdown(deadline);
 
   return (
     <>
@@ -75,12 +87,13 @@ export function FundingAnnouncement() {
                 <span className="text-primary">Fraction of the Cost.</span>
               </h2>
               <p className="text-muted-foreground text-sm leading-relaxed sm:text-base lg:text-lg">
-                No $4,000 GPU workstations. No complex V-Ray setups. For the
-                next{" "}
-                <span className="text-foreground font-semibold">15 days</span>,
-                lock in unlimited cloud rendering for{" "}
-                <span className="text-primary font-semibold">$15/mo</span>{" "}
-                forever. Includes full 14-day free trial ($0 due today).
+                No $4,000 GPU workstations. No complex V-Ray setups. Lock in
+                unlimited cloud rendering from{" "}
+                <span className="text-primary font-semibold">$20/mo</span> (or{" "}
+                <span className="text-primary font-semibold">
+                  $15/mo yearly
+                </span>
+                ). Includes full 14-day free trial — $0 due today.
               </p>
             </div>
 
@@ -169,13 +182,12 @@ export function FundingAnnouncement() {
                 className="group relative inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-b-[4px] border-zinc-700/80 border-b-black bg-gradient-to-b from-zinc-800 via-zinc-900 to-zinc-950 px-6 py-2.5 text-xs font-bold tracking-wide text-white shadow-[0_6px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.25)] transition-all select-none hover:shadow-[0_8px_20px_rgba(0,0,0,0.4)] hover:brightness-110 active:border-b-[2px] active:shadow-[0_2px_8px_rgba(0,0,0,0.2)] sm:rounded-2xl sm:px-8 sm:py-3 sm:text-sm"
               >
                 <span className="drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]">
-                  Download Plugin Free
+                  Start 14-Day Free Trial
                 </span>
               </motion.button>
             </div>
             <p className="text-muted-foreground -mt-2 text-[11px] sm:-mt-3 sm:text-xs">
-              $0.00 due today · Instant plugin download · Cancel anytime with 1
-              click
+              $0.00 due today · Download .rbz after signup · Cancel anytime
             </p>
           </motion.div>
 

@@ -17,6 +17,7 @@ import { PlanNotActiveModal } from "@/components/plan-not-active-modal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
+import { event as fbEvent } from "@/lib/fpixel";
 import type { DesignQuestionnaire } from "@/types";
 
 async function triggerDownload(url: string) {
@@ -49,6 +50,13 @@ function SubscribedToast() {
         localStorage.setItem("v6_is_paid", "true");
         localStorage.setItem("v6_plan_status", "paid");
       } catch {}
+
+      // Fire Meta Pixel conversion event
+      fbEvent("StartTrial", {
+        value: 0,
+        currency: "USD",
+        predicted_ltv: 180,
+      });
     }
 
     if (searchParams.get("download") === "1") {

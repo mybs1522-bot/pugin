@@ -483,9 +483,10 @@ async function resolveOutputUrl(output: unknown): Promise<string> {
 export async function POST(request: Request) {
   try {
     const req = await request.json();
+    const session = await getServerSession(authOptions);
     const userEmailHeader = request.headers.get("x-user-email");
     const sessionIdHeader = request.headers.get("x-session-id");
-    const userEmail = userEmailHeader || req.userEmail;
+    const userEmail = userEmailHeader || req.userEmail || session?.user?.email;
     const sessionId = sessionIdHeader || req.sessionId;
 
     if (!userEmail) {

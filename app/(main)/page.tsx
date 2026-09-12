@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { GoogleAuth } from "@/components/google-auth";
 import { AnimatedLogo } from "@/components/animated-logo";
 import { SectionCTA } from "@/components/ui/section-cta";
+import { NavbarActions } from "@/components/navbar-actions";
 
 const CinematicFooter = dynamic(
   () => import("@/components/ui/motion-footer").then((m) => m.CinematicFooter),
@@ -157,7 +158,8 @@ export default function HomePage() {
                 Pricing & Trial
               </Link>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <NavbarActions />
               <ThemeToggle />
             </div>
           </div>

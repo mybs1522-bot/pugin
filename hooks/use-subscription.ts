@@ -25,7 +25,9 @@ const DEFAULT: SubscriptionState = {
   loading: true,
 };
 
-export function useSubscription(): SubscriptionState & { refresh: () => Promise<void> } {
+export function useSubscription(): SubscriptionState & {
+  refresh: () => Promise<void>;
+} {
   const { data: session, status: sessionStatus } = useSession();
   const [state, setState] = useState<SubscriptionState>(DEFAULT);
 
@@ -50,13 +52,22 @@ export function useSubscription(): SubscriptionState & { refresh: () => Promise<
     } catch {
       setState({ ...DEFAULT, loading: false });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (sessionStatus === "loading") return;
     if (!session?.user) {
-      setState({ ...DEFAULT, loading: false });
+      const isPaidLocal =
+        typeof window !== "undefined" &&
+        (localStorage.getItem("v6_is_paid") === "true" ||
+          localStorage.getItem("v6_plan_status") === "paid");
+      setState({
+        ...DEFAULT,
+        subscribed: isPaidLocal,
+        status: isPaidLocal ? "trialing" : null,
+        loading: false,
+      });
       return;
     }
     fetchState();

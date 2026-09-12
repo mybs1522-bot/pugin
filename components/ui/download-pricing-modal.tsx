@@ -1,11 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Lock, AlertCircle, Check } from "lucide-react";
+import { Rocket, Lock, AlertCircle, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { event as fbEvent } from "@/lib/fpixel";
 
 interface DownloadPricingModalProps {
   open: boolean;
@@ -28,11 +29,19 @@ export function DownloadPricingModal({
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
     "monthly"
   );
+  const [email, setEmail] = useState(defaultEmail);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleCheckout = async () => {
     setErrorMessage(null);
+
+    // Validate email before redirecting
+    if (!email || !email.includes("@") || !email.includes(".")) {
+      setErrorMessage("Please enter a valid email address to continue.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -40,7 +49,7 @@ export function DownloadPricingModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: defaultEmail || undefined,
+          email: email.trim().toLowerCase(),
           plan: selectedPlan,
           mode: mode,
         }),
@@ -54,7 +63,16 @@ export function DownloadPricingModal({
 
       try {
         localStorage.setItem("v6_pending_plan", selectedPlan);
+        localStorage.setItem("v6_pending_email", email.trim().toLowerCase());
       } catch {}
+
+      // Track conversion event for Meta Ads optimization
+      fbEvent("InitiateCheckout", {
+        value: selectedPlan === "yearly" ? 180 : 20,
+        currency: "USD",
+        content_name: `V6 Render ${selectedPlan} trial`,
+        content_category: "subscription",
+      });
 
       window.location.href = data.url;
     } catch (err: any) {
@@ -69,7 +87,7 @@ export function DownloadPricingModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[calc(100%-2rem)] max-w-[440px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
-        <DialogTitle className="sr-only">Download Plugin Free</DialogTitle>
+        <DialogTitle className="sr-only">Start Free Trial</DialogTitle>
         <div className="flex flex-col gap-4 p-5 text-white sm:p-6">
           {/* Header with spinning SketchUp logo */}
           <div className="flex items-center justify-between gap-2 pt-1">
@@ -85,7 +103,7 @@ export function DownloadPricingModal({
                   alt="SketchUp Logo"
                   width={48}
                   height={48}
-                  className="h-8 w-8 animate-[spin_8s_linear_infinite] object-contain sm:h-9 sm:w-9"
+                  className="h-8 w-8 object-contain sm:h-9 sm:w-9"
                   priority
                 />
               </div>
@@ -182,6 +200,23 @@ export function DownloadPricingModal({
             ))}
           </div>
 
+          {/* Email Input */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-medium text-zinc-400">
+              Your email address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errorMessage) setErrorMessage(null);
+              }}
+              placeholder="you@company.com"
+              className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:outline-none"
+            />
+          </div>
+
           {errorMessage && (
             <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
@@ -201,8 +236,8 @@ export function DownloadPricingModal({
               "Redirecting to Checkout..."
             ) : (
               <>
-                <Download className="h-4 w-4 text-black" strokeWidth={2.5} />
-                <span>Download Plugin Free</span>
+                <Rocket className="h-4 w-4 text-black" strokeWidth={2.5} />
+                <span>Start 14-Day Free Trial</span>
               </>
             )}
           </Button>

@@ -405,7 +405,7 @@ export function CinematicFooter({
             {/* Available For Both buttons */}
             <div className="mb-4 flex flex-col items-center gap-1.5 sm:mb-8 sm:gap-3">
               <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase sm:text-xs">
-                Available For Both · 14-Day Free Trial ($0 Due Today):
+                Start 14-Day Free Trial · $0 Due Today:
               </span>
               <div
                 ref={linksRef}

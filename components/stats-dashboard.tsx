@@ -43,7 +43,7 @@ export function StatsDashboard() {
           }}
           cta={{
             text: "Win more client pitches and save 10+ hours per revision with instant 4K architectural rendering",
-            buttonText: "Download Plugin Free",
+            buttonText: "Start 14-Day Free Trial",
             onButtonClick: () => setPricingOpen(true),
           }}
         />

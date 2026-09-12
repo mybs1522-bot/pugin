@@ -16,7 +16,7 @@ const CanvasRevealEffect = dynamic(
   { ssr: false, loading: () => null }
 );
 
-const LOADER_DURATION = 3000;
+const LOADER_DURATION = 800;
 
 export default function SignInPage() {
   const [showLoader, setShowLoader] = useState(true);
@@ -26,7 +26,7 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [otpToken, setOtpToken] = useState("");
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [code, setCode] = useState(["", "", "", ""]);
   const [reverseCanvas, setReverseCanvas] = useState(false);
   const [showCanvas, setShowCanvas] = useState(true);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -95,7 +95,7 @@ export default function SignInPage() {
     setLoading(false);
     if (result?.error) {
       setError("Invalid or expired code. Try again.");
-      setCode(["", "", "", "", "", ""]);
+      setCode(["", "", "", ""]);
       setTimeout(() => codeRefs.current[0]?.focus(), 50);
       return;
     }
@@ -109,12 +109,25 @@ export default function SignInPage() {
 
   /* ── Code input handlers ── */
   const handleCodeChange = async (index: number, value: string) => {
-    if (value.length > 1) return;
+    // Support pasting full code
+    if (value.length > 1) {
+      const digits = value.replace(/\D/g, "").slice(0, 4).split("");
+      const next = ["", "", "", ""];
+      digits.forEach((d, i) => (next[i] = d));
+      setCode(next);
+      if (digits.length === 4) {
+        codeRefs.current[3]?.focus();
+        await verifyOTP(next.join(""));
+      } else {
+        codeRefs.current[Math.min(digits.length, 3)]?.focus();
+      }
+      return;
+    }
     const next = [...code];
     next[index] = value.replace(/\D/, "");
     setCode(next);
-    if (value && index < 5) codeRefs.current[index + 1]?.focus();
-    if (index === 5 && value && next.every((d) => d.length === 1)) {
+    if (value && index < 3) codeRefs.current[index + 1]?.focus();
+    if (index === 3 && value && next.every((d) => d.length === 1)) {
       await verifyOTP(next.join(""));
     }
   };
@@ -132,7 +145,7 @@ export default function SignInPage() {
     setStep("email");
     setOtpToken("");
     setError("");
-    setCode(["", "", "", "", "", ""]);
+    setCode(["", "", "", ""]);
     setReverseCanvas(false);
     setShowCanvas(true);
   };
@@ -304,7 +317,7 @@ export default function SignInPage() {
                   </p>
                 </div>
 
-                {/* Inline 6-box code input */}
+                {/* Inline 4-box code input */}
                 <div className="rounded-full border border-gray-200 bg-white/70 px-5 py-4 shadow-sm backdrop-blur">
                   <div className="flex items-center justify-center">
                     {code.map((digit, i) => (
@@ -332,7 +345,7 @@ export default function SignInPage() {
                             </div>
                           )}
                         </div>
-                        {i < 5 && (
+                        {i < 3 && (
                           <span className="text-lg text-gray-200">|</span>
                         )}
                       </div>
@@ -357,7 +370,22 @@ export default function SignInPage() {
                 )}
 
                 <p
-                  onClick={goBack}
+                  onClick={async () => {
+                    setError("");
+                    setCode(["", "", "", ""]);
+                    const res = await fetch("/api/auth/otp-send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email }),
+                    });
+                    const body = await res.json().catch(() => ({}));
+                    if (res.ok && body.token) {
+                      setOtpToken(body.token);
+                      codeRefs.current[0]?.focus();
+                    } else {
+                      setError("Could not resend code. Try again.");
+                    }
+                  }}
                   className="cursor-pointer text-sm text-gray-400 transition-colors hover:text-gray-700"
                 >
                   Resend code
