@@ -354,18 +354,18 @@ function CheckoutForm({
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-[10px] text-zinc-400 line-through">
-                $360
+                $30
               </span>
               <span className="text-sm font-black text-zinc-950">
-                $180
+                $15
                 <span className="text-[10px] font-normal text-zinc-500">
-                  /yr
+                  /mo
                 </span>
               </span>
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
-            14 Days Free ($15/mo)
+            14 Days Free · Billed $180/yr
           </span>
         </button>
       </div>
