@@ -1,12 +1,97 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import { PlatformBadge } from "@/components/ui/platform-icons";
+import { Play } from "lucide-react";
 
 export function LiveDemoSection() {
   const [pricingOpen, setPricingOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const attemptPlay = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || videoError) return;
+    video.muted = true;
+    video.defaultMuted = true;
+    const playPromise = video.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          // Autoplay policy or low battery restricted
+          setIsPlaying(false);
+        });
+    }
+  }, [videoError]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = true;
+    video.defaultMuted = true;
+    attemptPlay();
+
+    // IntersectionObserver: autoplay when in view, pause when off-screen
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            attemptPlay();
+          } else {
+            video.pause();
+            setIsPlaying(false);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    // Passive gesture fallback for iOS Low Power Mode or aggressive battery-saver
+    const triggerOnGesture = () => {
+      attemptPlay();
+    };
+
+    window.addEventListener("touchstart", triggerOnGesture, {
+      once: true,
+      passive: true,
+    });
+    window.addEventListener("scroll", triggerOnGesture, {
+      once: true,
+      passive: true,
+    });
+    window.addEventListener("pointerdown", triggerOnGesture, {
+      once: true,
+      passive: true,
+    });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("touchstart", triggerOnGesture);
+      window.removeEventListener("scroll", triggerOnGesture);
+      window.removeEventListener("pointerdown", triggerOnGesture);
+    };
+  }, [attemptPlay]);
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      attemptPlay();
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
 
   return (
     <>
@@ -21,23 +106,70 @@ export function LiveDemoSection() {
           </div>
 
           {/* Video Container */}
-          <div className="relative w-full overflow-hidden rounded-2xl border bg-black/90 shadow-2xl">
-            <div style={{ position: "relative", paddingTop: "56.25%" }}>
-              <iframe
-                src="https://iframe.mediadelivery.net/embed/494628/68bbd0f4-e435-478c-af0d-8cd95b3a96a1?autoplay=true&loop=true&muted=true&preload=true&responsive=true&playsinline=true"
-                loading="eager"
-                style={{
-                  border: 0,
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  height: "100%",
-                  width: "100%",
-                }}
-                allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; accelerometer; gyroscope"
-                allowFullScreen
-                title="V6 Render SketchUp Walkthrough Video"
-              />
+          <div
+            ref={containerRef}
+            className="group relative w-full overflow-hidden rounded-2xl border border-zinc-800 bg-black/90 shadow-2xl"
+          >
+            <div
+              style={{ position: "relative", paddingTop: "56.25%" }}
+              onClick={togglePlay}
+              className="cursor-pointer"
+            >
+              {!videoError ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    src="/live-demo.mp4"
+                    poster="/live-demo-poster.jpg"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    controls={false}
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onError={() => setVideoError(true)}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+
+                  {/* Play button overlay when paused */}
+                  <AnimatePresence>
+                    {!isPlaying && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                        className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-[1px]"
+                      >
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/20 bg-white/20 shadow-2xl backdrop-blur-md sm:h-16 sm:w-16">
+                          <Play className="ml-1 h-6 w-6 fill-white text-white sm:h-7 sm:w-7" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </>
+              ) : (
+                /* Fallback to BunnyCDN iframe if video fails */
+                <iframe
+                  src="https://iframe.mediadelivery.net/embed/494628/68bbd0f4-e435-478c-af0d-8cd95b3a96a1?autoplay=true&loop=true&muted=true&preload=true&responsive=true&playsinline=true"
+                  loading="eager"
+                  style={{
+                    border: 0,
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    height: "100%",
+                    width: "100%",
+                  }}
+                  allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; accelerometer; gyroscope"
+                  allowFullScreen
+                  title="V6 Render SketchUp Walkthrough Video"
+                />
+              )}
             </div>
           </div>
 

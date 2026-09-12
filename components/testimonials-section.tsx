@@ -6,64 +6,46 @@ import { TestimonialsColumn } from "@/components/ui/testimonials-columns-1";
 const testimonials = [
   {
     text: "Preserves our exact SketchUp walls, cabinetry, and camera perspective with zero drift. V-Ray level quality directly from the viewport.",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&q=80",
     name: "Luke Vercia",
     role: "Architectural Visualization Artist",
   },
   {
     text: "Saved us $6,000 on new GPU workstations. Renders flawless 4K presentation packages in the cloud from standard MacBooks.",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80",
     name: "James Caldwell",
     role: "Principal Architect, London",
   },
   {
     text: "We closed a $180k remodel in one meeting by testing finishes and lighting moods live in front of the client.",
-    image:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&q=80",
     name: "Sofia Moreno",
     role: "Residential Designer, Barcelona",
   },
   {
     text: "No more multi-hour machine freezes. High-res stills and 3D walkthroughs are ready inside SketchUp in seconds.",
-    image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&q=80",
     name: "Tariq Al-Farsi",
     role: "Architectural Visualizer, Dubai",
   },
   {
     text: "Unlike generic tools that warp walls and ruin scale, V6 Render locks our CAD dimensions mathematically.",
-    image:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&q=80",
     name: "Hannah Kowalski",
     role: "Freelance Interior Designer, Warsaw",
   },
   {
     text: "Client sign-offs dropped from 3 weeks to 4 days. Saved over $2,500/mo in outsourced rendering bills.",
-    image:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&q=80",
     name: "Luca Ferretti",
     role: "Design Director, Milan",
   },
   {
     text: "PBR glass reflections, metal finishes, and natural daylight bounce look like a finished architectural photo shoot.",
-    image:
-      "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=80&q=80",
     name: "Aisha Okonkwo",
     role: "Architect & Educator, Lagos",
   },
   {
     text: "Delivering 3D video walkthroughs on the same day gives our studio an unfair advantage on pitches.",
-    image:
-      "https://images.unsplash.com/photo-1463453091185-61582044d556?w=80&q=80",
     name: "Ethan Brooks",
     role: "Commercial Interior Designer, NYC",
   },
   {
     text: "Replaced $150/image outsourced rendering with instant in-house 4K delivery directly inside SketchUp.",
-    image:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&q=80",
     name: "Mei-Lin Chen",
     role: "Studio Owner, Singapore",
   },
