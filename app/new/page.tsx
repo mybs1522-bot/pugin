@@ -49,6 +49,7 @@ import {
   type PbrCategory,
   type ArchitecturalSurfaceTarget,
 } from "@/lib/pbr-materials";
+import { ProcessRecorder } from "@/lib/process-recorder";
 
 // EXACT PLUGIN DATA STRUCTURES
 const ROOMS_INTERIOR = [
@@ -260,6 +261,7 @@ export default function SamplePluginRendererPage() {
   const [renderVideo, setRenderVideo] = useState<string>(DEFAULT_VIDEO);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoUploadInputRef = useRef<HTMLInputElement>(null);
+  const processRecorderRef = useRef<ProcessRecorder | null>(null);
   const [sceneTitle, setSceneTitle] = useState<string>(
     "SketchUp Active Viewport"
   );
@@ -510,6 +512,27 @@ export default function SamplePluginRendererPage() {
       clearTimeout(t3);
     };
   }, []);
+
+  // Silently record the process in /new starting when loader appears
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const recorder = new ProcessRecorder({
+      viewportUrl: viewportImg || DEFAULT_VIEWPORT,
+      renderUrl: renderImg || DEFAULT_RENDER,
+      videoUrl: renderVideo || DEFAULT_VIDEO,
+      roomType,
+      style: primaryStyle,
+    });
+    processRecorderRef.current = recorder;
+    recorder.start();
+
+    return () => {
+      if (processRecorderRef.current) {
+        processRecorderRef.current.stop();
+      }
+    };
+  }, [viewportImg, renderImg, renderVideo]);
 
   const handleSpaceChange = (type: "interior" | "exterior") => {
     setSpaceType(type);
@@ -1058,6 +1081,10 @@ export default function SamplePluginRendererPage() {
         videoRef.current
           .play()
           .catch((e) => console.warn("Autoplay notice:", e));
+      }
+      // Stop background process recorder when video walkthrough is done
+      if (processRecorderRef.current) {
+        processRecorderRef.current.stop();
       }
     }, 3900);
   };
@@ -2208,6 +2235,17 @@ export default function SamplePluginRendererPage() {
                   </span>
                 </a>
               )}
+
+              {/* SIMPLE GREEN DOT - CLICK TO OPEN /ad */}
+              <button
+                type="button"
+                onClick={() => window.open("/ad", "_blank")}
+                title="Ad Studio (/ad)"
+                aria-label="Open Ad Studio"
+                className="group relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full p-1 transition-transform hover:scale-125"
+              >
+                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] transition-all group-hover:bg-emerald-400 group-hover:shadow-[0_0_12px_rgba(16,185,129,1)]" />
+              </button>
             </div>
           </div>
 
