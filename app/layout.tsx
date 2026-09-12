@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SwRegister } from "@/components/sw-register";
 import { FacebookPixel } from "@/components/facebook-pixel";
+import { MicrosoftClarity } from "@/components/clarity";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -96,6 +97,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </SessionProvider>
         <SwRegister />
         <FacebookPixel />
+        <MicrosoftClarity />
         <Analytics />
       </body>
     </html>
