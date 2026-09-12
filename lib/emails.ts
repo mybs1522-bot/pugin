@@ -88,9 +88,9 @@ This 4-digit code expires in 10 minutes. Enter it in your SketchUp extension win
 If you didn't request this code, you can safely ignore this email.
 
 ---
-V6 Render / Avada Space
+V6 Render
 548 Market St, Suite 35000, San Francisco, CA 94104
-https://www.avada.space`;
+https://www.v6render.com`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -152,14 +152,17 @@ export async function sendWelcomeDownloadEmail(
   email: string,
   plan: string = "Monthly"
 ) {
-  const downloadUrl = "https://www.avada.space/v6_render.rbz";
+  const downloadUrl = "https://www.v6render.com/download";
+  const fileUrl = "https://www.v6render.com/v6_render.rbz";
 
   const text = `Hi,
 
 Thank you for choosing V6 Render. Your 14-day free trial is now active.
 
-Here is your direct download link for the SketchUp extension:
+Click here to download your SketchUp extension and view the quick setup guide:
 ${downloadUrl}
+
+(Direct .rbz file download: ${fileUrl})
 
 --------------------------------------------------
 QUICK 3-STEP INSTALLATION GUIDE:
@@ -169,7 +172,7 @@ QUICK 3-STEP INSTALLATION GUIDE:
 3. Click the "Install Extension" button in the bottom left, and choose the downloaded "v6_render.rbz" file.
 
 --------------------------------------------------
-HOW TO ACTIVATE YOUR TRIAL:
+HOW TO ACTIVATE YOUR ACCESS:
 --------------------------------------------------
 Open the V6 Render toolbar inside SketchUp, enter your registered email (${email}), and enter the 4-digit code sent to your inbox to unlock unlimited rendering.
 
@@ -177,11 +180,11 @@ Need any help getting set up? Simply reply directly to this email and our team w
 
 Best regards,
 The V6 Render Team
-https://www.avada.space
+https://www.v6render.com
 
 ---
-V6 Render / Avada Space · 548 Market St, Suite 35000, San Francisco, CA 94104
-You received this transactional email because you started a 14-day free trial of V6 Render for SketchUp.`;
+V6 Render · 548 Market St, Suite 35000, San Francisco, CA 94104
+You received this transactional email because you started a 14-day free trial of V6 Render on v6render.com.`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -210,7 +213,7 @@ You received this transactional email because you started a 14-day free trial of
             <td style="padding:22px 0 16px;">
               <p style="margin:0 0 12px;color:#27272a;font-size:15px;line-height:1.6;">Hi,</p>
               <p style="margin:0 0 20px;color:#27272a;font-size:15px;line-height:1.6;">
-                Thank you for choosing V6 Render. Your 14-day free trial is officially active. You can download your SketchUp extension (.rbz file) using the button below:
+                Thank you for choosing V6 Render. Your 14-day free trial is officially active. You can download your SketchUp extension (.rbz file) and follow the installation steps using the button below:
               </p>
             </td>
           </tr>
@@ -218,11 +221,11 @@ You received this transactional email because you started a 14-day free trial of
           <!-- Download Button -->
           <tr>
             <td align="center" style="padding:4px 0 24px;">
-              <a href="${downloadUrl}" target="_blank" style="display:inline-block;background:#09090b;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
-                Download Plugin (.rbz)
+              <a href="${downloadUrl}" target="_blank" style="display:inline-block;background:#09090b;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:14px 30px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                Download Plugin &amp; View Setup Guide
               </a>
               <p style="margin:12px 0 0;color:#71717a;font-size:12px;">
-                Direct link: <a href="${downloadUrl}" style="color:#2563eb;text-decoration:underline;">https://www.avada.space/v6_render.rbz</a>
+                Direct file download: <a href="${fileUrl}" style="color:#2563eb;text-decoration:underline;">v6render.com/v6_render.rbz</a>
               </p>
             </td>
           </tr>
@@ -273,10 +276,10 @@ You received this transactional email because you started a 14-day free trial of
                 <strong>Need help?</strong> Simply reply directly to this email and our support team will help you immediately.
               </p>
               <p style="margin:0 0 4px;color:#a1a1aa;font-size:11px;">
-                V6 Render / Avada Space · 548 Market St, Suite 35000, San Francisco, CA 94104
+                V6 Render · 548 Market St, Suite 35000, San Francisco, CA 94104
               </p>
               <p style="margin:0;color:#a1a1aa;font-size:11px;">
-                You received this transactional service notification because you started a 14-day trial on avada.space.
+                You received this transactional service notification because you started a 14-day trial on v6render.com.
               </p>
             </td>
           </tr>
