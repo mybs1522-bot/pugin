@@ -36,10 +36,6 @@ const TrustedBySection = dynamic(
     import("@/components/trusted-by-section").then((m) => m.TrustedBySection),
   { loading: () => null }
 );
-const BeforeAfterCards = dynamic(
-  () => import("@/components/ui/3d-card").then((m) => m.BeforeAfterCards),
-  { loading: () => null }
-);
 const TestimonialsSection = dynamic(
   () =>
     import("@/components/testimonials-section").then(
@@ -220,18 +216,6 @@ export default function HomePage() {
             <div className="cv-auto">
               <StatsDashboard />
             </div>
-          </ScrollReveal>
-
-          {/* ── Before / After cards ─────────────────────────── */}
-          <ScrollReveal>
-            <div className="cv-auto flex justify-center py-1 sm:py-3">
-              <BeforeAfterCards />
-            </div>
-          </ScrollReveal>
-
-          {/* ── CTA after Before/After ────────────────────── */}
-          <ScrollReveal delay={0.05}>
-            <SectionCTA />
           </ScrollReveal>
 
           {/* ── Features Grid Section ────────────────────────── */}

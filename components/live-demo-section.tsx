@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import { PlatformBadge } from "@/components/ui/platform-icons";
 import { Play } from "lucide-react";
+import { BeforeAfterCards } from "@/components/ui/3d-card";
 
 export function LiveDemoSection() {
   const [pricingOpen, setPricingOpen] = useState(false);
@@ -200,6 +201,11 @@ export function LiveDemoSection() {
             <p className="text-muted-foreground mt-2 text-center text-[11px] font-medium sm:text-xs">
               14-Day Free Trial · Cancel anytime
             </p>
+
+            {/* Before / After Cards */}
+            <div className="mt-4 flex justify-center sm:mt-6">
+              <BeforeAfterCards />
+            </div>
           </div>
         </div>
       </section>
