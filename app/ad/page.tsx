@@ -31,10 +31,10 @@ import {
 import { getAsset, setAsset } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { ProcessRecorder } from "@/lib/process-recorder";
+import { ProcessVideoPlayer } from "./process-video-player";
 
 const DEFAULT_VIEWPORT = "/sketchup-design-sample.png";
-const DEFAULT_RENDER =
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80";
+const DEFAULT_RENDER = "/images/space-interior.jpg";
 const DEFAULT_VIDEO = "/sample-walkthrough.mp4";
 
 const AD_HOOKS = [
@@ -401,24 +401,15 @@ export default function AdCreatorPage() {
               )}
             >
               <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-lg bg-zinc-950">
-                <video
-                  key={`shelf-proc-${processVideoUrl || "pending"}`}
-                  src={processVideoUrl || renderVideo || DEFAULT_VIDEO}
-                  muted
-                  playsInline
-                  loop
-                  autoPlay
-                  className="pointer-events-none h-full w-full object-cover"
+                <ProcessVideoPlayer
+                  isThumbnail={true}
+                  viewportUrl={viewportImg}
+                  renderUrl={renderImg}
+                  videoUrl={renderVideo}
+                  blobUrl={processVideoUrl}
+                  className="pointer-events-none h-full w-full"
                 />
-                {isRecordingGenerating && !processVideoUrl && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
-                    <span className="flex items-center gap-1 rounded-full border border-emerald-500/40 bg-black/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
-                      <RefreshCw className="h-2.5 w-2.5 animate-spin text-emerald-400" />
-                      Capturing...
-                    </span>
-                  </div>
-                )}
-                <span className="absolute top-1.5 left-1.5 rounded bg-emerald-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white">
+                <span className="absolute top-1.5 left-1.5 rounded bg-emerald-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white shadow">
                   Process Recording
                 </span>
               </div>
@@ -515,15 +506,14 @@ export default function AdCreatorPage() {
             <div className="relative flex-1 overflow-hidden bg-[#09090b]">
               {/* Process Video */}
               {mediaSource === "process" && (
-                <video
-                  key={`main-proc-${processVideoUrl || "pending"}`}
-                  ref={previewVideoRef}
-                  src={processVideoUrl || renderVideo || DEFAULT_VIDEO}
-                  muted
-                  playsInline
-                  loop
-                  autoPlay={isPlayingPreview}
-                  className="h-full w-full object-cover"
+                <ProcessVideoPlayer
+                  isThumbnail={false}
+                  viewportUrl={viewportImg}
+                  renderUrl={renderImg}
+                  videoUrl={renderVideo}
+                  blobUrl={processVideoUrl}
+                  isPlaying={isPlayingPreview}
+                  className="h-full w-full"
                 />
               )}
 

@@ -214,10 +214,8 @@ const STEP_ITEMS = [
 const TOTAL_TILES = 16;
 const TILE_ORDER = [5, 6, 9, 10, 1, 2, 4, 7, 8, 11, 13, 14, 0, 3, 12, 15];
 
-const DEFAULT_VIEWPORT =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80";
-const DEFAULT_RENDER =
-  "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80";
+const DEFAULT_VIEWPORT = "/sketchup-design-sample.png";
+const DEFAULT_RENDER = "/images/space-interior.jpg";
 const DEFAULT_VIDEO = "/sample-walkthrough.mp4";
 
 export default function SamplePluginRendererPage() {

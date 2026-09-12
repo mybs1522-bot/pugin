@@ -29,6 +29,7 @@ export class ProcessRecorder {
   private imgVp: HTMLImageElement | null = null;
   private imgRnd: HTMLImageElement | null = null;
   private videoEl: HTMLVideoElement | null = null;
+  private intervalId: any = null;
 
   constructor(options: ProcessRecorderOptions) {
     this.options = options;
@@ -41,6 +42,22 @@ export class ProcessRecorder {
   public async start(): Promise<void> {
     if (this.isRecording || this.isStopped || typeof window === "undefined")
       return;
+
+    // Attach to DOM safely off-screen so browser compositor gives it full priority
+    this.canvas.style.position = "fixed";
+    this.canvas.style.left = "-9999px";
+    this.canvas.style.top = "-9999px";
+    this.canvas.style.width = "1px";
+    this.canvas.style.height = "1px";
+    this.canvas.style.opacity = "0";
+    this.canvas.style.pointerEvents = "none";
+    if (
+      typeof document !== "undefined" &&
+      document.body &&
+      !this.canvas.parentNode
+    ) {
+      document.body.appendChild(this.canvas);
+    }
 
     // Draw initial frame immediately to initialize canvas stream
     this.drawFrame(0);
@@ -68,11 +85,22 @@ export class ProcessRecorder {
 
       this.isRecording = true;
       this.startTime = Date.now();
-      // Request data chunks every 250ms so chunks are continuously collected
-      this.mediaRecorder.start(250);
+      // Request data chunks every 150ms so chunks are continuously collected
+      this.mediaRecorder.start(150);
       this.renderLoop();
 
-      // Load images in background without blocking recording start
+      // Dual timer ensures frames keep advancing even if the tab is backgrounded
+      this.intervalId = setInterval(() => {
+        if (this.isRecording) {
+          const elapsed = (Date.now() - this.startTime) / 1000;
+          this.drawFrame(elapsed);
+          if (elapsed >= 9.2) {
+            this.stop();
+          }
+        }
+      }, 40);
+
+      // Load images in background with CORS safety guarantees
       this.loadAssetsAsync();
     } catch (e) {
       console.warn("[ProcessRecorder] Start error:", e);
@@ -80,25 +108,28 @@ export class ProcessRecorder {
   }
 
   private async loadAssetsAsync() {
-    const loadImg = (src: string): Promise<HTMLImageElement> => {
+    const loadSafe = (
+      src: string,
+      fallback: string
+    ): Promise<HTMLImageElement> => {
       return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
         img.onload = () => resolve(img);
         img.onerror = () => {
           const fb = new Image();
-          fb.src = src;
+          fb.src = fallback;
           fb.onload = () => resolve(fb);
           fb.onerror = () => resolve(img);
         };
-        img.src = src;
+        img.src = src || fallback;
       });
     };
 
     try {
       const [vp, rnd] = await Promise.all([
-        loadImg(this.options.viewportUrl),
-        loadImg(this.options.renderUrl),
+        loadSafe(this.options.viewportUrl, "/sketchup-design-sample.png"),
+        loadSafe(this.options.renderUrl, "/images/space-interior.jpg"),
       ]);
       this.imgVp = vp;
       this.imgRnd = rnd;
@@ -124,8 +155,7 @@ export class ProcessRecorder {
     const elapsed = (Date.now() - this.startTime) / 1000;
     this.drawFrame(elapsed);
 
-    // Auto-complete at 4.2 seconds to produce a fast, punchy ad sequence
-    if (elapsed >= 4.2) {
+    if (elapsed >= 9.2) {
       this.stop();
       return;
     }
@@ -143,19 +173,19 @@ export class ProcessRecorder {
     ctx.fillStyle = "#09090b";
     ctx.fillRect(0, 0, w, h);
 
-    // Sequence timing (4.2 seconds total):
-    // 0.0s..0.8s: Splash Screen Loader (0% to 100%)
-    // 0.8s..1.8s: Raw SketchUp Viewport Scene
-    // 1.8s..3.0s: GPU 4K Path-Tracing Passes & Telemetry
-    // 3.0s..4.2s: Interactive Split Slider & 3D Walkthrough
-    if (t < 0.8) {
-      this.drawSplashPhase(ctx, w, h, t / 0.8);
-    } else if (t < 1.8) {
-      this.drawViewportPhase(ctx, w, h, (t - 0.8) / 1.0);
-    } else if (t < 3.0) {
-      this.drawRenderPhase(ctx, w, h, (t - 1.8) / 1.2);
+    // Sequence timing (9.2 seconds total):
+    // 0.0s..1.4s: Splash Screen Loader
+    // 1.4s..3.2s: Raw SketchUp Viewport Scene
+    // 3.2s..5.6s: GPU 4K Path-Tracing Passes & Telemetry
+    // 5.6s..9.2s: Interactive Split Slider Before & After
+    if (t < 1.4) {
+      this.drawSplashPhase(ctx, w, h, t / 1.4);
+    } else if (t < 3.2) {
+      this.drawViewportPhase(ctx, w, h, (t - 1.4) / 1.8);
+    } else if (t < 5.6) {
+      this.drawRenderPhase(ctx, w, h, (t - 3.2) / 2.4);
     } else {
-      this.drawSliderPhase(ctx, w, h, (t - 3.0) / 1.2);
+      this.drawSliderPhase(ctx, w, h, (t - 5.6) / 3.6);
     }
 
     // Discreet watermark
@@ -488,6 +518,13 @@ export class ProcessRecorder {
       if (this.animFrameId) {
         cancelAnimationFrame(this.animFrameId);
         this.animFrameId = null;
+      }
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+      if (this.canvas && this.canvas.parentNode) {
+        this.canvas.parentNode.removeChild(this.canvas);
       }
       if (this.videoEl) {
         try {
