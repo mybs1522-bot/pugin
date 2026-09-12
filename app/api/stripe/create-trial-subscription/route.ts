@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe, PLANS, type PlanKey } from "@/lib/stripe";
-import { registerTrialUser, setUserStatus } from "@/lib/usage";
+import {
+  registerTrialUser,
+  setUserStatus,
+  setUserPaidStatus,
+} from "@/lib/usage";
+import { sendWelcomeDownloadEmail } from "@/lib/emails";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limiter";
 
 export async function POST(req: NextRequest) {
@@ -183,9 +188,15 @@ export async function POST(req: NextRequest) {
       subscriptionId = sub.id;
     }
 
-    // 6. Register trial user in local store
+    // 6. Register trial user in local store & mark as paid
     await registerTrialUser(email);
     await setUserStatus(email, "trial", "Stripe 14-Day Trial (Card Saved)");
+    await setUserPaidStatus(email, true);
+
+    // Send welcome email with download links asynchronously
+    sendWelcomeDownloadEmail(email, plan).catch((err) =>
+      console.error("[Email Error] Failed to send welcome download email:", err)
+    );
 
     return NextResponse.json({
       success: true,
