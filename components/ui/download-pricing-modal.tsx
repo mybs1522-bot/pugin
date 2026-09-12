@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
   Download,
   CreditCard,
   CheckCircle2,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { event as fbEvent } from "@/lib/fpixel";
@@ -56,6 +57,54 @@ const CARD_ELEMENT_OPTIONS = {
   hidePostalCode: false,
 };
 
+function useEvergreenCountdown() {
+  // 2 Days 2 Hours 37 Mins default duration (ms)
+  const DURATION_MS = 2 * 86400000 + 2 * 3600000 + 37 * 60000;
+
+  const [remaining, setRemaining] = useState<number>(DURATION_MS);
+
+  useEffect(() => {
+    const key = "v6_evergreen_offer_end";
+    let endTime: number;
+    try {
+      const stored = localStorage.getItem(key);
+      const now = Date.now();
+      if (stored && Number(stored) > now) {
+        endTime = Number(stored);
+      } else {
+        endTime = now + DURATION_MS;
+        localStorage.setItem(key, String(endTime));
+      }
+    } catch {
+      endTime = Date.now() + DURATION_MS;
+    }
+
+    const update = () => {
+      const diff = Math.max(0, endTime - Date.now());
+      setRemaining(diff);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [DURATION_MS]);
+
+  const totalSecs = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSecs / 86400);
+  const hours = Math.floor((totalSecs % 86400) / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+  const seconds = totalSecs % 60;
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  return {
+    days: pad(days),
+    hours: pad(hours),
+    minutes: pad(minutes),
+    seconds: pad(seconds),
+  };
+}
+
 function CheckoutForm({
   defaultEmail = "",
   mode = "download",
@@ -67,6 +116,7 @@ function CheckoutForm({
 }) {
   const stripe = useStripe();
   const elements = useElements();
+  const timer = useEvergreenCountdown();
 
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">(
     "monthly"
@@ -198,7 +248,7 @@ function CheckoutForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3.5 p-5 text-zinc-900 sm:p-6"
+      className="flex flex-col gap-3 p-5 text-zinc-900 sm:p-6"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-2 pt-1">
@@ -222,8 +272,29 @@ function CheckoutForm({
         </span>
       </div>
 
+      {/* Sleek Evergreen Timer (Optimized for Phone) */}
+      <div className="flex items-center justify-between gap-1.5 rounded-lg border border-amber-500/25 bg-amber-50/80 px-2.5 py-1 text-amber-950 shadow-xs">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Clock className="h-3 w-3 shrink-0 animate-pulse text-amber-600" />
+          <span className="truncate text-[11px] font-semibold text-amber-900">
+            Offer Ends in
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap text-zinc-950 tabular-nums">
+          <span className="hidden sm:inline">
+            {timer.days} Days {timer.hours} Hours {timer.minutes} Mins
+          </span>
+          <span className="sm:hidden">
+            {timer.days}d {timer.hours}h {timer.minutes}m
+          </span>
+          <span className="py-0.2 rounded border border-amber-500/20 bg-white px-1 text-[10px] text-amber-700">
+            {timer.seconds}s
+          </span>
+        </div>
+      </div>
+
       {/* Plan Selector */}
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 pt-0.5">
         {/* Monthly Card */}
         <button
           type="button"
@@ -235,14 +306,26 @@ function CheckoutForm({
               : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
           )}
         >
+          <div className="absolute -top-2.5 right-2">
+            <span className="rounded-full bg-zinc-950 px-2 py-0.5 text-[9px] font-black text-white uppercase shadow-sm">
+              Save 50%
+            </span>
+          </div>
           <div className="flex w-full items-center justify-between gap-1">
             <span className="text-[11px] font-bold tracking-wider text-zinc-950 uppercase">
               Monthly
             </span>
-            <span className="text-sm font-black text-zinc-950">
-              $20
-              <span className="text-[10px] font-normal text-zinc-500">/mo</span>
-            </span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-[10px] text-zinc-400 line-through">
+                $40
+              </span>
+              <span className="text-sm font-black text-zinc-950">
+                $20
+                <span className="text-[10px] font-normal text-zinc-500">
+                  /mo
+                </span>
+              </span>
+            </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
             14 Days Free
