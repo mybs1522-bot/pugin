@@ -22,6 +22,7 @@ import {
   CreditCard,
   CheckCircle2,
   Clock,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { event as fbEvent } from "@/lib/fpixel";
@@ -433,6 +434,58 @@ function CheckoutForm({
           <span>{errorMessage}</span>
         </div>
       )}
+
+      {/* Movie Ticket Style Order Total $0 */}
+      <div className="relative flex items-center justify-between gap-3 rounded-xl border border-dashed border-zinc-300 bg-gradient-to-r from-zinc-50 via-zinc-50 to-emerald-50/40 p-2.5 px-4 shadow-xs">
+        {/* Left punch notch cutout */}
+        <span
+          aria-hidden="true"
+          className="absolute top-1/2 -left-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-zinc-300 bg-white"
+        />
+        {/* Right punch notch cutout */}
+        <span
+          aria-hidden="true"
+          className="absolute top-1/2 -right-2.5 h-4 w-4 -translate-y-1/2 rounded-full border border-zinc-300 bg-white"
+        />
+
+        {/* Ticket Left Section */}
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <div className="flex items-center gap-1.5 text-zinc-600">
+            <Ticket className="h-3.5 w-3.5 text-zinc-700" />
+            <span className="font-mono text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
+              ADMIT ONE · 14-DAY PASS
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="truncate text-xs font-extrabold text-zinc-900">
+              {selectedPlan === "monthly"
+                ? "Monthly Subscription"
+                : "Yearly VIP Subscription"}
+            </span>
+            <span className="hidden font-mono text-[9px] tracking-[2px] text-zinc-400 select-none sm:inline">
+              ||| |||| || |||
+            </span>
+          </div>
+        </div>
+
+        {/* Perforation Divider */}
+        <div className="h-8 w-px shrink-0 border-r border-dashed border-zinc-300" />
+
+        {/* Ticket Right Section (Order Total $0) */}
+        <div className="flex shrink-0 flex-col items-end text-right">
+          <span className="text-[10px] font-bold tracking-wider text-zinc-500 uppercase">
+            ORDER TOTAL
+          </span>
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl leading-none font-black text-emerald-600 tabular-nums">
+              $0.00
+            </span>
+          </div>
+          <span className="text-[9px] font-semibold text-zinc-500">
+            Due today
+          </span>
+        </div>
+      </div>
 
       {/* Primary CTA Button */}
       <Button
