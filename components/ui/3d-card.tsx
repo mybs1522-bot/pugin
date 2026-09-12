@@ -63,7 +63,7 @@ const PhotoCard = ({
       </div>
       <div className="flex h-[18%] items-center justify-center">
         <p className="text-muted-foreground truncate px-1 text-center text-[10px] font-medium">
-          {label === "After" ? "Render" : "Design"}
+          {label === "After" ? "4K Render" : "SketchUp Model"}
         </p>
       </div>
     </div>
@@ -142,8 +142,8 @@ export function BeforeAfterCards() {
 
       {/* Before card */}
       <PhotoCard
-        src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=80"
-        alt="Before: plain room"
+        src="/before-sketchup.png"
+        alt="Before: SketchUp model"
         rotation={-10}
         label="Before"
         index={0}
@@ -153,8 +153,8 @@ export function BeforeAfterCards() {
 
       {/* After card */}
       <PhotoCard
-        src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80"
-        alt="After: Photorealistic rendered room"
+        src="/after-render.png"
+        alt="After: Photorealistic render"
         rotation={10}
         label="After"
         index={1}
