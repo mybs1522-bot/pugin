@@ -345,7 +345,7 @@ function CheckoutForm({
         >
           <div className="absolute -top-2.5 right-2">
             <span className="rounded-full bg-zinc-950 px-2 py-0.5 text-[9px] font-black text-white uppercase shadow-sm">
-              Save 25%
+              Save 50%
             </span>
           </div>
           <div className="flex w-full items-center justify-between gap-1">
@@ -354,7 +354,7 @@ function CheckoutForm({
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-[10px] text-zinc-400 line-through">
-                $240
+                $360
               </span>
               <span className="text-sm font-black text-zinc-950">
                 $180
@@ -365,7 +365,7 @@ function CheckoutForm({
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
-            14 Days Free
+            14 Days Free ($15/mo)
           </span>
         </button>
       </div>
