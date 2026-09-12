@@ -464,7 +464,7 @@ function CheckoutForm({
           <div className="flex items-center gap-1.5 text-zinc-600">
             <Ticket className="h-3.5 w-3.5 text-zinc-700" />
             <span className="font-mono text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
-              ADMIT ONE · 14-DAY PASS
+              PLUGIN DOWNLOAD · 14-DAY PASS
             </span>
           </div>
           <div className="flex items-center gap-2">
