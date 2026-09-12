@@ -286,6 +286,17 @@ export default function LoadPluginImagesPage() {
     setIsLaunchingFullscreen(true);
     setCursorPhase("start");
 
+    // Request true browser fullscreen
+    try {
+      if (
+        typeof document !== "undefined" &&
+        !document.fullscreenElement &&
+        document.documentElement.requestFullscreen
+      ) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (_) {}
+
     // 2. Timeline sequence for exactly 2 seconds:
     // t = 100ms: Mouse pointer starts moving across screen to button '6' in the plugin bar
     const t1 = setTimeout(() => {
