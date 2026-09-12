@@ -17,7 +17,6 @@ import {
   Rocket,
   Lock,
   AlertCircle,
-  ShieldCheck,
   Download,
   CreditCard,
   CheckCircle2,
@@ -270,9 +269,6 @@ function CheckoutForm({
             />
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-emerald-600/30 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
-          $0.00 Due Today
-        </span>
       </div>
 
       {/* Plan Selector */}
@@ -375,16 +371,10 @@ function CheckoutForm({
       <div className="space-y-2">
         {/* Line 1: Card Number */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
-              <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
-              Card Details
-            </label>
-            <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              $0.00 Today
-            </span>
-          </div>
+          <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
+            <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
+            Card Details
+          </label>
           <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-2.5 px-3 shadow-xs transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
             <CardNumberElement
               options={CARD_ELEMENT_OPTIONS}
