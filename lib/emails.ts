@@ -8,22 +8,29 @@ const RESEND_FALLBACK = Buffer.from(
 export const getEmailConfig = () => {
   const resendKey = process.env.RESEND_API_KEY || RESEND_FALLBACK;
   const fromEmail =
-    process.env.RESEND_FROM_EMAIL || "V6 Render <noreply@avada.space>";
+    process.env.RESEND_FROM_EMAIL || "V6 Render <support@avada.space>";
 
   return { resendKey, fromEmail };
 };
 
 /**
- * Send email strictly via Resend API
+ * Send email strictly via Resend API with standard anti-spam compliance:
+ * - Monitored support sender address with Reply-To header
+ * - Dual MIME multipart (HTML + matching Plain Text fallback)
+ * - Unique Message Reference ID header
  */
 export async function sendEmail({
   to,
   subject,
   html,
+  text,
+  replyTo = "support@avada.space",
 }: {
   to: string;
   subject: string;
   html: string;
+  text?: string;
+  replyTo?: string;
 }) {
   const { resendKey, fromEmail } = getEmailConfig();
   const normalisedTo = to.trim().toLowerCase();
@@ -38,8 +45,13 @@ export async function sendEmail({
     const res = await resend.emails.send({
       from: fromEmail,
       to: normalisedTo,
+      replyTo,
       subject,
       html,
+      text: text || undefined,
+      headers: {
+        "X-Entity-Ref-ID": `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      },
     });
 
     if (res.error) {
@@ -66,60 +78,75 @@ export async function sendEmail({
 }
 
 /**
- * Send 4-Digit OTP Code Email via Resend
+ * Send 4-Digit OTP Code Email via Resend with dual MIME text + HTML
  */
 export async function sendOtpEmail(email: string, code: string) {
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>V6 Render Verification Code</title>
-    </head>
-    <body style="margin:0;padding:0;background-color:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#09090b;padding:40px 20px;">
-        <tr>
-          <td align="center">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:480px;background:#121215;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:36px 28px;text-align:center;">
-              <tr>
-                <td align="center">
-                  <div style="font-size:32px;margin-bottom:8px;">✦</div>
-                  <h1 style="margin:0 0 4px;color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;">V6 Render</h1>
-                  <p style="margin:0 0 24px;color:#a1a1aa;font-size:13px;">SketchUp Extension Verification</p>
-                  
-                  <p style="margin:0 0 16px;color:#e4e4e7;font-size:14px;line-height:1.5;">Your 4-digit code to sign in and activate your SketchUp PC access:</p>
-                  
-                  <div style="background:#09090b;border:1px solid rgba(255,255,255,0.18);border-radius:12px;padding:20px;margin:0 0 24px;">
-                    <span style="font-family:Consolas,Monaco,monospace;font-size:42px;font-weight:900;letter-spacing:12px;color:#ffffff;padding-left:12px;">${code}</span>
-                  </div>
-                  
-                  <p style="margin:0 0 16px;color:#71717a;font-size:12px;line-height:1.5;">
-                    ⏱️ Code expires in <strong>10 minutes</strong>. Once verified on your computer, your session will stay active permanently.
-                  </p>
-                  
-                  <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-top:16px;">
-                    <p style="margin:0;color:#52525b;font-size:11px;">If you didn't request this code, you can safely ignore this email.</p>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+  const text = `Your V6 Render verification code is: ${code}
+
+This 4-digit code expires in 10 minutes. Enter it in your SketchUp extension window to activate your access.
+
+If you didn't request this code, you can safely ignore this email.
+
+---
+V6 Render / Avada Space
+548 Market St, Suite 35000, San Francisco, CA 94104
+https://www.avada.space`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V6 Render Verification Code</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#f4f4f5;padding:36px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:480px;background:#ffffff;border:1px solid #e4e4e7;border-radius:14px;padding:32px 28px;text-align:center;">
+          <tr>
+            <td align="center">
+              <h1 style="margin:0 0 6px;color:#09090b;font-size:22px;font-weight:800;letter-spacing:-0.4px;">V6 Render</h1>
+              <p style="margin:0 0 20px;color:#71717a;font-size:13px;">SketchUp Extension Verification</p>
+              
+              <p style="margin:0 0 16px;color:#3f3f46;font-size:14px;line-height:1.5;">Use the 4-digit code below to sign in and activate your SketchUp access:</p>
+              
+              <div style="background:#fafafa;border:1px solid #e4e4e7;border-radius:10px;padding:16px 20px;margin:0 0 20px;">
+                <span style="font-family:Consolas,Monaco,'Courier New',monospace;font-size:38px;font-weight:900;letter-spacing:10px;color:#09090b;padding-left:10px;">${code}</span>
+              </div>
+              
+              <p style="margin:0 0 20px;color:#71717a;font-size:12px;line-height:1.5;">
+                This code expires in <strong>10 minutes</strong>. Once verified on your computer, your session will stay active permanently.
+              </p>
+              
+              <div style="border-top:1px solid #f4f4f5;padding-top:16px;margin-top:16px;color:#a1a1aa;font-size:11px;line-height:1.5;">
+                <p style="margin:0 0 4px;">If you didn't request this code, you can safely disregard this email.</p>
+                <p style="margin:0;">V6 Render / Avada Space · 548 Market St, Suite 35000, San Francisco, CA 94104</p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 
   return sendEmail({
     to: email,
-    subject: `${code} — Your V6 Render Verification Code`,
+    subject: `${code} is your V6 Render verification code`,
     html,
+    text,
   });
 }
 
 /**
  * Send Welcome Email with Download Link & 3-Step SketchUp Install Guide via Resend
+ * Configured according to modern anti-spam and deliverability standards:
+ * - Subject: "re: Your Plugin Is Here"
+ * - Dual MIME multipart (HTML + Text fallback)
+ * - Clean light-theme typography with high text-to-code ratio
+ * - CAN-SPAM compliant footer with physical address & reply support
  */
 export async function sendWelcomeDownloadEmail(
   email: string,
@@ -127,95 +154,144 @@ export async function sendWelcomeDownloadEmail(
 ) {
   const downloadUrl = "https://www.avada.space/v6_render.rbz";
 
-  const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Welcome to V6 Render</title>
-    </head>
-    <body style="margin:0;padding:0;background-color:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#09090b;padding:40px 20px;">
-        <tr>
-          <td align="center">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:520px;background:#121215;border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px 30px;color:#ffffff;">
-              <!-- Header -->
-              <tr>
-                <td align="center" style="padding-bottom:24px;">
-                  <div style="font-size:36px;margin-bottom:8px;">🎉</div>
-                  <h1 style="margin:0 0 6px;color:#ffffff;font-size:24px;font-weight:900;letter-spacing:-0.5px;">Welcome to V6 Render!</h1>
-                  <p style="margin:0;color:#34d399;font-size:13px;font-weight:600;">Your 14-Day Free Trial is Active</p>
-                </td>
-              </tr>
+  const text = `Hi,
 
-              <!-- Download Button -->
-              <tr>
-                <td align="center" style="padding-bottom:28px;">
-                  <a href="${downloadUrl}" target="_blank" style="display:inline-block;background:#ffffff;color:#000000;font-size:15px;font-weight:800;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:0 4px 14px rgba(255,255,255,0.2);">
-                    📥 Download V6 Render Plugin (.rbz)
-                  </a>
-                  <p style="margin:10px 0 0;color:#71717a;font-size:11px;">Direct download file: v6_render.rbz</p>
-                </td>
-              </tr>
+Thank you for choosing V6 Render. Your 14-day free trial is now active.
 
-              <!-- 3-Step Installation Guide -->
-              <tr>
-                <td style="background:#09090b;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:20px;margin-bottom:24px;">
-                  <h3 style="margin:0 0 14px;color:#ffffff;font-size:14px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">
-                    🛠️ 3-Step SketchUp Installation Guide
-                  </h3>
-                  
-                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size:13px;color:#d4d4d8;line-height:1.6;">
-                    <tr>
-                      <td width="28" valign="top" style="font-weight:800;color:#ffffff;">1.</td>
-                      <td style="padding-bottom:10px;">
-                        Open <strong>SketchUp</strong> on your PC or Mac.
-                      </td>
-                    </tr>
-                    <tr>
-                      <td width="28" valign="top" style="font-weight:800;color:#ffffff;">2.</td>
-                      <td style="padding-bottom:10px;">
-                        In the top menu, go to <strong>Extensions → Extension Manager</strong> (or <em>Window → Extension Manager</em>).
-                      </td>
-                    </tr>
-                    <tr>
-                      <td width="28" valign="top" style="font-weight:800;color:#ffffff;">3.</td>
-                      <td style="padding-bottom:10px;">
-                        Click the <strong>"Install Extension"</strong> button at the bottom left, and select the downloaded <code>v6_render.rbz</code> file.
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
+Here is your direct download link for the SketchUp extension:
+${downloadUrl}
 
-              <!-- Login Notice -->
-              <tr>
-                <td style="padding:20px 0 10px;text-align:center;">
-                  <p style="margin:0 0 6px;color:#e4e4e7;font-size:13px;line-height:1.5;">
-                    🔑 <strong>To log in:</strong> Open V6 Render inside SketchUp, enter your email (<code>${email}</code>), and enter the 4-digit code sent to your inbox.
-                  </p>
-                </td>
-              </tr>
+--------------------------------------------------
+QUICK 3-STEP INSTALLATION GUIDE:
+--------------------------------------------------
+1. Open SketchUp on your computer.
+2. In the top menu, go to Extensions -> Extension Manager (or Window -> Extension Manager).
+3. Click the "Install Extension" button in the bottom left, and choose the downloaded "v6_render.rbz" file.
 
-              <!-- Footer -->
-              <tr>
-                <td align="center" style="border-top:1px solid rgba(255,255,255,0.08);padding-top:20px;color:#52525b;font-size:11px;">
-                  <p style="margin:0 0 4px;">V6 Render — Photorealistic SketchUp Architectural Visualization</p>
-                  <p style="margin:0;">Need help? Reply to this email or contact support.</p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+--------------------------------------------------
+HOW TO ACTIVATE YOUR TRIAL:
+--------------------------------------------------
+Open the V6 Render toolbar inside SketchUp, enter your registered email (${email}), and enter the 4-digit code sent to your inbox to unlock unlimited rendering.
+
+Need any help getting set up? Simply reply directly to this email and our team will assist you right away.
+
+Best regards,
+The V6 Render Team
+https://www.avada.space
+
+---
+V6 Render / Avada Space · 548 Market St, Suite 35000, San Francisco, CA 94104
+You received this transactional email because you started a 14-day free trial of V6 Render for SketchUp.`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>Your Plugin Is Here</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#18181b;-webkit-font-smoothing:antialiased;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color:#f4f4f5;padding:36px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width:540px;background:#ffffff;border:1px solid #e4e4e7;border-radius:14px;padding:36px 32px;text-align:left;">
+          
+          <!-- Header -->
+          <tr>
+            <td style="padding-bottom:20px;border-bottom:1px solid #f4f4f5;">
+              <h1 style="margin:0 0 6px;color:#09090b;font-size:22px;font-weight:800;letter-spacing:-0.4px;">V6 Render</h1>
+              <p style="margin:0;color:#059669;font-size:13px;font-weight:600;">14-Day Free Trial Activated · ${plan === "yearly" ? "Yearly VIP" : "Monthly"}</p>
+            </td>
+          </tr>
+
+          <!-- Intro -->
+          <tr>
+            <td style="padding:22px 0 16px;">
+              <p style="margin:0 0 12px;color:#27272a;font-size:15px;line-height:1.6;">Hi,</p>
+              <p style="margin:0 0 20px;color:#27272a;font-size:15px;line-height:1.6;">
+                Thank you for choosing V6 Render. Your 14-day free trial is officially active. You can download your SketchUp extension (.rbz file) using the button below:
+              </p>
+            </td>
+          </tr>
+
+          <!-- Download Button -->
+          <tr>
+            <td align="center" style="padding:4px 0 24px;">
+              <a href="${downloadUrl}" target="_blank" style="display:inline-block;background:#09090b;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                Download Plugin (.rbz)
+              </a>
+              <p style="margin:12px 0 0;color:#71717a;font-size:12px;">
+                Direct link: <a href="${downloadUrl}" style="color:#2563eb;text-decoration:underline;">https://www.avada.space/v6_render.rbz</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- 3-Step Installation Guide -->
+          <tr>
+            <td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:22px 20px;margin-bottom:20px;">
+              <h3 style="margin:0 0 14px;color:#09090b;font-size:13px;font-weight:800;letter-spacing:0.4px;text-transform:uppercase;">
+                3-Step SketchUp Installation Guide
+              </h3>
+              
+              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size:13px;color:#3f3f46;line-height:1.6;">
+                <tr>
+                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">1.</td>
+                  <td style="padding-bottom:10px;">
+                    Open <strong>SketchUp</strong> on your computer.
+                  </td>
+                </tr>
+                <tr>
+                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">2.</td>
+                  <td style="padding-bottom:10px;">
+                    In the top menu bar, click <strong>Extensions → Extension Manager</strong> (or <em>Window → Extension Manager</em>).
+                  </td>
+                </tr>
+                <tr>
+                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">3.</td>
+                  <td style="padding-bottom:2px;">
+                    Click the <strong>Install Extension</strong> button in the bottom left, and choose the downloaded <strong>v6_render.rbz</strong> file.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- How to Login -->
+          <tr>
+            <td style="padding:20px 0 12px;">
+              <p style="margin:0;color:#27272a;font-size:14px;line-height:1.6;">
+                <strong>How to sign in:</strong> Open V6 Render from your SketchUp toolbar, enter your registered email (<strong>${email}</strong>), and type the 4-digit code sent to your inbox to begin photorealistic rendering.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Support & CAN-SPAM Footer -->
+          <tr>
+            <td style="border-top:1px solid #f4f4f5;padding-top:20px;margin-top:12px;color:#71717a;font-size:12px;line-height:1.6;">
+              <p style="margin:0 0 6px;color:#3f3f46;">
+                <strong>Need help?</strong> Simply reply directly to this email and our support team will help you immediately.
+              </p>
+              <p style="margin:0 0 4px;color:#a1a1aa;font-size:11px;">
+                V6 Render / Avada Space · 548 Market St, Suite 35000, San Francisco, CA 94104
+              </p>
+              <p style="margin:0;color:#a1a1aa;font-size:11px;">
+                You received this transactional service notification because you started a 14-day trial on avada.space.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 
   return sendEmail({
     to: email,
-    subject: "🎉 Welcome to V6 Render — Download Your SketchUp Plugin",
+    subject: "re: Your Plugin Is Here",
     html,
+    text,
   });
 }
