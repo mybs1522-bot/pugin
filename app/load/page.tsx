@@ -110,10 +110,22 @@ export default function LoadPluginImagesPage() {
   >(null);
   const [showSketchupPreview, setShowSketchupPreview] =
     useState<boolean>(false);
+  const [isLaunchingFullscreen, setIsLaunchingFullscreen] =
+    useState<boolean>(false);
+  const [cursorPhase, setCursorPhase] = useState<
+    "start" | "moving" | "hover" | "clicked" | "launching"
+  >("start");
+  const launchTimersRef = useRef<NodeJS.Timeout[]>([]);
 
   const viewportInputRef = useRef<HTMLInputElement>(null);
   const renderInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      launchTimersRef.current.forEach(clearTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     async function loadSavedAssets() {
@@ -246,34 +258,71 @@ export default function LoadPluginImagesPage() {
   };
 
   const handleLaunchStudio = async () => {
-    if (!viewportImg || !renderImg) {
-      alert(
-        "Please upload both the SketchUp Viewport Image and the 4K Render Image before launching."
-      );
-      return;
-    }
-
-    setIsSubmitting(true);
+    const vpToUse = viewportImg || "/sketchup-design-sample.png";
+    const renderToUse = renderImg || DEFAULT_SAMPLES[0].render;
     const videoToSave = videoBlob || renderVideo || DEFAULT_SAMPLE_VIDEO;
     const finalTitle = sceneTitle || "Custom SketchUp Render";
 
+    setIsSubmitting(true);
+
+    // Save to high-capacity storage for /new
     try {
-      // 1. Save to high-capacity IndexedDB (No 5MB storage limit)
-      await setAsset("custom_viewport_img", viewportImg);
-      await setAsset("custom_render_img", renderImg);
+      await setAsset("custom_viewport_img", vpToUse);
+      await setAsset("custom_render_img", renderToUse);
       await setAsset("custom_render_video", videoToSave);
       await setAsset("custom_scene_title", finalTitle);
-
-      // 2. Safe non-blocking sync for short keys (swallow any QuotaExceededError)
       try {
         localStorage.setItem("custom_scene_title", finalTitle);
       } catch (_) {}
-
-      router.push("/new");
     } catch (err) {
       console.error("Launch studio storage error:", err);
-      router.push("/new");
     }
+
+    // Clear any previous running timers
+    launchTimersRef.current.forEach(clearTimeout);
+    launchTimersRef.current = [];
+
+    // 1. Show Viewport on Full Screen
+    setIsLaunchingFullscreen(true);
+    setCursorPhase("start");
+
+    // Optional browser fullscreen request
+    try {
+      if (
+        typeof document !== "undefined" &&
+        document.documentElement.requestFullscreen
+      ) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (_) {}
+
+    // 2. Timeline sequence for exactly 2 seconds:
+    // t = 100ms: Mouse pointer starts moving across screen to button '6' in the plugin bar
+    const t1 = setTimeout(() => {
+      setCursorPhase("moving");
+    }, 100);
+
+    // t = 1150ms: Mouse pointer lands right on '6' in the plugin bar and hovers
+    const t2 = setTimeout(() => {
+      setCursorPhase("hover");
+    }, 1150);
+
+    // t = 1400ms: Mouse clicks '6' (click ripple + button push down + active state)
+    const t3 = setTimeout(() => {
+      setCursorPhase("clicked");
+    }, 1400);
+
+    // t = 1800ms: Smooth fade-out transition starts
+    const t4 = setTimeout(() => {
+      setCursorPhase("launching");
+    }, 1800);
+
+    // t = 2000ms: Exactly 2s! Navigate to /new and start the /new startup animation
+    const t5 = setTimeout(() => {
+      router.push("/new");
+    }, 2000);
+
+    launchTimersRef.current.push(t1, t2, t3, t4, t5);
   };
 
   return (
@@ -676,6 +725,30 @@ export default function LoadPluginImagesPage() {
               alt="SketchUp UI Frame"
               className="pointer-events-none absolute inset-0 h-full w-full select-none"
             />
+
+            {/* Authentic SketchUp V6 Render Plugin Toolbar */}
+            <div className="absolute top-[6.8%] left-[1.8%] z-20 flex flex-col rounded-sm border border-zinc-400/90 bg-[#f2f2f4] shadow-[0_4px_14px_rgba(0,0,0,0.35)]">
+              <div className="flex h-4 items-center justify-between border-b border-zinc-300 bg-gradient-to-r from-[#e3e3e8] to-[#d8d8de] px-1.5 select-none">
+                <span className="text-[9px] font-bold tracking-tight text-zinc-700">
+                  V6 Render
+                </span>
+                <span className="text-[9px] leading-none text-zinc-400">×</span>
+              </div>
+              <div className="p-1">
+                <button
+                  type="button"
+                  onClick={handleLaunchStudio}
+                  title="Click '6' in V6 Render Plugin Bar to Launch"
+                  className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border border-zinc-300 bg-gradient-to-b from-white to-[#ececf0] shadow-xs transition-all hover:scale-105 hover:border-blue-500 hover:bg-white active:scale-95"
+                >
+                  <img
+                    src="/icon.png"
+                    alt="6 (V6 Render)"
+                    className="h-5 w-5 object-contain select-none"
+                  />
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -793,6 +866,35 @@ export default function LoadPluginImagesPage() {
                   alt="SketchUp UI Frame"
                   className="pointer-events-none absolute inset-0 h-full w-full select-none"
                 />
+
+                {/* Authentic SketchUp V6 Render Plugin Toolbar */}
+                <div className="absolute top-[6.8%] left-[1.8%] z-20 flex flex-col rounded-sm border border-zinc-400/90 bg-[#f2f2f4] shadow-[0_4px_14px_rgba(0,0,0,0.35)]">
+                  <div className="flex h-4 items-center justify-between border-b border-zinc-300 bg-gradient-to-r from-[#e3e3e8] to-[#d8d8de] px-1.5 select-none">
+                    <span className="text-[9px] font-bold tracking-tight text-zinc-700">
+                      V6 Render
+                    </span>
+                    <span className="text-[9px] leading-none text-zinc-400">
+                      ×
+                    </span>
+                  </div>
+                  <div className="p-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSketchupPreview(false);
+                        handleLaunchStudio();
+                      }}
+                      title="Click '6' in V6 Render Plugin Bar to Launch"
+                      className="group relative flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border border-zinc-300 bg-gradient-to-b from-white to-[#ececf0] shadow-xs transition-all hover:scale-105 hover:border-blue-500 hover:bg-white active:scale-95"
+                    >
+                      <img
+                        src="/icon.png"
+                        alt="6 (V6 Render)"
+                        className="h-5 w-5 object-contain select-none"
+                      />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -831,6 +933,126 @@ export default function LoadPluginImagesPage() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {isLaunchingFullscreen && (
+        <div className="fixed inset-0 z-[9999] flex h-screen w-screen items-center justify-center overflow-hidden bg-black select-none">
+          {/* Authentic SketchUp 2024 Frame Scaled to Fullscreen Viewport */}
+          <div className="relative aspect-[1024/555] h-full max-h-screen w-full max-w-[calc(100vh*1024/555)] overflow-hidden bg-white shadow-2xl">
+            {/* Viewport Canvas (Solid Plain White + Preserved Aspect Ratio) */}
+            <div className="absolute top-[5.586%] left-0 flex h-[92.432%] w-[84.766%] items-center justify-center overflow-hidden bg-white">
+              <img
+                src={viewportImg || "/sketchup-design-sample.png"}
+                alt="Active SketchUp Viewport"
+                className="h-full w-full object-contain select-none"
+              />
+            </div>
+
+            {/* Authentic SketchUp Chrome Frame (Menu, Toolbars, Default Tray, Status Bar) */}
+            <img
+              src="/sketchup-frame-cutout.png"
+              alt="SketchUp UI Frame"
+              className="pointer-events-none absolute inset-0 h-full w-full select-none"
+            />
+
+            {/* Authentic SketchUp V6 Render Plugin Toolbar with '6' Button */}
+            <div className="absolute top-[6.8%] left-[1.8%] z-30 flex flex-col rounded-sm border border-zinc-400/90 bg-[#f2f2f4] shadow-[0_6px_20px_rgba(0,0,0,0.45)]">
+              {/* Title Bar */}
+              <div className="flex h-4 items-center justify-between border-b border-zinc-300 bg-gradient-to-r from-[#e3e3e8] to-[#d8d8de] px-1.5 select-none">
+                <span className="text-[9px] font-bold tracking-tight text-zinc-700">
+                  V6 Render
+                </span>
+                <span className="text-[9px] leading-none text-zinc-400">×</span>
+              </div>
+
+              {/* '6' Button in Plugin Bar */}
+              <div className="p-1">
+                <div
+                  className={cn(
+                    "relative flex h-8 w-8 items-center justify-center rounded-sm border transition-all duration-150",
+                    cursorPhase === "clicked"
+                      ? "translate-y-[1px] scale-95 border-blue-600 bg-blue-100 shadow-inner"
+                      : cursorPhase === "hover"
+                        ? "scale-105 border-blue-500 bg-white shadow-md"
+                        : "border-zinc-300 bg-gradient-to-b from-white to-[#ececf0] shadow-xs"
+                  )}
+                >
+                  <img
+                    src="/icon.png"
+                    alt="6 (V6 Render)"
+                    className="h-6 w-6 object-contain select-none"
+                  />
+
+                  {/* Click Ripple Effect radiating from '6' button */}
+                  {cursorPhase === "clicked" && (
+                    <span className="absolute inset-0 animate-ping rounded-sm bg-blue-500/40" />
+                  )}
+
+                  {/* Native SketchUp tooltip when hovered or clicked */}
+                  {(cursorPhase === "hover" || cursorPhase === "clicked") && (
+                    <div className="pointer-events-none absolute -bottom-7 left-1/2 z-40 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-900/95 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white shadow-lg">
+                      V6 Render · Click 6
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* ON-SCREEN MOUSE POINTER ANIMATION */}
+            <div
+              className={cn(
+                "pointer-events-none absolute z-50 transition-all",
+                cursorPhase === "start" && "transition-none",
+                cursorPhase === "moving" && "duration-[1050ms] ease-in-out",
+                cursorPhase === "hover" && "duration-100",
+                cursorPhase === "clicked" && "scale-90 duration-75",
+                cursorPhase === "launching" && "opacity-0 duration-200"
+              )}
+              style={{
+                top: cursorPhase === "start" ? "72%" : "11.2%",
+                left: cursorPhase === "start" ? "68%" : "3.1%",
+              }}
+            >
+              <div className="relative">
+                {/* Authentic OS Cursor SVG */}
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="drop-shadow-[0_4px_12px_rgba(0,0,0,0.85)] filter"
+                >
+                  <path
+                    d="M3 3L10.07 20.97L12.58 13.58L19.97 11.07L3 3Z"
+                    fill="#ffffff"
+                    stroke="#000000"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+
+                {/* Ripple ring at mouse tip upon clicking */}
+                {cursorPhase === "clicked" && (
+                  <div className="pointer-events-none absolute -top-3 -left-3 h-10 w-10 animate-ping rounded-full border-2 border-blue-400 bg-blue-500/35" />
+                )}
+              </div>
+            </div>
+
+            {/* Status indicator pill at bottom */}
+            <div className="pointer-events-none absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 rounded-full border border-zinc-700 bg-zinc-950/90 px-4 py-1.5 shadow-2xl backdrop-blur-md">
+              <span className="flex h-2 w-2 animate-pulse rounded-full bg-blue-400" />
+              <span className="text-xs font-semibold text-zinc-200">
+                {cursorPhase === "clicked"
+                  ? "Launching Plugin Studio..."
+                  : "Clicking 6 in V6 Render Plugin Bar..."}
+              </span>
+            </div>
+
+            {/* Fade transition before /new begins */}
+            {cursorPhase === "launching" && (
+              <div className="animate-in fade-in absolute inset-0 z-50 bg-black/40 backdrop-blur-xs duration-200" />
+            )}
           </div>
         </div>
       )}
