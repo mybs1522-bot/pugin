@@ -136,6 +136,46 @@ export default function AdCreatorPage() {
     loadAssets();
   }, []);
 
+  // Listen for real-time recording completion from /new across browser tabs
+  useEffect(() => {
+    let bc: BroadcastChannel | null = null;
+    if (typeof window !== "undefined" && "BroadcastChannel" in window) {
+      try {
+        bc = new BroadcastChannel("v6_recordings");
+        bc.onmessage = async (e) => {
+          if (e.data?.type === "RECORDING_SAVED") {
+            const proc = await getAsset("custom_process_recording");
+            if (proc && (proc instanceof Blob || proc instanceof File)) {
+              setProcessVideoUrl(URL.createObjectURL(proc));
+              setIsRecordingGenerating(false);
+            }
+          }
+        };
+      } catch (_) {}
+    }
+    return () => {
+      if (bc) bc.close();
+    };
+  }, []);
+
+  // Active sync polling: ensure recorded video appears with 0 delay if saving was in flight
+  useEffect(() => {
+    if (processVideoUrl) return;
+    let attempts = 0;
+    const timer = setInterval(async () => {
+      attempts++;
+      const proc = await getAsset("custom_process_recording");
+      if (proc && (proc instanceof Blob || proc instanceof File)) {
+        setProcessVideoUrl(URL.createObjectURL(proc));
+        setIsRecordingGenerating(false);
+        clearInterval(timer);
+      } else if (attempts >= 10) {
+        clearInterval(timer);
+      }
+    }, 500);
+    return () => clearInterval(timer);
+  }, [processVideoUrl]);
+
   const generateProcessVideo = async (
     vpUrl: string,
     rndUrl: string,
@@ -155,13 +195,15 @@ export default function AdCreatorPage() {
       });
       await recorder.start();
       setTimeout(async () => {
-        const finalBlob = await recorder.stop();
-        if (finalBlob) {
-          const url = URL.createObjectURL(finalBlob);
-          setProcessVideoUrl(url);
+        if (recorder.isRecording) {
+          const finalBlob = await recorder.stop();
+          if (finalBlob) {
+            const url = URL.createObjectURL(finalBlob);
+            setProcessVideoUrl(url);
+          }
         }
         setIsRecordingGenerating(false);
-      }, 14500);
+      }, 4400);
     } catch (e) {
       console.warn("Process recording generator:", e);
       setIsRecordingGenerating(false);
@@ -179,17 +221,17 @@ export default function AdCreatorPage() {
     let targetUrl = renderImg;
     let filename = "v6_ad_asset.jpg";
 
-    if (mediaSource === "process" && processVideoUrl) {
-      targetUrl = processVideoUrl;
+    if (mediaSource === "process") {
+      targetUrl = processVideoUrl || renderVideo || DEFAULT_VIDEO;
       filename = "v6_process_recording_ad.webm";
     } else if (mediaSource === "walkthrough") {
-      targetUrl = renderVideo;
+      targetUrl = renderVideo || DEFAULT_VIDEO;
       filename = "v6_3d_walkthrough_ad.mp4";
     } else if (mediaSource === "render") {
-      targetUrl = renderImg;
+      targetUrl = renderImg || DEFAULT_RENDER;
       filename = "v6_photoreal_4k_render.jpg";
     } else if (mediaSource === "compare") {
-      targetUrl = renderImg;
+      targetUrl = renderImg || DEFAULT_RENDER;
       filename = "v6_comparison_ad.jpg";
     }
 
@@ -359,19 +401,21 @@ export default function AdCreatorPage() {
               )}
             >
               <div className="relative flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-lg bg-zinc-950">
-                {processVideoUrl ? (
-                  <video
-                    src={processVideoUrl}
-                    muted
-                    playsInline
-                    loop
-                    autoPlay
-                    className="pointer-events-none h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center gap-1 text-[11px] text-zinc-500">
-                    <RefreshCw className="h-4 w-4 animate-spin text-emerald-400" />
-                    <span>Rendering video...</span>
+                <video
+                  key={`shelf-proc-${processVideoUrl || "pending"}`}
+                  src={processVideoUrl || renderVideo || DEFAULT_VIDEO}
+                  muted
+                  playsInline
+                  loop
+                  autoPlay
+                  className="pointer-events-none h-full w-full object-cover"
+                />
+                {isRecordingGenerating && !processVideoUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
+                    <span className="flex items-center gap-1 rounded-full border border-emerald-500/40 bg-black/80 px-2 py-0.5 text-[9px] font-bold text-emerald-300">
+                      <RefreshCw className="h-2.5 w-2.5 animate-spin text-emerald-400" />
+                      Capturing...
+                    </span>
                   </div>
                 )}
                 <span className="absolute top-1.5 left-1.5 rounded bg-emerald-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white">
@@ -472,8 +516,9 @@ export default function AdCreatorPage() {
               {/* Process Video */}
               {mediaSource === "process" && (
                 <video
+                  key={`main-proc-${processVideoUrl || "pending"}`}
                   ref={previewVideoRef}
-                  src={processVideoUrl || DEFAULT_VIDEO}
+                  src={processVideoUrl || renderVideo || DEFAULT_VIDEO}
                   muted
                   playsInline
                   loop

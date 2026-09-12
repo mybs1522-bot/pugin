@@ -262,6 +262,17 @@ export default function SamplePluginRendererPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoUploadInputRef = useRef<HTMLInputElement>(null);
   const processRecorderRef = useRef<ProcessRecorder | null>(null);
+  const hasStartedRecorderRef = useRef<boolean>(false);
+
+  const handleOpenAdStudio = async () => {
+    if (processRecorderRef.current && processRecorderRef.current.isRecording) {
+      try {
+        await processRecorderRef.current.stop();
+      } catch (_) {}
+    }
+    window.open("/ad", "_blank");
+  };
+
   const [sceneTitle, setSceneTitle] = useState<string>(
     "SketchUp Active Viewport"
   );
@@ -515,7 +526,8 @@ export default function SamplePluginRendererPage() {
 
   // Silently record the process in /new starting when loader appears
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || hasStartedRecorderRef.current) return;
+    hasStartedRecorderRef.current = true;
 
     const recorder = new ProcessRecorder({
       viewportUrl: viewportImg || DEFAULT_VIEWPORT,
@@ -532,6 +544,17 @@ export default function SamplePluginRendererPage() {
         processRecorderRef.current.stop();
       }
     };
+  }, []);
+
+  // Update assets dynamically without canceling ongoing process recording
+  useEffect(() => {
+    if (processRecorderRef.current && processRecorderRef.current.isRecording) {
+      processRecorderRef.current.updateAssets(
+        viewportImg,
+        renderImg,
+        renderVideo
+      );
+    }
   }, [viewportImg, renderImg, renderVideo]);
 
   const handleSpaceChange = (type: "interior" | "exterior") => {
@@ -2239,7 +2262,7 @@ export default function SamplePluginRendererPage() {
               {/* SIMPLE GREEN DOT - CLICK TO OPEN /ad */}
               <button
                 type="button"
-                onClick={() => window.open("/ad", "_blank")}
+                onClick={handleOpenAdStudio}
                 title="Ad Studio (/ad)"
                 aria-label="Open Ad Studio"
                 className="group relative flex h-6 w-6 cursor-pointer items-center justify-center rounded-full p-1 transition-transform hover:scale-125"
