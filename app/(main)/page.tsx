@@ -172,7 +172,7 @@ export default function HomePage() {
           {/* ── How it works (Complete Workflow in 3 Simple Steps) ─ */}
           <section
             id="how-it-works"
-            className="bg-background rounded-xl border px-3 py-5 sm:rounded-2xl sm:px-12 sm:py-12 lg:px-20 lg:py-20"
+            className="cv-auto bg-background rounded-xl border px-3 py-5 sm:rounded-2xl sm:px-12 sm:py-12 lg:px-20 lg:py-20"
           >
             <div className="mb-4 text-center sm:mb-10 lg:mb-16">
               <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
@@ -214,10 +214,12 @@ export default function HomePage() {
           <SectionCTA />
 
           {/* ── Stats dashboard ───────────────────────────────── */}
-          <StatsDashboard />
+          <div className="cv-auto">
+            <StatsDashboard />
+          </div>
 
           {/* ── Before / After cards ─────────────────────────── */}
-          <div className="flex justify-center py-1 sm:py-3">
+          <div className="cv-auto flex justify-center py-1 sm:py-3">
             <BeforeAfterCards />
           </div>
 
@@ -225,7 +227,7 @@ export default function HomePage() {
           <SectionCTA />
 
           {/* ── Features Grid Section ────────────────────────── */}
-          <section id="features" className="space-y-3.5 sm:space-y-8">
+          <section id="features" className="cv-auto space-y-3.5 sm:space-y-8">
             <div className="text-center">
               <div className="border-primary/30 bg-primary/10 text-primary mb-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider uppercase sm:mb-3 sm:px-4 sm:text-xs">
                 <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Built for
@@ -266,15 +268,19 @@ export default function HomePage() {
           <SectionCTA />
 
           {/* ── Funding announcement (Pricing Offer) ───────────── */}
-          <div id="pricing">
+          <div id="pricing" className="cv-auto">
             <FundingAnnouncement />
           </div>
 
           {/* ── Trusted by ────────────────────────────────── */}
-          <TrustedBySection />
+          <div className="cv-auto">
+            <TrustedBySection />
+          </div>
 
           {/* ── Testimonials ──────────────────────────────── */}
-          <TestimonialsSection />
+          <div className="cv-auto">
+            <TestimonialsSection />
+          </div>
 
           {/* ── Final CTA before Footer ───────────────────── */}
           <SectionCTA className="pt-2 pb-4 sm:pb-8" />

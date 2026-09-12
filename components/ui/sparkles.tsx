@@ -45,11 +45,13 @@ export function Sparkles({
   }, []);
 
   const id = useId();
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const effectiveDensity = isMobile ? Math.min(density, 30) : density;
 
   const defaultOptions: ISourceOptions = {
     background: { color: { value: background } },
     fullScreen: { enable: false, zIndex: 1 },
-    fpsLimit: 30,
+    fpsLimit: isMobile ? 24 : 30,
     particles: {
       color: { value: color },
       move: {
@@ -58,7 +60,7 @@ export function Sparkles({
         speed: { min: minSpeed ?? speed / 10, max: speed },
         straight: false,
       },
-      number: { value: density },
+      number: { value: effectiveDensity },
       opacity: {
         value: { min: minOpacity ?? opacity / 10, max: opacity },
         animation: { enable: true, sync: false, speed: opacitySpeed },

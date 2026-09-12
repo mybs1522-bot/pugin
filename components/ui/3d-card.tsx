@@ -43,6 +43,8 @@ const PhotoCard = ({
         <img
           src={src}
           alt={alt}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover"
           onError={(e) => {
             e.currentTarget.src =
@@ -72,7 +74,7 @@ const AnimatedGrid = () => {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
       <div
-        className="absolute inset-0 animate-[grid-scroll_3.2s_linear_infinite]"
+        className="absolute inset-0 sm:animate-[grid-scroll_3.2s_linear_infinite]"
         style={{
           background: `
             linear-gradient(rgba(156,163,175,0.15) 1px, transparent 1px),
@@ -88,9 +90,11 @@ const AnimatedGrid = () => {
       <style
         dangerouslySetInnerHTML={{
           __html: `
-        @keyframes grid-scroll {
-          from { background-position: 0 0, 0 0; }
-          to { background-position: 40px 40px, 40px 40px; }
+        @media (min-width: 640px) {
+          @keyframes grid-scroll {
+            from { background-position: 0 0, 0 0; }
+            to { background-position: 40px 40px, 40px 40px; }
+          }
         }
       `,
         }}

@@ -2,6 +2,7 @@
 const nextConfig = {
   transpilePackages: ["three", "@react-three/fiber"],
   images: {
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
@@ -22,6 +23,12 @@ const nextConfig = {
   },
   experimental: {
     scrollRestoration: true,
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "recharts",
+      "gsap",
+    ],
   },
 };
 

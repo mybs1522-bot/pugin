@@ -62,6 +62,8 @@ export const metadata: Metadata = {
 
 export const viewport = {
   themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
 };
 
 type RootLayoutProps = {
@@ -71,6 +73,14 @@ type RootLayoutProps = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <link
+          rel="preconnect"
+          href="https://iframe.mediadelivery.net"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://iframe.mediadelivery.net" />
+      </head>
       <body
         className={`${inter.className} min-h-screen overflow-x-hidden antialiased`}
       >

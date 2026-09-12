@@ -133,6 +133,7 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
 
     useEffect(() => {
       if (typeof window === "undefined") return;
+      if (window.matchMedia("(pointer: coarse)").matches) return;
       const element = localRef.current;
       if (!element) return;
 
@@ -280,7 +281,18 @@ export function CinematicFooter({
 
   useEffect(() => {
     if (typeof window === "undefined" || !wrapperRef.current) return;
+    const isMobile = window.innerWidth < 768;
     const ctx = gsap.context(() => {
+      if (isMobile) {
+        // Fast, lightweight entrance for mobile without heavy scroll scrubbing
+        if (giantTextRef.current)
+          gsap.to(giantTextRef.current, { opacity: 0.8, duration: 0.4 });
+        if (headingRef.current)
+          gsap.to(headingRef.current, { y: 0, duration: 0.4 });
+        if (linksRef.current)
+          gsap.to(linksRef.current, { y: 0, duration: 0.4 });
+        return;
+      }
       gsap.fromTo(
         giantTextRef.current,
         { y: "10vh", scale: 0.8, opacity: 0 },
@@ -341,7 +353,10 @@ export function CinematicFooter({
       >
         <footer className="bg-background text-foreground cinematic-footer-wrapper flex w-full flex-col justify-between overflow-hidden">
           {/* Aurora + grid */}
-          <div className="footer-aurora animate-footer-breathe pointer-events-none absolute top-1/2 left-1/2 z-0 h-[60vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-[50%] blur-[80px]" />
+          <div
+            className="footer-aurora animate-footer-breathe pointer-events-none absolute top-1/2 left-1/2 z-0 h-[60vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-[50%] blur-[32px] sm:blur-[80px]"
+            style={{ willChange: "transform" }}
+          />
           <div className="footer-bg-grid pointer-events-none absolute inset-0 z-0" />
 
           {/* Giant background text */}

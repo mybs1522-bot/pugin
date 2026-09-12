@@ -25,7 +25,7 @@ export function LiveDemoSection() {
             <div style={{ position: "relative", paddingTop: "56.25%" }}>
               <iframe
                 src="https://iframe.mediadelivery.net/embed/494628/68bbd0f4-e435-478c-af0d-8cd95b3a96a1?autoplay=true&loop=true&muted=true&preload=true&responsive=true"
-                loading="lazy"
+                loading="eager"
                 style={{
                   border: 0,
                   position: "absolute",

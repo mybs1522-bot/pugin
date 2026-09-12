@@ -216,6 +216,12 @@
     box-shadow: var(--glass-shadow);
   }
 
+  /* Off-screen mobile content visibility optimization */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 1px 600px;
+  }
+
   :root {
     --gradient-color: #8350e8;
     --sparkles-color: #8350e8;
@@ -225,4 +231,9 @@
     --gradient-color: #8350e8;
     --sparkles-color: #ffffff;
   }
+}
+
+html {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }

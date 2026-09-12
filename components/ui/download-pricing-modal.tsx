@@ -664,6 +664,8 @@ export function DownloadPricingModal({
     plan: "monthly" | "yearly";
   } | null>(null);
 
+  if (!open && !successData) return null;
+
   const handleSuccess = (email: string, plan: "monthly" | "yearly") => {
     setSuccessData({ email, plan });
 
