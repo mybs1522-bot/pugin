@@ -286,14 +286,10 @@ export default function LoadPluginImagesPage() {
     setIsLaunchingFullscreen(true);
     setCursorPhase("start");
 
-    // Request true browser fullscreen
+    // Exit any existing browser fullscreen to ensure zero browser security banners
     try {
-      if (
-        typeof document !== "undefined" &&
-        !document.fullscreenElement &&
-        document.documentElement.requestFullscreen
-      ) {
-        document.documentElement.requestFullscreen().catch(() => {});
+      if (typeof document !== "undefined" && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
       }
     } catch (_) {}
 
