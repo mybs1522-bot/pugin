@@ -110,9 +110,6 @@ export default function LoadPluginImagesPage() {
   >(null);
   const [showSketchupPreview, setShowSketchupPreview] =
     useState<boolean>(false);
-  const [previewFitMode, setPreviewFitMode] = useState<"cover" | "contain">(
-    "cover"
-  );
 
   const viewportInputRef = useRef<HTMLInputElement>(null);
   const renderInputRef = useRef<HTMLInputElement>(null);
@@ -647,32 +644,9 @@ export default function LoadPluginImagesPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs">
-                <button
-                  type="button"
-                  onClick={() => setPreviewFitMode("cover")}
-                  className={cn(
-                    "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
-                    previewFitMode === "cover"
-                      ? "bg-zinc-800 text-white shadow-xs"
-                      : "text-zinc-400 hover:text-white"
-                  )}
-                >
-                  Cover
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreviewFitMode("contain")}
-                  className={cn(
-                    "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
-                    previewFitMode === "contain"
-                      ? "bg-zinc-800 text-white shadow-xs"
-                      : "text-zinc-400 hover:text-white"
-                  )}
-                >
-                  Contain
-                </button>
-              </div>
+              <span className="rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-semibold text-zinc-300">
+                Aspect Ratio Locked · Plain White
+              </span>
 
               <button
                 type="button"
@@ -686,16 +660,13 @@ export default function LoadPluginImagesPage() {
           </div>
 
           {/* Authentic SketchUp Frame with Replaced Viewport */}
-          <div className="relative mx-auto aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/70 bg-[#2d2d30] shadow-2xl">
-            {/* Dynamically Replaced Viewport Design Screen */}
-            <div className="absolute top-[5.586%] left-0 h-[92.432%] w-[84.766%] overflow-hidden bg-zinc-950">
+          <div className="relative mx-auto aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/70 bg-white shadow-2xl">
+            {/* Dynamically Replaced Viewport Design Screen - Plain White Canvas & Preserved Image Ratio */}
+            <div className="absolute top-[5.586%] left-0 flex h-[92.432%] w-[84.766%] items-center justify-center overflow-hidden bg-white">
               <img
                 src={viewportImg || "/sketchup-design-sample.png"}
                 alt="Active SketchUp Viewport Design"
-                className={cn(
-                  "h-full w-full transition-all duration-300 select-none",
-                  previewFitMode === "cover" ? "object-cover" : "object-contain"
-                )}
+                className="h-full w-full object-contain select-none"
               />
             </div>
 
@@ -781,32 +752,9 @@ export default function LoadPluginImagesPage() {
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewFitMode("cover")}
-                    className={cn(
-                      "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
-                      previewFitMode === "cover"
-                        ? "bg-zinc-800 text-white shadow-xs"
-                        : "text-zinc-400 hover:text-white"
-                    )}
-                  >
-                    Fill (Cover)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewFitMode("contain")}
-                    className={cn(
-                      "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
-                      previewFitMode === "contain"
-                        ? "bg-zinc-800 text-white shadow-xs"
-                        : "text-zinc-400 hover:text-white"
-                    )}
-                  >
-                    Fit (Contain)
-                  </button>
-                </div>
+                <span className="hidden rounded-md border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-[11px] font-semibold text-zinc-300 sm:inline-flex">
+                  Aspect Ratio Locked · Plain White Canvas
+                </span>
 
                 <button
                   type="button"
@@ -829,18 +777,13 @@ export default function LoadPluginImagesPage() {
 
             {/* Modal Canvas Body */}
             <div className="relative flex flex-1 items-center justify-center overflow-auto bg-[#141417] p-4 sm:p-6">
-              <div className="relative aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/80 bg-[#2d2d30] shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
-                {/* Dynamically Replaced Viewport Design Screen */}
-                <div className="absolute top-[5.586%] left-0 h-[92.432%] w-[84.766%] overflow-hidden bg-zinc-950">
+              <div className="relative aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/80 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+                {/* Dynamically Replaced Viewport Design Screen - Plain White Canvas & Preserved Image Ratio */}
+                <div className="absolute top-[5.586%] left-0 flex h-[92.432%] w-[84.766%] items-center justify-center overflow-hidden bg-white">
                   <img
                     src={viewportImg || "/sketchup-design-sample.png"}
                     alt="Active Design Screen"
-                    className={cn(
-                      "h-full w-full transition-all duration-300 select-none",
-                      previewFitMode === "cover"
-                        ? "object-cover"
-                        : "object-contain"
-                    )}
+                    className="h-full w-full object-contain select-none"
                   />
                 </div>
 
