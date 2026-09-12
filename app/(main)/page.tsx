@@ -25,10 +25,7 @@ import { AnimatedLogo } from "@/components/animated-logo";
 import { SectionCTA } from "@/components/ui/section-cta";
 import { NavbarActions } from "@/components/navbar-actions";
 
-const CinematicFooter = dynamic(
-  () => import("@/components/ui/motion-footer").then((m) => m.CinematicFooter),
-  { loading: () => null }
-);
+import { CinematicFooter } from "@/components/ui/motion-footer";
 const StatsDashboard = dynamic(
   () => import("@/components/stats-dashboard").then((m) => m.StatsDashboard),
   { loading: () => null }

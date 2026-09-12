@@ -1,6 +1,5 @@
 "use client";
 
-import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 import { Button } from "@/components/ui/button";
 import CountUp from "react-countup";
 import { useEffect, useState } from "react";
@@ -8,15 +7,6 @@ import { motion } from "motion/react";
 import { Zap, TrendingUp, Clock } from "lucide-react";
 import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import { PlatformBadge } from "@/components/ui/platform-icons";
-
-const renderData = [
-  { month: "Nov", renders: 1200 },
-  { month: "Dec", renders: 3800 },
-  { month: "Jan", renders: 8400 },
-  { month: "Feb", renders: 16200 },
-  { month: "Mar", renders: 31000 },
-  { month: "Apr", renders: 58000 },
-];
 
 function getDeadline(): number {
   if (typeof window === "undefined") return Date.now() + 15 * 86400000;
@@ -199,55 +189,47 @@ export function FundingAnnouncement() {
             viewport={{ once: true }}
             className="border-border bg-background/60 relative h-[280px] w-full overflow-hidden rounded-xl border backdrop-blur-sm sm:h-[380px] sm:rounded-2xl lg:h-[440px]"
           >
-            {/* Chart */}
-            <div className="absolute inset-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={renderData}
-                  margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="renderGradient"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="hsl(var(--primary))"
-                        stopOpacity={0.35}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="hsl(var(--primary))"
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                      fontSize: "12px",
-                    }}
-                    formatter={(v: number) => [
-                      `${v.toLocaleString()} renders`,
-                      "",
-                    ]}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="renders"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2.5}
-                    fill="url(#renderGradient)"
-                    dot={false}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+            {/* Chart SVG */}
+            <div className="pointer-events-none absolute inset-0">
+              <svg
+                viewBox="0 0 500 220"
+                preserveAspectRatio="none"
+                className="h-full w-full"
+              >
+                <defs>
+                  <linearGradient
+                    id="renderGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="hsl(var(--primary))"
+                      stopOpacity={0.35}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="hsl(var(--primary))"
+                      stopOpacity={0}
+                    />
+                  </linearGradient>
+                </defs>
+                {/* Gradient area */}
+                <path
+                  d="M 0 205 C 80 200, 140 185, 200 160 C 260 135, 320 95, 380 50 C 430 20, 470 12, 500 8 L 500 220 L 0 220 Z"
+                  fill="url(#renderGradient)"
+                />
+                {/* Stroke curve */}
+                <path
+                  d="M 0 205 C 80 200, 140 185, 200 160 C 260 135, 320 95, 380 50 C 430 20, 470 12, 500 8"
+                  fill="none"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
             </div>
 
             {/* Overlay center stat */}
