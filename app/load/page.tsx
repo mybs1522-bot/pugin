@@ -9,6 +9,12 @@ import {
   Sparkles,
   Trash2,
   Film,
+  Eye,
+  X,
+  Maximize2,
+  Minimize2,
+  Check,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { setAsset, getAsset } from "@/lib/storage";
@@ -16,6 +22,13 @@ import { setAsset, getAsset } from "@/lib/storage";
 const DEFAULT_SAMPLE_VIDEO = "/sample-walkthrough.mp4";
 
 const DEFAULT_SAMPLES = [
+  {
+    title: "SketchUp Dining & Kitchen (Your Shared Viewport)",
+    viewport: "/sketchup-design-sample.png",
+    render:
+      "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=80",
+    video: "/sample-walkthrough.mp4",
+  },
   {
     title: "Minimalist Living Room Villa",
     viewport:
@@ -95,6 +108,11 @@ export default function LoadPluginImagesPage() {
   const [draggingZone, setDraggingZone] = useState<
     "viewport" | "render" | "video" | null
   >(null);
+  const [showSketchupPreview, setShowSketchupPreview] =
+    useState<boolean>(false);
+  const [previewFitMode, setPreviewFitMode] = useState<"cover" | "contain">(
+    "cover"
+  );
 
   const viewportInputRef = useRef<HTMLInputElement>(null);
   const renderInputRef = useRef<HTMLInputElement>(null);
@@ -282,7 +300,17 @@ export default function LoadPluginImagesPage() {
         </div>
 
         <div className="flex items-center gap-3 text-xs text-zinc-400">
-          <span>Step 1: Upload Viewport, Render &amp; 3D Video</span>
+          <button
+            type="button"
+            onClick={() => setShowSketchupPreview(true)}
+            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-indigo-500/50 bg-indigo-600/20 px-3 py-1.5 text-xs font-bold text-indigo-200 shadow-sm transition-all hover:border-indigo-400 hover:bg-indigo-600/35 hover:text-white active:scale-95"
+          >
+            <Eye className="h-3.5 w-3.5 text-indigo-300" />
+            <span>Show SketchUp Preview</span>
+          </button>
+          <span className="hidden sm:inline">
+            Step 1: Upload Viewport, Render &amp; 3D Video
+          </span>
         </div>
       </header>
 
@@ -314,16 +342,27 @@ export default function LoadPluginImagesPage() {
                 </span>
                 <span>SketchUp Viewport</span>
               </label>
-              {viewportImg && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setViewportImg("")}
-                  className="flex cursor-pointer items-center gap-1 text-xs text-red-400 hover:text-red-300"
+                  onClick={() => setShowSketchupPreview(true)}
+                  className="flex cursor-pointer items-center gap-1 rounded-md border border-indigo-500/30 bg-indigo-500/15 px-2 py-0.5 text-[11px] font-bold text-indigo-300 transition-colors hover:bg-indigo-500/25 hover:text-white"
+                  title="Show SketchUp Preview"
                 >
-                  <Trash2 className="h-3 w-3" />
-                  <span>Clear</span>
+                  <Eye className="h-3 w-3" />
+                  <span>Preview</span>
                 </button>
-              )}
+                {viewportImg && (
+                  <button
+                    type="button"
+                    onClick={() => setViewportImg("")}
+                    className="flex cursor-pointer items-center gap-1 text-xs text-red-400 hover:text-red-300"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    <span>Clear</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <input
@@ -392,6 +431,16 @@ export default function LoadPluginImagesPage() {
                 </div>
               )}
             </div>
+
+            {/* Direct button to launch SketchUp preview */}
+            <button
+              type="button"
+              onClick={() => setShowSketchupPreview(true)}
+              className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-950/40 py-2.5 text-xs font-bold text-indigo-200 transition-all hover:border-indigo-400/80 hover:bg-indigo-900/60 hover:text-white active:scale-[0.99]"
+            >
+              <Eye className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Show SketchUp Preview</span>
+            </button>
           </div>
 
           {/* 2. RENDERED 4K IMAGE */}
@@ -576,6 +625,89 @@ export default function LoadPluginImagesPage() {
           </div>
         </div>
 
+        {/* INLINE SKETCHUP PREVIEW SECTION */}
+        <section className="space-y-3 rounded-2xl border border-zinc-800/90 bg-zinc-950/80 p-4 shadow-xl sm:p-5">
+          <div className="flex flex-col justify-between gap-2 border-b border-zinc-800/80 pb-3 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-600/90 text-[11px] font-black text-white shadow-sm">
+                SKP
+              </div>
+              <div>
+                <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                  <span>SketchUp Live Viewport Preview</span>
+                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                    Design Replaced
+                  </span>
+                </h3>
+                <p className="text-[11px] text-zinc-400">
+                  Toolbars, menus &amp; Default Tray preserved · Viewport canvas
+                  displays your uploaded design
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPreviewFitMode("cover")}
+                  className={cn(
+                    "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
+                    previewFitMode === "cover"
+                      ? "bg-zinc-800 text-white shadow-xs"
+                      : "text-zinc-400 hover:text-white"
+                  )}
+                >
+                  Cover
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewFitMode("contain")}
+                  className={cn(
+                    "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
+                    previewFitMode === "contain"
+                      ? "bg-zinc-800 text-white shadow-xs"
+                      : "text-zinc-400 hover:text-white"
+                  )}
+                >
+                  Contain
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSketchupPreview(true)}
+                className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-indigo-500/50 bg-indigo-600/20 px-3 py-1.5 text-xs font-bold text-indigo-200 shadow-sm transition-all hover:border-indigo-400 hover:bg-indigo-600/35 hover:text-white"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+                <span>Fullscreen Preview</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Authentic SketchUp Frame with Replaced Viewport */}
+          <div className="relative mx-auto aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/70 bg-[#2d2d30] shadow-2xl">
+            {/* Dynamically Replaced Viewport Design Screen */}
+            <div className="absolute top-[5.586%] left-0 h-[92.432%] w-[84.766%] overflow-hidden bg-zinc-950">
+              <img
+                src={viewportImg || "/sketchup-design-sample.png"}
+                alt="Active SketchUp Viewport Design"
+                className={cn(
+                  "h-full w-full transition-all duration-300 select-none",
+                  previewFitMode === "cover" ? "object-cover" : "object-contain"
+                )}
+              />
+            </div>
+
+            {/* Authentic SketchUp Chrome Frame (Menu, Toolbars, Tray, Status Bar) */}
+            <img
+              src="/sketchup-frame-cutout.png"
+              alt="SketchUp UI Frame"
+              className="pointer-events-none absolute inset-0 h-full w-full select-none"
+            />
+          </div>
+        </section>
+
         {/* QUICK SAMPLES ROW */}
         <div className="flex flex-col justify-between gap-3 rounded-xl border border-zinc-800/80 bg-zinc-950/60 p-3.5 sm:flex-row sm:items-center">
           <div className="text-xs text-zinc-400">
@@ -623,6 +755,142 @@ export default function LoadPluginImagesPage() {
           </button>
         </div>
       </main>
+
+      {/* FULL SKETCHUP PREVIEW MODAL */}
+      {showSketchupPreview && (
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-3 backdrop-blur-md duration-200 sm:p-6">
+          <div className="relative flex max-h-[95vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-zinc-700 bg-zinc-900 shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-950 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-600 text-xs font-black text-white shadow-sm">
+                  SKP
+                </div>
+                <div>
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-white">
+                    <span>SketchUp 2024 Viewport Preview</span>
+                    <span className="rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400">
+                      Live Screen Replaced
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-zinc-400">
+                    Menus, toolbars &amp; Default Tray preserved · Canvas
+                    rendered with your uploaded design
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex items-center rounded-lg border border-zinc-800 bg-zinc-900 p-0.5 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewFitMode("cover")}
+                    className={cn(
+                      "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
+                      previewFitMode === "cover"
+                        ? "bg-zinc-800 text-white shadow-xs"
+                        : "text-zinc-400 hover:text-white"
+                    )}
+                  >
+                    Fill (Cover)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewFitMode("contain")}
+                    className={cn(
+                      "cursor-pointer rounded-md px-2.5 py-1 text-[11px] font-bold transition-all",
+                      previewFitMode === "contain"
+                        ? "bg-zinc-800 text-white shadow-xs"
+                        : "text-zinc-400 hover:text-white"
+                    )}
+                  >
+                    Fit (Contain)
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => viewportInputRef.current?.click()}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-bold text-zinc-200 transition-colors hover:bg-zinc-700 hover:text-white"
+                >
+                  <Upload className="h-3.5 w-3.5" />
+                  <span>Change Design</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowSketchupPreview(false)}
+                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Canvas Body */}
+            <div className="relative flex flex-1 items-center justify-center overflow-auto bg-[#141417] p-4 sm:p-6">
+              <div className="relative aspect-[1024/555] w-full max-w-4xl overflow-hidden rounded-xl border border-zinc-700/80 bg-[#2d2d30] shadow-[0_20px_60px_rgba(0,0,0,0.8)]">
+                {/* Dynamically Replaced Viewport Design Screen */}
+                <div className="absolute top-[5.586%] left-0 h-[92.432%] w-[84.766%] overflow-hidden bg-zinc-950">
+                  <img
+                    src={viewportImg || "/sketchup-design-sample.png"}
+                    alt="Active Design Screen"
+                    className={cn(
+                      "h-full w-full transition-all duration-300 select-none",
+                      previewFitMode === "cover"
+                        ? "object-cover"
+                        : "object-contain"
+                    )}
+                  />
+                </div>
+
+                {/* Exact Authentic SketchUp Chrome Frame (Menu, Toolbars, Tray, Status) */}
+                <img
+                  src="/sketchup-frame-cutout.png"
+                  alt="SketchUp UI Frame"
+                  className="pointer-events-none absolute inset-0 h-full w-full select-none"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-zinc-800 bg-zinc-950 px-4 py-3 sm:flex-row">
+              <div className="flex items-center gap-2 text-xs text-zinc-400">
+                <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                <span>
+                  Active design:{" "}
+                  <strong className="text-white">
+                    {viewportImg
+                      ? "Your Uploaded Viewport"
+                      : "Default Kitchen Scene"}
+                  </strong>
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowSketchupPreview(false)}
+                  className="cursor-pointer rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSketchupPreview(false);
+                    handleLaunchStudio();
+                  }}
+                  className="flex cursor-pointer items-center gap-2 rounded-lg bg-white px-5 py-2 text-xs font-black text-black shadow-lg transition-all hover:bg-zinc-200"
+                >
+                  <span>Launch Studio with this Design</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
