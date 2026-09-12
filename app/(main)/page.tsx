@@ -24,6 +24,7 @@ import { GoogleAuth } from "@/components/google-auth";
 import { AnimatedLogo } from "@/components/animated-logo";
 import { SectionCTA } from "@/components/ui/section-cta";
 import { NavbarActions } from "@/components/navbar-actions";
+import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 import { CinematicFooter } from "@/components/ui/motion-footer";
 const StatsDashboard = dynamic(
@@ -167,120 +168,142 @@ export default function HomePage() {
 
         <div className="mx-auto w-full max-w-7xl space-y-6 px-3 py-3 pb-8 sm:space-y-16 sm:px-6 sm:py-12 sm:pb-20 lg:space-y-24 lg:px-12 lg:py-20 xl:px-16">
           {/* ── How it works (Complete Workflow in 3 Simple Steps) ─ */}
-          <section
-            id="how-it-works"
-            className="cv-auto bg-background rounded-xl border px-3 py-5 sm:rounded-2xl sm:px-12 sm:py-12 lg:px-20 lg:py-20"
-          >
-            <div className="mb-4 text-center sm:mb-10 lg:mb-16">
-              <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                From SketchUp to 4K Renders in 3 Steps
-              </h2>
-              <p className="text-muted-foreground mt-1.5 text-xs sm:mt-2 sm:text-base lg:mt-3 lg:text-lg">
-                No render queues, complex node graphs, or export bottlenecks.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3 sm:gap-8 lg:gap-14">
-              {steps.map((s) => (
-                <div
-                  key={s.number}
-                  className="flex flex-col items-center gap-3 text-center sm:gap-4 lg:gap-6"
-                >
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-full border before:absolute before:-inset-1.5 before:rounded-full before:border sm:h-12 sm:w-12 lg:h-20 lg:w-20 dark:border-white/10 dark:before:border-white/5">
-                    <s.icon
-                      className="h-4 w-4 sm:h-5 sm:w-5 lg:h-8 lg:w-8"
-                      strokeWidth={1.5}
-                    />
+          <ScrollReveal>
+            <section
+              id="how-it-works"
+              className="cv-auto bg-background rounded-xl border px-3 py-5 sm:rounded-2xl sm:px-12 sm:py-12 lg:px-20 lg:py-20"
+            >
+              <div className="mb-4 text-center sm:mb-10 lg:mb-16">
+                <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                  From SketchUp to 4K Renders in 3 Steps
+                </h2>
+                <p className="text-muted-foreground mt-1.5 text-xs sm:mt-2 sm:text-base lg:mt-3 lg:text-lg">
+                  No render queues, complex node graphs, or export bottlenecks.
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3 sm:gap-8 lg:gap-14">
+                {steps.map((s) => (
+                  <div
+                    key={s.number}
+                    className="flex flex-col items-center gap-3 text-center sm:gap-4 lg:gap-6"
+                  >
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-full border before:absolute before:-inset-1.5 before:rounded-full before:border sm:h-12 sm:w-12 lg:h-20 lg:w-20 dark:border-white/10 dark:before:border-white/5">
+                      <s.icon
+                        className="h-4 w-4 sm:h-5 sm:w-5 lg:h-8 lg:w-8"
+                        strokeWidth={1.5}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase sm:text-xs">
+                        {s.number}
+                      </p>
+                      <p className="mt-1 text-base font-bold sm:text-lg lg:mt-2 lg:text-xl">
+                        {s.title}
+                      </p>
+                      <p className="text-muted-foreground mt-1 text-xs leading-relaxed sm:mt-1.5 sm:text-sm sm:leading-6 lg:mt-2 lg:text-base">
+                        {s.body}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground text-[11px] font-semibold tracking-widest uppercase sm:text-xs">
-                      {s.number}
-                    </p>
-                    <p className="mt-1 text-base font-bold sm:text-lg lg:mt-2 lg:text-xl">
-                      {s.title}
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-xs leading-relaxed sm:mt-1.5 sm:text-sm sm:leading-6 lg:mt-2 lg:text-base">
-                      {s.body}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          </ScrollReveal>
 
           {/* ── CTA after How It Works ────────────────────── */}
-          <SectionCTA />
+          <ScrollReveal delay={0.05}>
+            <SectionCTA />
+          </ScrollReveal>
 
           {/* ── Stats dashboard ───────────────────────────────── */}
-          <div className="cv-auto">
-            <StatsDashboard />
-          </div>
+          <ScrollReveal>
+            <div className="cv-auto">
+              <StatsDashboard />
+            </div>
+          </ScrollReveal>
 
           {/* ── Before / After cards ─────────────────────────── */}
-          <div className="cv-auto flex justify-center py-1 sm:py-3">
-            <BeforeAfterCards />
-          </div>
+          <ScrollReveal>
+            <div className="cv-auto flex justify-center py-1 sm:py-3">
+              <BeforeAfterCards />
+            </div>
+          </ScrollReveal>
 
           {/* ── CTA after Before/After ────────────────────── */}
-          <SectionCTA />
+          <ScrollReveal delay={0.05}>
+            <SectionCTA />
+          </ScrollReveal>
 
           {/* ── Features Grid Section ────────────────────────── */}
-          <section id="features" className="cv-auto space-y-3.5 sm:space-y-8">
-            <div className="text-center">
-              <div className="border-primary/30 bg-primary/10 text-primary mb-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider uppercase sm:mb-3 sm:px-4 sm:text-xs">
-                <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Built for
-                Architects & Designers
+          <ScrollReveal>
+            <section id="features" className="cv-auto space-y-3.5 sm:space-y-8">
+              <div className="text-center">
+                <div className="border-primary/30 bg-primary/10 text-primary mb-2 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider uppercase sm:mb-3 sm:px-4 sm:text-xs">
+                  <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> Built for
+                  Architects & Designers
+                </div>
+                <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
+                  Why Leading Studios Replaced Heavy Render Farms
+                </h2>
+                <p className="text-muted-foreground mx-auto mt-1.5 max-w-2xl text-xs leading-relaxed sm:mt-3 sm:text-base lg:text-lg">
+                  Stop losing hours to trial-and-error lighting passes and
+                  frozen laptops.
+                </p>
               </div>
-              <h2 className="text-xl font-black tracking-tight sm:text-3xl lg:text-4xl xl:text-5xl">
-                Why Leading Studios Replaced Heavy Render Farms
-              </h2>
-              <p className="text-muted-foreground mx-auto mt-1.5 max-w-2xl text-xs leading-relaxed sm:mt-3 sm:text-base lg:text-lg">
-                Stop losing hours to trial-and-error lighting passes and frozen
-                laptops.
-              </p>
-            </div>
 
-            <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
-              {features.map((f, i) => (
-                <Card
-                  key={i}
-                  className="border-border/60 bg-card/60 hover:border-foreground/30 relative overflow-hidden rounded-lg backdrop-blur-sm transition-all hover:shadow-lg sm:rounded-2xl"
-                >
-                  <CardContent className="flex flex-col gap-2 p-3.5 sm:gap-3.5 sm:p-6">
-                    <div className="bg-primary/10 text-primary border-primary/20 flex h-8 w-8 items-center justify-center rounded-lg border sm:h-11 sm:w-11 sm:rounded-xl">
-                      <f.icon className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
-                    </div>
-                    <h3 className="text-foreground text-base font-bold tracking-tight sm:text-lg lg:text-xl">
-                      {f.title}
-                    </h3>
-                    <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm lg:text-[15px]">
-                      {f.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
+              <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+                {features.map((f, i) => (
+                  <Card
+                    key={i}
+                    className="border-border/60 bg-card/60 hover:border-foreground/30 relative overflow-hidden rounded-lg backdrop-blur-sm transition-all hover:shadow-lg sm:rounded-2xl"
+                  >
+                    <CardContent className="flex flex-col gap-2 p-3.5 sm:gap-3.5 sm:p-6">
+                      <div className="bg-primary/10 text-primary border-primary/20 flex h-8 w-8 items-center justify-center rounded-lg border sm:h-11 sm:w-11 sm:rounded-xl">
+                        <f.icon className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
+                      </div>
+                      <h3 className="text-foreground text-base font-bold tracking-tight sm:text-lg lg:text-xl">
+                        {f.title}
+                      </h3>
+                      <p className="text-muted-foreground text-xs leading-relaxed sm:text-sm lg:text-[15px]">
+                        {f.description}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          </ScrollReveal>
 
           {/* ── CTA after Features ────────────────────────── */}
-          <SectionCTA />
+          <ScrollReveal delay={0.05}>
+            <SectionCTA />
+          </ScrollReveal>
 
           {/* ── Funding announcement (Pricing Offer) ───────────── */}
-          <div id="pricing" className="cv-auto">
-            <FundingAnnouncement />
-          </div>
+          <ScrollReveal>
+            <div id="pricing" className="cv-auto">
+              <FundingAnnouncement />
+            </div>
+          </ScrollReveal>
 
           {/* ── Trusted by ────────────────────────────────── */}
-          <div className="cv-auto">
-            <TrustedBySection />
-          </div>
+          <ScrollReveal>
+            <div className="cv-auto">
+              <TrustedBySection />
+            </div>
+          </ScrollReveal>
 
           {/* ── Testimonials ──────────────────────────────── */}
-          <div className="cv-auto">
-            <TestimonialsSection />
-          </div>
+          <ScrollReveal>
+            <div className="cv-auto">
+              <TestimonialsSection />
+            </div>
+          </ScrollReveal>
 
           {/* ── Final CTA before Footer ───────────────────── */}
-          <SectionCTA className="pt-2 pb-4 sm:pb-8" />
+          <ScrollReveal delay={0.05}>
+            <SectionCTA className="pt-2 pb-4 sm:pb-8" />
+          </ScrollReveal>
         </div>
       </div>
 

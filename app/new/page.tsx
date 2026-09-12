@@ -2280,7 +2280,16 @@ export default function SamplePluginRendererPage() {
                     {previewMode === "video" && hasRenderedVideo ? (
                       <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black/60 p-1.5">
                         <video
-                          ref={videoRef}
+                          ref={(el) => {
+                            videoRef.current = el;
+                            if (el) {
+                              el.muted = true;
+                              el.defaultMuted = true;
+                              el.setAttribute("playsinline", "");
+                              el.setAttribute("webkit-playsinline", "");
+                              el.play().catch(() => {});
+                            }
+                          }}
                           key={renderVideo}
                           src={renderVideo}
                           controls
@@ -2289,6 +2298,7 @@ export default function SamplePluginRendererPage() {
                           muted
                           playsInline
                           preload="auto"
+                          controlsList="nodownload"
                           className="h-full w-full rounded-lg object-contain"
                           onError={() => {
                             console.warn(

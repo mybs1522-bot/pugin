@@ -24,7 +24,7 @@ export function LiveDemoSection() {
           <div className="relative w-full overflow-hidden rounded-2xl border bg-black/90 shadow-2xl">
             <div style={{ position: "relative", paddingTop: "56.25%" }}>
               <iframe
-                src="https://iframe.mediadelivery.net/embed/494628/68bbd0f4-e435-478c-af0d-8cd95b3a96a1?autoplay=true&loop=true&muted=true&preload=true&responsive=true"
+                src="https://iframe.mediadelivery.net/embed/494628/68bbd0f4-e435-478c-af0d-8cd95b3a96a1?autoplay=true&loop=true&muted=true&preload=true&responsive=true&playsinline=true"
                 loading="eager"
                 style={{
                   border: 0,
@@ -34,8 +34,9 @@ export function LiveDemoSection() {
                   height: "100%",
                   width: "100%",
                 }}
-                allow="accelerometer;gyroscope;autoplay;encrypted-media;picture-in-picture;fullscreen;"
+                allow="autoplay *; fullscreen *; encrypted-media *; picture-in-picture *; accelerometer; gyroscope"
                 allowFullScreen
+                title="V6 Render SketchUp Walkthrough Video"
               />
             </div>
           </div>

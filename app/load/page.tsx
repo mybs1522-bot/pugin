@@ -621,11 +621,21 @@ export default function LoadPluginImagesPage() {
               {renderVideo ? (
                 <>
                   <video
+                    ref={(el) => {
+                      if (el) {
+                        el.muted = true;
+                        el.defaultMuted = true;
+                        el.setAttribute("playsinline", "");
+                        el.setAttribute("webkit-playsinline", "");
+                        el.play().catch(() => {});
+                      }
+                    }}
                     src={renderVideo}
                     autoPlay
                     loop
                     muted
                     playsInline
+                    preload="auto"
                     className="h-full w-full object-contain p-2"
                   />
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
