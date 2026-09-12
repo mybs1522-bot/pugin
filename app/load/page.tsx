@@ -286,16 +286,6 @@ export default function LoadPluginImagesPage() {
     setIsLaunchingFullscreen(true);
     setCursorPhase("start");
 
-    // Optional browser fullscreen request
-    try {
-      if (
-        typeof document !== "undefined" &&
-        document.documentElement.requestFullscreen
-      ) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      }
-    } catch (_) {}
-
     // 2. Timeline sequence for exactly 2 seconds:
     // t = 100ms: Mouse pointer starts moving across screen to button '6' in the plugin bar
     const t1 = setTimeout(() => {
@@ -988,13 +978,6 @@ export default function LoadPluginImagesPage() {
                   {cursorPhase === "clicked" && (
                     <span className="absolute inset-0 animate-ping rounded-sm bg-blue-500/40" />
                   )}
-
-                  {/* Native SketchUp tooltip when hovered or clicked */}
-                  {(cursorPhase === "hover" || cursorPhase === "clicked") && (
-                    <div className="pointer-events-none absolute -bottom-7 left-1/2 z-40 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-900/95 px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap text-white shadow-lg">
-                      V6 Render · Click 6
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1039,16 +1022,6 @@ export default function LoadPluginImagesPage() {
               </div>
             </div>
 
-            {/* Status indicator pill at bottom */}
-            <div className="pointer-events-none absolute bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2.5 rounded-full border border-zinc-700 bg-zinc-950/90 px-4 py-1.5 shadow-2xl backdrop-blur-md">
-              <span className="flex h-2 w-2 animate-pulse rounded-full bg-blue-400" />
-              <span className="text-xs font-semibold text-zinc-200">
-                {cursorPhase === "clicked"
-                  ? "Launching Plugin Studio..."
-                  : "Clicking 6 in V6 Render Plugin Bar..."}
-              </span>
-            </div>
-
             {/* Fade transition before /new begins */}
             {cursorPhase === "launching" && (
               <div className="animate-in fade-in absolute inset-0 z-50 bg-black/40 backdrop-blur-xs duration-200" />
@@ -1056,6 +1029,21 @@ export default function LoadPluginImagesPage() {
           </div>
         </div>
       )}
+
+      {/* HIDE NEXT.JS DEV INDICATORS & FLOATING NOTIFICATION BADGES */}
+      <style jsx global>{`
+        nextjs-portal,
+        [data-nextjs-toast],
+        [data-nextjs-portal],
+        #nextjs-dev-indicator,
+        nextjs-dev-indicator,
+        div[data-nextjs-dialog-overlay] {
+          display: none !important;
+          opacity: 0 !important;
+          visibility: hidden !important;
+          pointer-events: none !important;
+        }
+      `}</style>
     </div>
   );
 }

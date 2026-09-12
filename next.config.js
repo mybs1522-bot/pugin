@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  devIndicators: false,
   transpilePackages: ["three", "@react-three/fiber"],
   images: {
     formats: ["image/avif", "image/webp"],
