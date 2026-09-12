@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,12 +15,10 @@ import {
   Rocket,
   Lock,
   AlertCircle,
-  Check,
   ShieldCheck,
   Download,
   CreditCard,
   CheckCircle2,
-  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { event as fbEvent } from "@/lib/fpixel";
@@ -40,15 +38,15 @@ interface DownloadPricingModalProps {
 const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
-      color: "#ffffff",
+      color: "#09090b",
       fontFamily:
         'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontSmoothing: "antialiased",
       fontSize: "14px",
       "::placeholder": {
-        color: "#71717a",
+        color: "#a1a1aa",
       },
-      iconColor: "#ffffff",
+      iconColor: "#09090b",
     },
     invalid: {
       color: "#ef4444",
@@ -200,12 +198,12 @@ function CheckoutForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3.5 p-5 text-white sm:p-6"
+      className="flex flex-col gap-3.5 p-5 text-zinc-900 sm:p-6"
     >
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 pt-1">
         <div className="flex items-center gap-2.5">
-          <h3 className="text-xl font-black tracking-tight text-white sm:text-2xl">
+          <h3 className="text-xl font-black tracking-tight text-zinc-950 sm:text-2xl">
             {mode === "activate_pro" ? "Activate Pro Plan" : "Start Free Trial"}
           </h3>
           <div className="flex h-8 w-8 shrink-0 items-center justify-center">
@@ -219,7 +217,7 @@ function CheckoutForm({
             />
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-400">
+        <span className="shrink-0 rounded-full border border-emerald-600/30 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
           $0.00 Due Today
         </span>
       </div>
@@ -231,22 +229,22 @@ function CheckoutForm({
           type="button"
           onClick={() => setSelectedPlan("monthly")}
           className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-colors",
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
             selectedPlan === "monthly"
-              ? "border-white bg-zinc-900 text-white ring-1 ring-white"
-              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/40 hover:text-zinc-200"
+              ? "border-zinc-950 bg-zinc-100/90 text-zinc-950 shadow-sm ring-2 ring-zinc-950"
+              : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
           )}
         >
           <div className="flex w-full items-center justify-between gap-1">
-            <span className="text-[11px] font-bold tracking-wider text-white uppercase">
+            <span className="text-[11px] font-bold tracking-wider text-zinc-950 uppercase">
               Monthly
             </span>
-            <span className="text-sm font-black text-white">
+            <span className="text-sm font-black text-zinc-950">
               $20
-              <span className="text-[10px] font-normal text-zinc-400">/mo</span>
+              <span className="text-[10px] font-normal text-zinc-500">/mo</span>
             </span>
           </div>
-          <span className="mt-1 text-[11px] font-medium text-emerald-400">
+          <span className="mt-1 text-[11px] font-semibold text-emerald-600">
             14 Days Free
           </span>
         </button>
@@ -256,34 +254,34 @@ function CheckoutForm({
           type="button"
           onClick={() => setSelectedPlan("yearly")}
           className={cn(
-            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-colors",
+            "relative flex cursor-pointer flex-col justify-between rounded-xl border p-3 text-left transition-all",
             selectedPlan === "yearly"
-              ? "border-white bg-zinc-900 text-white ring-1 ring-white"
-              : "border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:bg-zinc-900/40 hover:text-zinc-200"
+              ? "border-zinc-950 bg-zinc-100/90 text-zinc-950 shadow-sm ring-2 ring-zinc-950"
+              : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900"
           )}
         >
           <div className="absolute -top-2.5 right-2">
-            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black text-black uppercase">
+            <span className="rounded-full bg-zinc-950 px-2 py-0.5 text-[9px] font-black text-white uppercase shadow-sm">
               Save 25%
             </span>
           </div>
           <div className="flex w-full items-center justify-between gap-1">
-            <span className="text-[11px] font-bold tracking-wider text-white uppercase">
+            <span className="text-[11px] font-bold tracking-wider text-zinc-950 uppercase">
               Yearly
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-[10px] text-zinc-500 line-through">
+              <span className="text-[10px] text-zinc-400 line-through">
                 $240
               </span>
-              <span className="text-sm font-black text-white">
+              <span className="text-sm font-black text-zinc-950">
                 $180
-                <span className="text-[10px] font-normal text-zinc-400">
+                <span className="text-[10px] font-normal text-zinc-500">
                   /yr
                 </span>
               </span>
             </div>
           </div>
-          <span className="mt-1 text-[11px] font-medium text-emerald-400">
+          <span className="mt-1 text-[11px] font-semibold text-emerald-600">
             14 Days Free
           </span>
         </button>
@@ -291,7 +289,7 @@ function CheckoutForm({
 
       {/* Email Input */}
       <div className="space-y-1">
-        <label className="text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
+        <label className="text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
           Your Email Address
         </label>
         <input
@@ -304,24 +302,24 @@ function CheckoutForm({
           placeholder="you@company.com"
           required
           disabled={loading}
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-zinc-500 focus:ring-1 focus:ring-zinc-500 focus:outline-none disabled:opacity-50"
+          className="w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-3.5 py-2.5 text-sm text-zinc-900 transition-colors placeholder:text-zinc-400 focus:border-zinc-950 focus:bg-white focus:ring-1 focus:ring-zinc-950 focus:outline-none disabled:opacity-50"
         />
       </div>
 
       {/* On-Page Card Details */}
       <div className="space-y-1">
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-400 uppercase">
-            <CreditCard className="h-3.5 w-3.5 text-zinc-300" />
+          <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
+            <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
             Card Information
           </label>
-          <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+          <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
             <ShieldCheck className="h-3.5 w-3.5" />
             $0.00 Today
           </span>
         </div>
 
-        <div className="rounded-xl border border-zinc-800 bg-zinc-950/80 p-3 shadow-inner focus-within:border-zinc-500 focus-within:ring-1 focus-within:ring-zinc-500">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 shadow-sm transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
           <CardElement
             options={CARD_ELEMENT_OPTIONS}
             onChange={(e) => {
@@ -334,27 +332,27 @@ function CheckoutForm({
 
       {/* Error display */}
       {errorMessage && (
-        <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+        <div className="flex items-start gap-2 rounded-xl border border-red-500/30 bg-red-50 p-2.5 text-xs text-red-600">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
           <span>{errorMessage}</span>
         </div>
       )}
 
-      {/* Primary CTA Button */}
+      {/* Primary CTA Button (Inverted: Black button with white text) */}
       <Button
         type="submit"
         size="lg"
         disabled={loading}
-        className="h-12 w-full cursor-pointer gap-2 bg-white text-sm font-extrabold text-black shadow-lg transition-all hover:bg-zinc-200 active:scale-[0.99] disabled:opacity-60"
+        className="h-12 w-full cursor-pointer gap-2 rounded-xl bg-zinc-950 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-zinc-800 active:scale-[0.99] disabled:opacity-60"
       >
         {loading ? (
           <span className="flex items-center gap-2">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-black/30 border-t-black" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
             <span>Activating 14-Day Free Trial...</span>
           </span>
         ) : (
           <>
-            <Rocket className="h-4 w-4 text-black" strokeWidth={2.5} />
+            <Rocket className="h-4 w-4 text-white" strokeWidth={2.5} />
             <span>Start 14-Day Free Trial</span>
           </>
         )}
@@ -362,9 +360,9 @@ function CheckoutForm({
 
       {/* Trust & Guarantee Footer */}
       <div className="flex flex-col items-center justify-center gap-1 pt-0.5 text-center">
-        <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-          <span className="flex items-center gap-1 text-zinc-400">
-            <Lock className="h-3 w-3" /> 256-Bit SSL Encrypted
+        <div className="flex items-center gap-2 text-[11px] text-zinc-600">
+          <span className="flex items-center gap-1 text-zinc-600">
+            <Lock className="h-3 w-3 text-zinc-500" /> 256-Bit SSL Encrypted
           </span>
           <span>•</span>
           <span>Cancel anytime with 1 click</span>
@@ -395,18 +393,18 @@ function SuccessView({
   };
 
   return (
-    <div className="flex flex-col items-center gap-4 p-6 text-center text-white sm:p-7">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40">
+    <div className="flex flex-col items-center gap-4 p-6 text-center text-zinc-900 sm:p-7">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 ring-1 ring-emerald-500/30">
         <CheckCircle2 className="h-8 w-8" />
       </div>
 
       <div className="space-y-1">
-        <h3 className="text-2xl font-black tracking-tight text-white">
+        <h3 className="text-2xl font-black tracking-tight text-zinc-950">
           14-Day Free Trial Activated!
         </h3>
-        <p className="text-xs text-zinc-400">
+        <p className="text-xs text-zinc-600">
           Unlimited 4K photorealistic renders unlocked for{" "}
-          <span className="font-semibold text-white">{email}</span>.
+          <span className="font-semibold text-zinc-950">{email}</span>.
         </p>
       </div>
 
@@ -414,49 +412,49 @@ function SuccessView({
       <div className="w-full space-y-2 pt-1">
         <Button
           onClick={downloadPlugin}
-          className="h-12 w-full gap-2 rounded-xl bg-white text-sm font-extrabold text-black shadow-lg transition-all hover:bg-zinc-200"
+          className="h-12 w-full gap-2 rounded-xl bg-zinc-950 text-sm font-extrabold text-white shadow-lg transition-all hover:bg-zinc-800"
         >
-          <Download className="h-4 w-4 text-black" strokeWidth={2.5} />
+          <Download className="h-4 w-4 text-white" strokeWidth={2.5} />
           <span>Download v6_render.rbz</span>
         </Button>
-        <p className="text-[11px] text-zinc-400">
+        <p className="text-[11px] text-zinc-500">
           Browser should download automatically · macOS & Windows Universal
         </p>
       </div>
 
       {/* 3-Step Installation Guide */}
-      <div className="w-full space-y-2.5 rounded-xl border border-zinc-800/90 bg-zinc-900/40 p-3.5 text-left">
-        <p className="text-[11px] font-bold tracking-wider text-zinc-300 uppercase">
+      <div className="w-full space-y-2.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-left">
+        <p className="text-[11px] font-bold tracking-wider text-zinc-800 uppercase">
           Quick 3-Step Setup in SketchUp:
         </p>
-        <div className="space-y-2 text-xs text-zinc-400">
+        <div className="space-y-2 text-xs text-zinc-600">
           <div className="flex items-start gap-2">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[11px] font-bold text-white">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[11px] font-bold text-zinc-900">
               1
             </span>
             <span>
               Open SketchUp → Go to{" "}
-              <strong className="text-zinc-200">Extensions</strong> →{" "}
-              <strong className="text-zinc-200">Extension Manager</strong>.
+              <strong className="text-zinc-900">Extensions</strong> →{" "}
+              <strong className="text-zinc-900">Extension Manager</strong>.
             </span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[11px] font-bold text-white">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[11px] font-bold text-zinc-900">
               2
             </span>
             <span>
-              Click <strong className="text-zinc-200">Install Extension</strong>{" "}
+              Click <strong className="text-zinc-900">Install Extension</strong>{" "}
               and select the downloaded{" "}
-              <strong className="text-zinc-200">v6_render.rbz</strong>.
+              <strong className="text-zinc-900">v6_render.rbz</strong>.
             </span>
           </div>
           <div className="flex items-start gap-2">
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-[11px] font-bold text-white">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[11px] font-bold text-zinc-900">
               3
             </span>
             <span>
               Enter your email (
-              <strong className="text-zinc-200">{email}</strong>) in the plugin
+              <strong className="text-zinc-900">{email}</strong>) in the plugin
               window to start rendering!
             </span>
           </div>
@@ -466,7 +464,7 @@ function SuccessView({
       <Button
         variant="ghost"
         onClick={onClose}
-        className="w-full text-xs text-zinc-400 hover:text-white"
+        className="w-full text-xs text-zinc-500 hover:text-zinc-900"
       >
         Close window
       </Button>
@@ -509,7 +507,7 @@ export function DownloadPricingModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-[calc(100%-2rem)] max-w-[460px] overflow-hidden rounded-2xl border-zinc-800/80 bg-[#09090b] p-0 text-white shadow-2xl focus:outline-none">
+      <DialogContent className="w-[calc(100%-2rem)] max-w-[460px] overflow-hidden rounded-2xl border-zinc-200 bg-white p-0 text-zinc-900 shadow-2xl focus:outline-none [&>button]:border-zinc-200 [&>button]:bg-zinc-100 [&>button]:text-zinc-700 hover:[&>button]:bg-zinc-200">
         <DialogTitle className="sr-only">Start Free Trial</DialogTitle>
         {successData ? (
           <SuccessView email={successData.email} onClose={handleClose} />
