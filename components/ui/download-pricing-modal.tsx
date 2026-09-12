@@ -448,8 +448,8 @@ function CheckoutForm({
           </span>
         ) : (
           <>
-            <Rocket className="h-4 w-4 text-white" strokeWidth={2.5} />
-            <span>Start 14-Day Free Trial</span>
+            <Download className="h-4 w-4 text-white" strokeWidth={2.5} />
+            <span>Download Plugin</span>
           </>
         )}
       </Button>
