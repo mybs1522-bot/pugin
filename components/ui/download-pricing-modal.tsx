@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Clock,
   Ticket,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { event as fbEvent } from "@/lib/fpixel";
@@ -343,16 +344,22 @@ function CheckoutForm({
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
-            14 Days Free · Billed $180/yr
+            14 Days Free
           </span>
         </button>
       </div>
 
       {/* Email Input */}
       <div className="space-y-1">
-        <label className="text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
-          Your Email Address
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-zinc-700 uppercase">
+            <Mail className="h-3.5 w-3.5 text-zinc-500" />
+            Account Email
+          </label>
+          <span className="text-[10px] font-medium text-zinc-400">
+            License sent here
+          </span>
+        </div>
         <input
           type="email"
           value={email}
@@ -367,14 +374,28 @@ function CheckoutForm({
         />
       </div>
 
+      {/* Professional Bifurcation Divider */}
+      <div className="relative my-0.5 flex items-center justify-center py-1">
+        <div className="w-full border-t border-zinc-200" />
+        <span className="absolute bg-white px-2.5 text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
+          Payment Details
+        </span>
+      </div>
+
       {/* On-Page Card Details (2 Lines) */}
       <div className="space-y-2">
         {/* Line 1: Card Number */}
         <div className="space-y-1">
-          <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
-            <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
-            Card Details
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-zinc-700 uppercase">
+              <CreditCard className="h-3.5 w-3.5 text-zinc-500" />
+              Card Information
+            </label>
+            <span className="flex items-center gap-1 text-[10px] font-medium text-zinc-400">
+              <Lock className="h-3 w-3 text-zinc-400" />
+              Encrypted
+            </span>
+          </div>
           <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-2.5 px-3 shadow-xs transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
             <CardNumberElement
               options={CARD_ELEMENT_OPTIONS}
