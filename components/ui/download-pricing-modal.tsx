@@ -8,7 +8,9 @@ import {
   Elements,
   useStripe,
   useElements,
-  CardElement,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
 } from "@stripe/react-stripe-js";
 import { getStripeClient } from "@/lib/stripe-client";
 import {
@@ -54,7 +56,7 @@ const CARD_ELEMENT_OPTIONS = {
       iconColor: "#ef4444",
     },
   },
-  hidePostalCode: false,
+  showIcon: true,
 };
 
 function useEvergreenCountdown() {
@@ -143,8 +145,8 @@ function CheckoutForm({
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
       setErrorMessage("Please enter your card details.");
       return;
     }
@@ -179,7 +181,7 @@ function CheckoutForm({
         setupData.clientSecret,
         {
           payment_method: {
-            card: cardElement,
+            card: cardNumberElement,
             billing_details: {
               email: normEmail,
             },
@@ -270,27 +272,6 @@ function CheckoutForm({
         <span className="shrink-0 rounded-full border border-emerald-600/30 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700">
           $0.00 Due Today
         </span>
-      </div>
-
-      {/* Sleek Evergreen Timer (Optimized for Phone) */}
-      <div className="flex items-center justify-between gap-1.5 rounded-lg border border-amber-500/25 bg-amber-50/80 px-2.5 py-1 text-amber-950 shadow-xs">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <Clock className="h-3 w-3 shrink-0 animate-pulse text-amber-600" />
-          <span className="truncate text-[11px] font-semibold text-amber-900">
-            Offer Ends in
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap text-zinc-950 tabular-nums">
-          <span className="hidden sm:inline">
-            {timer.days} Days {timer.hours} Hours {timer.minutes} Mins
-          </span>
-          <span className="sm:hidden">
-            {timer.days}d {timer.hours}h {timer.minutes}m
-          </span>
-          <span className="py-0.2 rounded border border-amber-500/20 bg-white px-1 text-[10px] text-amber-700">
-            {timer.seconds}s
-          </span>
-        </div>
       </div>
 
       {/* Plan Selector */}
@@ -389,27 +370,59 @@ function CheckoutForm({
         />
       </div>
 
-      {/* On-Page Card Details */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
-            <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
-            Card Information
-          </label>
-          <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            $0.00 Today
-          </span>
+      {/* On-Page Card Details (2 Lines) */}
+      <div className="space-y-2">
+        {/* Line 1: Card Number */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wider text-zinc-700 uppercase">
+              <CreditCard className="h-3.5 w-3.5 text-zinc-700" />
+              Card Details
+            </label>
+            <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              $0.00 Today
+            </span>
+          </div>
+          <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-2.5 px-3 shadow-xs transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
+            <CardNumberElement
+              options={CARD_ELEMENT_OPTIONS}
+              onChange={(e) => {
+                setCardComplete(e.complete);
+                if (errorMessage) setErrorMessage(null);
+              }}
+            />
+          </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 shadow-sm transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
-          <CardElement
-            options={CARD_ELEMENT_OPTIONS}
-            onChange={(e) => {
-              setCardComplete(e.complete);
-              if (errorMessage) setErrorMessage(null);
-            }}
-          />
+        {/* Line 2: Expiration Date & CVC */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold tracking-wider text-zinc-600 uppercase">
+              Expires (MM/YY)
+            </label>
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-2.5 px-3 shadow-xs transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
+              <CardExpiryElement
+                options={CARD_ELEMENT_OPTIONS}
+                onChange={() => {
+                  if (errorMessage) setErrorMessage(null);
+                }}
+              />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-semibold tracking-wider text-zinc-600 uppercase">
+              CVC / CVV
+            </label>
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-2.5 px-3 shadow-xs transition-colors focus-within:border-zinc-950 focus-within:bg-white focus-within:ring-1 focus-within:ring-zinc-950">
+              <CardCvcElement
+                options={CARD_ELEMENT_OPTIONS}
+                onChange={() => {
+                  if (errorMessage) setErrorMessage(null);
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -421,7 +434,7 @@ function CheckoutForm({
         </div>
       )}
 
-      {/* Primary CTA Button (Inverted: Black button with white text) */}
+      {/* Primary CTA Button */}
       <Button
         type="submit"
         size="lg"
@@ -440,6 +453,27 @@ function CheckoutForm({
           </>
         )}
       </Button>
+
+      {/* Sleek Evergreen Timer (Sitting just below CTA button) */}
+      <div className="flex items-center justify-between gap-1.5 rounded-lg border border-amber-500/25 bg-amber-50/80 px-2.5 py-1 text-amber-950 shadow-xs">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <Clock className="h-3 w-3 shrink-0 animate-pulse text-amber-600" />
+          <span className="truncate text-[11px] font-semibold text-amber-900">
+            Offer Ends in
+          </span>
+        </div>
+        <div className="flex items-center gap-1 text-[11px] font-bold whitespace-nowrap text-zinc-950 tabular-nums">
+          <span className="hidden sm:inline">
+            {timer.days} Days {timer.hours} Hours {timer.minutes} Mins
+          </span>
+          <span className="sm:hidden">
+            {timer.days}d {timer.hours}h {timer.minutes}m
+          </span>
+          <span className="py-0.2 rounded border border-amber-500/20 bg-white px-1 text-[10px] text-amber-700">
+            {timer.seconds}s
+          </span>
+        </div>
+      </div>
 
       {/* Trust & Guarantee Footer */}
       <div className="flex flex-col items-center justify-center gap-1 pt-0.5 text-center">
