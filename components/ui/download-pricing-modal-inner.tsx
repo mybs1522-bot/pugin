@@ -513,7 +513,7 @@ function CheckoutForm({
         ) : (
           <>
             <Download className="h-4 w-4 text-white" strokeWidth={2.5} />
-            <span>Start 7-Day Free Trial &amp; Download</span>
+            <span>Download Sketchup Plugin</span>
           </>
         )}
       </Button>
