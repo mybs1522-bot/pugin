@@ -477,10 +477,15 @@ function CheckoutForm({
               ||| |||| || |||
             </span>
           </div>
+          <span className="text-[10px] font-bold text-zinc-600">
+            {selectedPlan === "monthly"
+              ? "Then $7/Month"
+              : "Then $63/Year ($5.25/mo)"}
+          </span>
         </div>
 
         {/* Perforation Divider */}
-        <div className="h-8 w-px shrink-0 border-r border-dashed border-zinc-300" />
+        <div className="h-9 w-px shrink-0 border-r border-dashed border-zinc-300" />
 
         {/* Ticket Right Section (Order Total $0) */}
         <div className="flex shrink-0 flex-col items-end text-right">
@@ -494,6 +499,9 @@ function CheckoutForm({
           </div>
           <span className="text-[9px] font-semibold text-zinc-500">
             Due today
+          </span>
+          <span className="text-[9px] font-bold text-zinc-600">
+            {selectedPlan === "monthly" ? "Then $7/Month" : "Then $63/Year"}
           </span>
         </div>
       </div>
