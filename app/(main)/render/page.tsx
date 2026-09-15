@@ -44,7 +44,7 @@ function SubscribedToast() {
 
     if (isSubscribed) {
       toast.success(
-        "🎉 Welcome! Your 14-day free trial has started. Unlimited renders unlocked!"
+        "🎉 Welcome! Your 7-day free trial has started. Unlimited renders unlocked!"
       );
       try {
         localStorage.setItem("v6_is_paid", "true");

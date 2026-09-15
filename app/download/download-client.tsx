@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Download,
   CheckCircle2,
@@ -14,10 +15,19 @@ import {
   ArrowRight,
   Laptop,
   Check,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 
 export function DownloadClient() {
+  const searchParams = useSearchParams();
+  const platformParam = (
+    searchParams.get("platform") === "mac" ? "mac" : "windows"
+  ) as "windows" | "mac";
+
+  const [isPaid, setIsPaid] = useState(false);
+  const [pricingOpen, setPricingOpen] = useState(false);
   const [downloadTriggered, setDownloadTriggered] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -36,12 +46,30 @@ export function DownloadClient() {
   };
 
   useEffect(() => {
-    // Automatically trigger the download shortly after page load
-    const timer = setTimeout(() => {
+    const paidInStorage = localStorage.getItem("v6_is_paid") === "true";
+    const paidInParam =
+      searchParams.get("paid") === "true" ||
+      searchParams.get("download") === "1";
+    const alreadyPaid = paidInStorage || paidInParam;
+    setIsPaid(alreadyPaid);
+
+    if (!alreadyPaid) {
+      setPricingOpen(true);
+    } else {
+      const timer = setTimeout(() => {
+        triggerDownload();
+      }, 700);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+
+  const handlePrimaryAction = () => {
+    if (isPaid) {
       triggerDownload();
-    }, 700);
-    return () => clearTimeout(timer);
-  }, []);
+    } else {
+      setPricingOpen(true);
+    }
+  };
 
   const copyUrl = () => {
     try {
@@ -53,6 +81,21 @@ export function DownloadClient() {
 
   return (
     <div className="selection:bg-primary min-h-screen bg-zinc-950 text-zinc-100 selection:text-white">
+      <DownloadPricingModal
+        open={pricingOpen}
+        onOpenChange={(open) => {
+          setPricingOpen(open);
+          if (
+            !open &&
+            typeof window !== "undefined" &&
+            localStorage.getItem("v6_is_paid") === "true"
+          ) {
+            setIsPaid(true);
+            setDownloadTriggered(true);
+          }
+        }}
+        platform={platformParam}
+      />
       {/* Top Simple Navigation */}
       <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
@@ -91,27 +134,43 @@ export function DownloadClient() {
         <div className="space-y-4 text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400">
             <CheckCircle2 className="h-3.5 w-3.5" />
-            <span>14-Day Free Trial Active · Plugin Ready</span>
+            <span>
+              {isPaid
+                ? "7-Day Free Trial Active · Plugin Ready"
+                : "7-Day Free Trial · $0 Due Today"}
+            </span>
           </div>
 
           <h1 className="text-3xl font-black tracking-tight text-white sm:text-5xl">
             Install V6 Render for SketchUp
           </h1>
           <p className="mx-auto max-w-2xl text-sm leading-relaxed text-zinc-400 sm:text-base">
-            Your download should start automatically. Follow the 3 quick steps
-            below to load the extension into SketchUp and start photorealistic
-            cloud rendering.
+            {isPaid
+              ? "Your download should start automatically. Follow the 3 quick steps below to load the extension into SketchUp and start photorealistic cloud rendering."
+              : "Start your 7-day free trial ($0 due today) to download the v6_render.rbz extension and unlock unlimited photorealistic cloud rendering in SketchUp."}
           </p>
 
           {/* Primary Download Button & File Info */}
           <div className="flex flex-col items-center justify-center gap-3 pt-2 pb-4">
             <Button
               size="lg"
-              onClick={triggerDownload}
+              onClick={handlePrimaryAction}
               className="h-14 cursor-pointer gap-3 rounded-xl bg-white px-8 text-base font-extrabold text-zinc-950 shadow-xl transition-all hover:scale-[1.02] hover:bg-zinc-200 active:scale-[0.99]"
             >
-              <Download className="h-5 w-5 text-zinc-950" strokeWidth={2.5} />
-              <span>Download v6_render.rbz</span>
+              {isPaid ? (
+                <>
+                  <Download
+                    className="h-5 w-5 text-zinc-950"
+                    strokeWidth={2.5}
+                  />
+                  <span>Download v6_render.rbz</span>
+                </>
+              ) : (
+                <>
+                  <Rocket className="h-5 w-5 text-zinc-950" strokeWidth={2.5} />
+                  <span>Start 7-Day Free Trial &amp; Download</span>
+                </>
+              )}
               <span className="rounded-md bg-zinc-200 px-2 py-0.5 text-xs font-bold text-zinc-800">
                 710 KB
               </span>

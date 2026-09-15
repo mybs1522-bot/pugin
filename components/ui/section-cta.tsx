@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { PlatformBadge } from "@/components/ui/platform-icons";
-import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 
 interface SectionCTAProps {
   className?: string;
@@ -12,22 +11,18 @@ interface SectionCTAProps {
 
 export function SectionCTA({
   className = "",
-  subtext = "14-Day Free Trial · Cancel anytime",
+  subtext = "7-Day Free Trial · Cancel anytime",
 }: SectionCTAProps) {
-  const [pricingOpen, setPricingOpen] = useState(false);
-
   return (
-    <>
-      <DownloadPricingModal open={pricingOpen} onOpenChange={setPricingOpen} />
-      <div
-        className={`flex flex-col items-center justify-center px-4 py-3 sm:py-5 ${className}`}
-      >
-        {/* Windows & Mac icons */}
-        <PlatformBadge className="mb-2" />
+    <div
+      className={`flex flex-col items-center justify-center px-4 py-3 sm:py-5 ${className}`}
+    >
+      {/* Windows & Mac icons */}
+      <PlatformBadge className="mb-2" />
 
-        {/* 3D Rectangular Tactile CTA Button */}
+      {/* 3D Rectangular Tactile CTA Button */}
+      <Link href="/download">
         <motion.button
-          onClick={() => setPricingOpen(true)}
           animate={{ scale: [1, 1.02, 1] }}
           transition={{
             duration: 2.8,
@@ -42,14 +37,14 @@ export function SectionCTA({
             Download Plugin
           </span>
         </motion.button>
+      </Link>
 
-        {/* Subtext */}
-        {subtext && (
-          <p className="text-muted-foreground mt-2 text-center text-[11px] font-medium sm:text-xs">
-            {subtext}
-          </p>
-        )}
-      </div>
-    </>
+      {/* Subtext */}
+      {subtext && (
+        <p className="text-muted-foreground mt-2 text-center text-[11px] font-medium sm:text-xs">
+          {subtext}
+        </p>
+      )}
+    </div>
   );
 }

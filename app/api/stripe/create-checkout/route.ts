@@ -73,14 +73,14 @@ export async function POST(req: NextRequest) {
           ? {}
           : {
               trial_period_days: trialDays,
-              description: "V6 Render Pro 14-Day Free Trial",
+              description: "V6 Render Pro 7-Day Free Trial",
             },
       allow_promotion_codes: true,
       billing_address_collection: "auto",
       custom_text: {
         submit: {
           message:
-            "Start your 14-day free trial ($0.00 today). You will get instant access to download the SketchUp plugin.",
+            "Start your 7-day free trial ($0.00 today). You will get instant access to download the SketchUp plugin.",
         },
       },
       success_url:

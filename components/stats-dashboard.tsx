@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { MarketingDashboard } from "@/components/ui/dashboard-1";
-import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 import { useSharedUserCount } from "@/lib/user-counter";
 
 export function StatsDashboard() {
-  const [pricingOpen, setPricingOpen] = useState(false);
   const userCount = useSharedUserCount();
 
   return (
     <>
-      <DownloadPricingModal open={pricingOpen} onOpenChange={setPricingOpen} />
       <div className="flex justify-center">
         <MarketingDashboard
           title="Loved by 8,700+ SketchUp Designers in 90+ Countries"
@@ -44,7 +40,9 @@ export function StatsDashboard() {
           cta={{
             text: "Win more client pitches and save 10+ hours per revision with instant 4K architectural rendering",
             buttonText: "Download Plugin",
-            onButtonClick: () => setPricingOpen(true),
+            onButtonClick: () => {
+              window.location.href = "/download";
+            },
           }}
         />
       </div>

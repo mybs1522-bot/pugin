@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import Stripe from "stripe";
 import { setUserPaidStatus, setUserStatus } from "@/lib/usage";
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
         if (customerEmail && customerEmail.includes("@")) {
           const plan = (session.metadata && session.metadata.plan) || "monthly";
-          const modeLabel = `Stripe 14-Day Free Trial (${plan})`;
+          const modeLabel = `Stripe 7-Day Free Trial (${plan})`;
 
           console.log(
             `[Stripe Webhook] New checkout for: ${customerEmail}, plan: ${plan}`
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
           const isTrialing = sub.status === "trialing";
           const isActive = sub.status === "active" || isTrialing;
           const statusMode = isTrialing
-            ? "Stripe 14-Day Free Trial"
+            ? "Stripe 7-Day Free Trial"
             : "Stripe Pro Subscription";
 
           console.log(

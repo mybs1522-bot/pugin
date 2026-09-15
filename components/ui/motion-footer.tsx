@@ -7,7 +7,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
 import { LiveDemoSection } from "@/components/live-demo-section";
-import { DownloadPricingModal } from "@/components/ui/download-pricing-modal";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -328,24 +327,9 @@ export function CinematicFooter({
     return () => ctx.revert();
   }, []);
 
-  const [pricingOpen, setPricingOpen] = useState(false);
-  const [platform, setPlatform] = useState<"windows" | "mac">("windows");
-
-  function openPricing(p: "windows" | "mac") {
-    setPlatform(p);
-    setPricingOpen(true);
-  }
-
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: STYLES }} />
-      <DownloadPricingModal
-        open={pricingOpen}
-        onOpenChange={setPricingOpen}
-        platform={platform}
-        windowsHref={windowsHref}
-        macHref={macHref}
-      />
       <div
         ref={wrapperRef}
         className="relative w-full"
@@ -420,15 +404,15 @@ export function CinematicFooter({
             {/* Available For Both buttons */}
             <div className="mb-4 flex flex-col items-center gap-1.5 sm:mb-8 sm:gap-3">
               <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase sm:text-xs">
-                Start 14-Day Free Trial · $0 Due Today:
+                Start 7-Day Free Trial · $0 Due Today:
               </span>
               <div
                 ref={linksRef}
                 className="flex w-full max-w-md flex-row items-center justify-center gap-2 sm:w-auto sm:max-w-none sm:gap-4"
               >
                 <MagneticButton
-                  as="button"
-                  onClick={() => openPricing("windows")}
+                  as="a"
+                  href="/download?platform=windows"
                   className="footer-glass-pill text-foreground group flex flex-1 items-center justify-center gap-3 rounded-xl px-4 py-2 sm:w-72 sm:flex-initial sm:gap-4 sm:rounded-2xl sm:px-6 sm:py-2.5 md:w-80 lg:w-84 lg:py-3"
                 >
                   <WindowsIcon className="h-5 w-5 shrink-0 sm:h-6 sm:w-6" />
@@ -446,8 +430,8 @@ export function CinematicFooter({
                 </MagneticButton>
 
                 <MagneticButton
-                  as="button"
-                  onClick={() => openPricing("mac")}
+                  as="a"
+                  href="/download?platform=mac"
                   className="footer-glass-pill text-foreground group flex flex-1 items-center justify-center gap-3 rounded-xl px-4 py-2 sm:w-72 sm:flex-initial sm:gap-4 sm:rounded-2xl sm:px-6 sm:py-2.5 md:w-80 lg:w-84 lg:py-3"
                 >
                   <AppleIcon className="text-foreground h-5 w-5 shrink-0 sm:h-6 sm:w-6" />

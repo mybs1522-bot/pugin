@@ -60,7 +60,7 @@ export function PricingModal({ open, onClose, hadTrial = false }: Props) {
             <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
               {hadTrial
                 ? "Choose a plan to continue generating designs."
-                : "14-day free trial · unlimited renders · No charge until the trial ends — cancel anytime."}
+                : "7-day free trial · unlimited renders · No charge until the trial ends — cancel anytime."}
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -75,7 +75,7 @@ export function PricingModal({ open, onClose, hadTrial = false }: Props) {
               </p>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                  $20
+                  $7
                 </span>
                 <span className="text-sm text-zinc-400 dark:text-zinc-500">
                   / month
@@ -84,7 +84,7 @@ export function PricingModal({ open, onClose, hadTrial = false }: Props) {
               {!hadTrial && (
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400">
                   <Zap className="h-3 w-3 fill-current" />
-                  14-day free trial · unlimited renders
+                  7-day free trial · unlimited renders
                 </div>
               )}
             </div>
@@ -132,19 +132,19 @@ export function PricingModal({ open, onClose, hadTrial = false }: Props) {
               </p>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-5xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                  $180
+                  $63
                 </span>
                 <span className="text-sm text-zinc-400 dark:text-zinc-500">
                   / year
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
-                ≈ $15.00 / mo
+                ≈ $5.25 / mo
               </p>
               {!hadTrial && (
                 <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-green-200 bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 dark:border-green-800 dark:bg-green-950/50 dark:text-green-400">
                   <Zap className="h-3 w-3 fill-current" />
-                  14-day free trial · unlimited renders
+                  7-day free trial · unlimited renders
                 </div>
               )}
             </div>

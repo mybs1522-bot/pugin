@@ -27,19 +27,19 @@ export const stripe = new Proxy({} as Stripe, {
 export const PLANS = {
   monthly: {
     label: "Monthly",
-    price: "$20",
+    price: "$7",
     period: "/month",
     priceId:
       process.env.STRIPE_PRICE_MONTHLY_ID || "price_1U8IgWGGsoQTkhyvNRIEJSYO",
-    trialDays: 14,
+    trialDays: 7,
   },
   yearly: {
     label: "Yearly",
-    price: "$180",
+    price: "$63",
     period: "/year",
     priceId:
       process.env.STRIPE_PRICE_YEARLY_ID || "price_1U8IgWGGsoQTkhyv7R0hpRRr",
-    trialDays: 14,
+    trialDays: 7,
   },
 } as const;
 

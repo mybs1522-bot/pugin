@@ -159,12 +159,12 @@ export async function POST(req: NextRequest) {
     if (activeSub) {
       subscriptionId = activeSub.id;
     } else {
-      // 5. Create 14-day free trial subscription with automated anti-fraud settings
+      // 5. Create 7-day free trial subscription with automated anti-fraud settings
       const sub = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: selectedPlan.priceId }],
         default_payment_method: paymentMethodId,
-        trial_period_days: 14,
+        trial_period_days: selectedPlan.trialDays || 7,
         trial_settings: {
           end_behavior: {
             missing_payment_method: "cancel",
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     // 6. Register trial user in local store & mark as paid
     await registerTrialUser(email);
-    await setUserStatus(email, "trial", "Stripe 14-Day Trial (Card Saved)");
+    await setUserStatus(email, "trial", "Stripe 7-Day Trial (Card Saved)");
     await setUserPaidStatus(email, true);
 
     // Send welcome email with download links asynchronously
@@ -203,9 +203,9 @@ export async function POST(req: NextRequest) {
       subscriptionId,
       customerId,
       isTrial: true,
-      trialDays: 14,
+      trialDays: selectedPlan.trialDays || 7,
       message:
-        "14-Day Free Trial activated with card securely verified on file.",
+        "7-Day Free Trial activated with card securely verified on file.",
     });
   } catch (err: any) {
     console.error("Create Trial Subscription Error:", err);

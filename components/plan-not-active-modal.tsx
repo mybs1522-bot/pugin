@@ -56,7 +56,7 @@ export function PlanNotActiveModal({
             <DialogDescription className="text-sm text-zinc-500 dark:text-zinc-400">
               {hadTrial
                 ? "Activate your monthly plan to start generating renders."
-                : "Start your 14-day free trial to unlock unlimited renders and downloads."}
+                : "Start your 7-day free trial to unlock unlimited renders and downloads."}
             </DialogDescription>
           </DialogHeader>
 
@@ -85,7 +85,7 @@ export function PlanNotActiveModal({
           <p className="text-xs text-zinc-400 dark:text-zinc-600">
             {hadTrial
               ? "Secured by Stripe · Cancel anytime"
-              : "14-day free trial · No charge until trial ends · Cancel anytime"}
+              : "7-day free trial · No charge until trial ends · Cancel anytime"}
           </p>
         </div>
       </DialogContent>

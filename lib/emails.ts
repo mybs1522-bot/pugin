@@ -157,7 +157,7 @@ export async function sendWelcomeDownloadEmail(
 
   const text = `Hi,
 
-Thank you for choosing V6 Render. Your 14-day free trial is now active.
+Thank you for choosing V6 Render. Your 7-day free trial is now active.
 
 Click here to download your SketchUp extension and view the quick setup guide:
 ${downloadUrl}
@@ -184,7 +184,7 @@ https://www.v6render.com
 
 ---
 V6 Render · 548 Market St, Suite 35000, San Francisco, CA 94104
-You received this transactional email because you started a 14-day free trial of V6 Render on v6render.com.`;
+You received this transactional email because you started a 7-day free trial of V6 Render on v6render.com.`;
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -204,7 +204,7 @@ You received this transactional email because you started a 14-day free trial of
           <tr>
             <td style="padding-bottom:20px;border-bottom:1px solid #f4f4f5;">
               <h1 style="margin:0 0 6px;color:#09090b;font-size:22px;font-weight:800;letter-spacing:-0.4px;">V6 Render</h1>
-              <p style="margin:0;color:#059669;font-size:13px;font-weight:600;">14-Day Free Trial Activated · ${plan === "yearly" ? "Yearly VIP" : "Monthly"}</p>
+              <p style="margin:0;color:#059669;font-size:13px;font-weight:600;">7-Day Free Trial Activated · ${plan === "yearly" ? "Yearly VIP" : "Monthly"}</p>
             </td>
           </tr>
 
@@ -213,7 +213,7 @@ You received this transactional email because you started a 14-day free trial of
             <td style="padding:22px 0 16px;">
               <p style="margin:0 0 12px;color:#27272a;font-size:15px;line-height:1.6;">Hi,</p>
               <p style="margin:0 0 20px;color:#27272a;font-size:15px;line-height:1.6;">
-                Thank you for choosing V6 Render. Your 14-day free trial is officially active. You can download your SketchUp extension (.rbz file) and follow the installation steps using the button below:
+                Thank you for choosing V6 Render. Your 7-day free trial is officially active. You can download your SketchUp extension (.rbz file) and follow the installation steps using the button below:
               </p>
             </td>
           </tr>
@@ -239,33 +239,21 @@ You received this transactional email because you started a 14-day free trial of
               
               <table width="100%" border="0" cellspacing="0" cellpadding="0" style="font-size:13px;color:#3f3f46;line-height:1.6;">
                 <tr>
-                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">1.</td>
-                  <td style="padding-bottom:10px;">
-                    Open <strong>SketchUp</strong> on your computer.
+                  <td style="padding-bottom:12px;vertical-align:top;">
+                    <strong style="color:#09090b;">1. Open SketchUp:</strong> Go to <span style="background:#f4f4f5;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;">Extensions &rarr; Extension Manager</span>.
                   </td>
                 </tr>
                 <tr>
-                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">2.</td>
-                  <td style="padding-bottom:10px;">
-                    In the top menu bar, click <strong>Extensions → Extension Manager</strong> (or <em>Window → Extension Manager</em>).
+                  <td style="padding-bottom:12px;vertical-align:top;">
+                    <strong style="color:#09090b;">2. Install Extension:</strong> Click <em>&ldquo;Install Extension&rdquo;</em> in the bottom left and select the downloaded <span style="background:#f4f4f5;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;">v6_render.rbz</span>.
                   </td>
                 </tr>
                 <tr>
-                  <td width="26" valign="top" style="font-weight:800;color:#09090b;">3.</td>
-                  <td style="padding-bottom:2px;">
-                    Click the <strong>Install Extension</strong> button in the bottom left, and choose the downloaded <strong>v6_render.rbz</strong> file.
+                  <td style="vertical-align:top;">
+                    <strong style="color:#09090b;">3. Instant Activation:</strong> Open the V6 Render toolbar inside SketchUp, enter your email (<strong style="color:#09090b;">${email}</strong>), and type the 4-digit code sent to you to start rendering!
                   </td>
                 </tr>
               </table>
-            </td>
-          </tr>
-
-          <!-- How to Login -->
-          <tr>
-            <td style="padding:20px 0 12px;">
-              <p style="margin:0;color:#27272a;font-size:14px;line-height:1.6;">
-                <strong>How to sign in:</strong> Open V6 Render from your SketchUp toolbar, enter your registered email (<strong>${email}</strong>), and type the 4-digit code sent to your inbox to begin photorealistic rendering.
-              </p>
             </td>
           </tr>
 
@@ -279,7 +267,7 @@ You received this transactional email because you started a 14-day free trial of
                 V6 Render · 548 Market St, Suite 35000, San Francisco, CA 94104
               </p>
               <p style="margin:0;color:#a1a1aa;font-size:11px;">
-                You received this transactional service notification because you started a 14-day trial on v6render.com.
+                You received this transactional service notification because you started a 7-day trial on v6render.com.
               </p>
             </td>
           </tr>

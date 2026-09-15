@@ -157,7 +157,7 @@ function CheckoutForm({
     try {
       // 1. Track checkout initiation in Meta Pixel
       fbEvent("InitiateCheckout", {
-        value: selectedPlan === "yearly" ? 180 : 20,
+        value: selectedPlan === "yearly" ? 63 : 7,
         currency: "USD",
         content_name: `V6 Render ${selectedPlan} trial`,
         content_category: "subscription",
@@ -206,7 +206,7 @@ function CheckoutForm({
         );
       }
 
-      // 4. Create 14-day free trial subscription
+      // 4. Create 7-day free trial subscription
       const subRes = await fetch("/api/stripe/create-trial-subscription", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -219,7 +219,7 @@ function CheckoutForm({
 
       const subData = await subRes.json();
       if (!subRes.ok || subData.error) {
-        throw new Error(subData.error || "Failed to activate 14-day trial.");
+        throw new Error(subData.error || "Failed to activate 7-day trial.");
       }
 
       // 5. Store trial state in local storage
@@ -234,7 +234,7 @@ function CheckoutForm({
       fbEvent("StartTrial", {
         value: 0,
         currency: "USD",
-        predicted_ltv: selectedPlan === "yearly" ? 180 : 20,
+        predicted_ltv: selectedPlan === "yearly" ? 63 : 7,
       });
 
       onSuccess(normEmail, selectedPlan);
@@ -296,10 +296,10 @@ function CheckoutForm({
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-[10px] text-zinc-400 line-through">
-                $40
+                $14
               </span>
               <span className="text-sm font-black text-zinc-950">
-                $20
+                $7
                 <span className="text-[10px] font-normal text-zinc-500">
                   /mo
                 </span>
@@ -307,7 +307,7 @@ function CheckoutForm({
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
-            14 Days Free
+            7 Days Free
           </span>
         </button>
 
@@ -333,10 +333,10 @@ function CheckoutForm({
             </span>
             <div className="flex items-baseline gap-1">
               <span className="text-[10px] text-zinc-400 line-through">
-                $30
+                $11
               </span>
               <span className="text-sm font-black text-zinc-950">
-                $15
+                $5.25
                 <span className="text-[10px] font-normal text-zinc-500">
                   /mo
                 </span>
@@ -344,7 +344,7 @@ function CheckoutForm({
             </div>
           </div>
           <span className="mt-1 text-[11px] font-semibold text-emerald-600">
-            14 Days Free
+            7 Days Free
           </span>
         </button>
       </div>
@@ -464,7 +464,7 @@ function CheckoutForm({
           <div className="flex items-center gap-1.5 text-zinc-600">
             <Ticket className="h-3.5 w-3.5 text-zinc-700" />
             <span className="font-mono text-[9px] font-bold tracking-wider text-zinc-500 uppercase">
-              PLUGIN DOWNLOAD · 14-DAY PASS
+              PLUGIN DOWNLOAD · 7-DAY PASS
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -508,7 +508,7 @@ function CheckoutForm({
         {loading ? (
           <span className="flex items-center gap-2">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            <span>Activating 14-Day Free Trial...</span>
+            <span>Activating 7-Day Free Trial...</span>
           </span>
         ) : (
           <>
@@ -549,7 +549,7 @@ function CheckoutForm({
           <span>Cancel anytime with 1 click</span>
         </div>
         <p className="text-[10px] text-zinc-500">
-          No charge until day 14. You will receive an email reminder before your
+          No charge until day 7. You will receive an email reminder before your
           trial ends.
         </p>
       </div>
@@ -581,7 +581,7 @@ function SuccessView({
 
       <div className="space-y-1">
         <h3 className="text-2xl font-black tracking-tight text-zinc-950">
-          14-Day Free Trial Activated!
+          7-Day Free Trial Activated!
         </h3>
         <p className="text-xs text-zinc-600">
           Unlimited 4K photorealistic renders unlocked for{" "}
