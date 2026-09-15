@@ -1,0 +1,6 @@
+desktop-app
+dist
+node_modules
+.next
+public/v6_render.rbz
+sketchup-plugin
