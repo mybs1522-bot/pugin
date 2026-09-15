@@ -513,7 +513,7 @@ function CheckoutForm({
         ) : (
           <>
             <Download className="h-4 w-4 text-white" strokeWidth={2.5} />
-            <span>Download Plugin</span>
+            <span>Start 7-Day Free Trial &amp; Download</span>
           </>
         )}
       </Button>
@@ -705,5 +705,27 @@ export function DownloadPricingModal({
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+export function DownloadCheckoutCard({
+  defaultEmail = "",
+  mode = "download",
+  onSuccess,
+}: {
+  defaultEmail?: string;
+  mode?: "download" | "activate_pro";
+  onSuccess: (email: string, plan: "monthly" | "yearly") => void;
+}) {
+  return (
+    <div className="w-full max-w-[480px] overflow-hidden rounded-2xl border border-zinc-800 bg-white p-0 text-zinc-900 shadow-2xl">
+      <Elements stripe={getStripeClient()}>
+        <CheckoutForm
+          defaultEmail={defaultEmail}
+          mode={mode}
+          onSuccess={onSuccess}
+        />
+      </Elements>
+    </div>
   );
 }
