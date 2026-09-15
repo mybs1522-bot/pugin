@@ -63,99 +63,16 @@ export function DownloadClient() {
 
   return (
     <div className="selection:bg-primary min-h-screen bg-zinc-950 text-zinc-100 selection:text-white">
-      {/* Top Simple Navigation */}
-      <header className="sticky top-0 z-50 border-b border-zinc-800/80 bg-zinc-950/80 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4 sm:px-6">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-base font-black text-zinc-950 shadow-sm">
-              V6
-            </div>
-            <span className="text-base font-extrabold tracking-tight text-white">
-              V6 Render
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="text-xs font-semibold text-zinc-400 transition-colors hover:text-white"
-            >
-              ← Back to Home
-            </Link>
-            <a
-              href="mailto:support@avada.space"
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900 px-3 py-1 text-xs font-medium text-zinc-300 transition-all hover:border-zinc-700 hover:text-white"
-            >
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>Need Help?</span>
-            </a>
-          </div>
-        </div>
-      </header>
-
       {!isPaid ? (
-        /* ── Checkout Page View ────────────────────────────────────────── */
-        <main className="mx-auto max-w-xl px-4 py-8 sm:px-6 sm:py-12">
-          <div className="flex flex-col items-center space-y-4 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400">
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>7-Day Free Trial · $0.00 Due Today</span>
-            </div>
-
-            <h1 className="text-3xl font-black tracking-tight text-white sm:text-4xl">
-              Start Free Trial &amp; Download
-            </h1>
-            <p className="max-w-md text-sm leading-relaxed text-zinc-400">
-              Unlock unlimited 4K photorealistic cloud rendering for SketchUp.
-              Download the official{" "}
-              <code className="text-zinc-200">v6_render.rbz</code> plugin
-              immediately after card verification.
-            </p>
-
-            <div className="flex w-full justify-center pt-2">
-              <DownloadCheckoutCard
-                mode="download"
-                onSuccess={() => {
-                  setIsPaid(true);
-                  triggerDownload();
-                }}
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pt-2 text-xs text-zinc-500">
-              <span className="flex items-center gap-1 text-zinc-400">
-                <Check className="h-3.5 w-3.5 text-emerald-400" /> Universal
-                .rbz package
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-zinc-400">
-                <Monitor className="h-3.5 w-3.5" /> Windows
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1 text-zinc-400">
-                <Apple className="h-3.5 w-3.5" /> macOS
-              </span>
-              <span>•</span>
-              <span>SketchUp 2021 – 2026</span>
-            </div>
-
-            <p className="pt-2 text-xs text-zinc-500">
-              Already started your trial?{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPaid(true);
-                  triggerDownload();
-                }}
-                className="cursor-pointer text-zinc-300 underline hover:text-white"
-              >
-                Download v6_render.rbz directly
-              </button>
-            </p>
-          </div>
+        /* ── Full-Page Checkout: Only Checkout Card ────────────────────── */
+        <main className="flex min-h-screen w-full items-center justify-center px-3 py-6 sm:px-4 sm:py-10">
+          <DownloadCheckoutCard
+            mode="download"
+            onSuccess={() => {
+              setIsPaid(true);
+              triggerDownload();
+            }}
+          />
         </main>
       ) : (
         /* ── Post-Checkout Download & Installation Guide View ───────────── */
